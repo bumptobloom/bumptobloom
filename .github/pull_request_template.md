@@ -1,11 +1,10 @@
-## Closes
-
-<!-- REQUIRED. This is what links the PR to the board and moves the card. -->
-Closes #
-
 ## What this does
 
 
+
+## Why
+
+<!-- Link the Monday item, or the ADR / contract section it implements. -->
 
 ## What breaks if this is wrong
 

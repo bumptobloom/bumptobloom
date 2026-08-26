@@ -1,23 +1,26 @@
 # Architecture
 
 ```
-                        ┌──────────────────┐
-                        │     Browser      │
-                        │  Next.js PWA     │
-                        └────────┬─────────┘
-                                 │ HTTPS
-                        ┌────────▼─────────┐
-                        │  Next.js server  │   Vercel
-                        │  Server Actions  │
-                        │  + API routes    │
-                        │  + Ask module    │
-                        └──┬───────────┬───┘
-                           │           │
-   ┌───────────────────────▼─┐   ┌─────▼──────────────────┐
-   │  Supabase Postgres      │   │   OpenAI API           │
-   │  + Auth + Storage       │   │   (only external call) │
-   │  Row Level Security     │   │                        │
-   └─────────────────────────┘   └────────────────────────┘
+              ┌────────────────────────────────────┐
+              │        THE PHONE                   │
+              │   Expo / React Native app          │
+              │                                    │
+              │   • every screen                   │
+              │   • packages/fever-rules  ← runs   │
+              │     here, offline, deterministic   │
+              └──────┬──────────────────────┬──────┘
+                     │                      │
+       Supabase JS   │                      │  HTTPS
+       (RLS enforced)│                      │
+              ┌──────▼─────────────┐  ┌─────▼──────────────────┐
+              │ Supabase Postgres  │  │ Supabase Edge Function │
+              │ + Auth + Storage   │  │  /ask                  │
+              │ Row Level Security │  │  holds the OpenAI key  │
+              └────────────────────┘  └─────┬──────────────────┘
+                                            │
+                                      ┌─────▼──────┐
+                                      │  OpenAI    │
+                                      └────────────┘
 
    ┌───────────────────────────────────────────────┐
    │  packages/fever-rules  (in-process, no I/O)   │
@@ -28,28 +31,32 @@
 
 ## Why this shape
 
-See [ADR-001](DECISIONS.md#adr-001--one-language-typescript-everywhere). Short
-version: one language, one repo, one deploy. An earlier hybrid proposal put Ask
-in a separate Python service; it was dropped once it turned out the backend group
-is comfortable in TypeScript, because the hybrid's integration cost then bought
-nothing.
+See [ADR-005](DECISIONS.md#adr-005--react-native-with-expo-this-is-a-store-app-not-a-website).
+This ships to the App Store and Play Store, so it is a React Native app. There is
+no web server of ours anywhere in this diagram — Supabase is the backend.
 
 ## Rules that hold the shape together
 
-**No internal network hops.** Every component of this system runs in the same
-process. The only external call we make is to OpenAI. If you find yourself
-proposing a second service, raise it before you build it.
+**No secret ever ships in the app bundle.** Anything in a mobile build can be
+extracted in about five minutes. The OpenAI key lives in the `/ask` Edge Function
+and nowhere else. If you find yourself putting a key in `app.config.ts`, stop.
 
-**The browser never calls OpenAI.** The key lives server-side, in Server Actions
-and API routes only.
+**Most data access needs no server at all.** The app talks to Supabase directly
+and Row Level Security decides what it may see. That is why the RLS tests matter
+so much here — they are not a nice-to-have, they are the entire access-control
+layer.
 
-**Triage does not cross a network boundary.** A network call can time out, and a
-timed-out fever check that fails open is the worst bug this product could have.
-`packages/fever-rules` is a pure function imported in-process.
+**Edge Functions exist for exactly two reasons:** something needs a secret, or
+something must not be decided by the client. Today that is only `/ask`. If you
+want a third, raise it first.
 
-**Age is derived server-side.** The fever-check endpoint does not accept an age
-from the client; it reads `birth_date`. A stale or tampered client cannot produce
-a wrong triage.
+**Triage runs on the device, deliberately.** A network call can time out, and a
+timed-out fever check that fails open is the worst bug this product could have. A
+mother at 2am on hotel wifi still gets an answer. The result is logged to Supabase
+afterwards, and logging failing never blocks the answer.
+
+**Age is derived from `birth_date`, which comes from the database.** The app
+cannot invent an age; it can only use the one we gave it.
 
 **Nothing identifying reaches OpenAI.** The Ask context carries an age in months
 and a question. No name, no user id, no email.
@@ -63,18 +70,15 @@ guard before the OpenAI call, not after. See docs/SAFETY.md.
 Parent enters temp + method + red flags
         │
         ▼
-POST /api/health/fever-check     (Next.js, authenticated)
-        │
-        ├─ look up baby, verify ownership via RLS
-        ├─ derive ageMonths from birth_date
+ON THE DEVICE — no network needed
+        ├─ read birth_date from the local session (fetched at login)
+        ├─ derive ageMonths
         ├─ assessFever()  ← packages/fever-rules, pure, deterministic
-        └─ insert fever_checks (inputs, tier, ruleId, rulesVersion)
+        └─ render the tier immediately
         │
         ▼
-{ tier, ruleId, rectalEquivalentF, reasons, methodCaution }
-        │
-        ▼
-UI renders copy for the tier, severity high → low
+Fire-and-forget: insert a fever_checks row via Supabase
+        (if this fails, the parent already has their answer)
 ```
 
 OpenAI appears nowhere in that diagram. That is the point — triage is
@@ -82,10 +86,10 @@ deterministic, in-process, and cannot fail open.
 
 ## Environments
 
-| | Web | DB |
+| | App | DB |
 |---|---|---|
-| local | :3000 | Supabase local or a dev project |
-| preview | Vercel per-PR | shared dev project |
-| prod | Vercel | prod project, RLS enforced |
+| local | Expo Go on your own phone | Supabase local or a dev project |
+| internal | EAS build → TestFlight / Play internal | shared dev project |
+| prod | App Store / Play Store | prod project, RLS enforced |
 
-Preview deploys never point at the production database.
+Internal builds never point at the production database.

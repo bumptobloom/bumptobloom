@@ -129,44 +129,43 @@ sheet.
 ## 4. THE TECH STACK
 
 ```
-                        WHAT THE MOM SEES
-                     Next.js app on her phone
-                              │
-                              ▼
-                    ┌──────────────────────┐
-                    │   Next.js server     │      hosted on Vercel
-                    │                      │
-                    │  • all the screens   │
-                    │  • all the data      │
-                    │  • the Ask AI part   │
-                    │  • fever rules       │
-                    └───┬──────────────┬───┘
-                        │              │
-              ┌─────────▼──────┐  ┌────▼─────────┐
-              │   Supabase     │  │  OpenAI      │
-              │                │  │              │
-              │ • database     │  │ • Ask only   │
-              │ • login        │  │ • never      │
-              │ • file storage │  │   medical    │
-              └────────────────┘  └──────────────┘
+              ┌──────────────────────────────┐
+              │        THE APP               │
+              │   React Native, on her phone │
+              │   App Store + Play Store     │
+              │                              │
+              │   • every screen             │
+              │   • fever checker ← runs     │
+              │     here, works offline      │
+              └───┬──────────────────────┬───┘
+                  │                      │
+        ┌─────────▼────────┐  ┌──────────▼─────────┐
+        │    Supabase      │  │  Ask function      │
+        │                  │  │  holds the OpenAI  │
+        │ • database       │  │  key, calls OpenAI │
+        │ • login          │  │                    │
+        │ • photo storage  │  │  never medical     │
+        └──────────────────┘  └────────────────────┘
 ```
 
 Say it like this:
 
-> "One app, one language, one place to deploy. TypeScript everywhere.
-> Supabase holds the data and handles login. OpenAI powers the Ask tab and
-> nothing else — it never touches anything medical.
+> "It's a real app, on both stores. Written in React Native, which is
+> TypeScript — so everyone's writing the same language. Supabase holds the data
+> and handles login. OpenAI powers the Ask tab and nothing else.
 >
-> The fever checker is deliberately separate: plain code, no AI, no internet
-> connection. It cannot fail and it cannot be talked into the wrong answer."
+> The fever checker runs **on the phone itself** — no AI, no internet needed.
+> A mom at 2am on bad wifi still gets an answer, and it can't be talked into
+> the wrong one."
 
 **In one line each:**
 
-- **Next.js + TypeScript** — the app itself, works like a mobile app in the browser
-- **Tailwind + shadcn/ui** — how we style it, so it looks consistent
+- **Expo / React Native + TypeScript** — the app, one codebase for iPhone and Android
+- **NativeWind** — how we style it, so it looks consistent
 - **Supabase** — database, login, and photo storage, all in one
+- **Supabase Edge Functions** — the only place our OpenAI key can safely live
 - **OpenAI** — the Ask tab only
-- **Vercel** — where it lives on the internet
+- **EAS Build** — turns our code into something the app stores accept
 - **GitHub Actions** — runs the tests on every change
 
 ---

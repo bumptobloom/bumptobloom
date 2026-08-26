@@ -7,15 +7,20 @@ against these shapes with mocks; backend builds to them. Neither blocks the othe
 Changing a frozen contract requires a PR to this file approved by both affected
 squad leads. Do not change a shape in code and document it afterwards.
 
-Every route below except `/api/auth/*` requires a Supabase session.
-All timestamps are ISO 8601 UTC. All IDs are UUIDs.
+**This is a React Native app talking to Supabase directly.** Most of what follows
+is a Supabase query, not an HTTP endpoint we wrote — Row Level Security is the
+access control. Only `/ask` is an Edge Function, because it needs a secret.
+
+Everything requires a Supabase session. All timestamps are ISO 8601 UTC. All IDs
+are UUIDs. Shapes below are what the app's data layer (`apps/mobile/lib/api/`)
+returns, so screens never see raw table rows.
 
 ---
 
 ## Home
 
-```
-GET /api/home/:babyId
+```ts
+getHome(babyId): Promise<HomeData>     // apps/mobile/lib/api/home.ts
 ```
 
 ```json
@@ -45,15 +50,15 @@ it themselves and must never cache it across days.
 
 ## Track
 
-```
-GET  /api/milestones?babyId=…            → milestones for the baby's checkpoint
-POST /api/babies/:babyId/milestones      → { milestoneId } marks noticed
-DELETE /api/babies/:babyId/milestones/:milestoneId
-GET  /api/activities?babyId=…
-POST /api/babies/:babyId/activities      → { activityId }
+```ts
+getMilestones(babyId)                    // milestones for the baby's checkpoint
+markMilestone(babyId, milestoneId)
+unmarkMilestone(babyId, milestoneId)
+getActivities(babyId)
+markActivity(babyId, activityId)
 ```
 
-`GET /api/milestones` response:
+`getMilestones` returns:
 
 ```json
 {
@@ -81,11 +86,11 @@ client must render it.
 
 ## Learn
 
-```
-GET    /api/content?babyId=…&category=…
-GET    /api/content/:id
-POST   /api/content/:id/save
-DELETE /api/content/:id/save
+```ts
+getContent(babyId, category?)
+getContentItem(id)
+saveContent(id)
+unsaveContent(id)
 ```
 
 ```json
@@ -112,12 +117,17 @@ from — that is what separates this from a forum post.
 
 ## Health — Fever Checker
 
-```
-POST /api/health/fever-check
-GET  /api/health/fever-checks/:babyId
+**Runs on the device.** No network call, so it works offline.
+
+```ts
+import { assessFever } from '@btb/fever-rules';
+
+const result = assessFever({ ageMonths, tempF, method, redFlags });
+// then, fire and forget:
+logFeverCheck(babyId, input, result);
 ```
 
-Request:
+Input:
 
 ```json
 {
@@ -128,10 +138,10 @@ Request:
 }
 ```
 
-The client does **not** send age. The server derives it from `birth_date`, so a
-stale client cannot produce a wrong triage.
+`ageMonths` is derived from the `birth_date` we fetched from the database. The
+app never asks the parent for an age and never stores one.
 
-Response:
+Result:
 
 ```json
 {
@@ -148,19 +158,24 @@ Response:
 `tier` is one of `HOME`, `CALL`, `EMERGENCY`. The client renders copy for the
 tier — it never re-derives or overrides it. Severity renders high-to-low.
 
-Validation failures return `422` with a machine-readable reason. **A validation
-failure must never render as a reassuring result.** Show the error and the
+`assessFever` throws `FeverInputError` on impossible input. **A validation failure
+must never render as a reassuring result.** Catch it, show the error and the
 emergency banner.
+
+If `logFeverCheck` fails, do nothing about it. The parent already has their
+answer; a logging failure must never surface as an error on this screen.
 
 ---
 
 ## Cart (route `/act`)
 
+```ts
+getRecommendations(babyId)
+getProduct(id)
 ```
-GET /api/recommendations/:babyId
-GET /api/products/:id
-GET /api/products/:id/retailers
-```
+
+Retailer links are plain search URLs — no affiliate programme, no tracking:
+`https://www.amazon.com/s?k=belly+oil+for+pregnancy`
 
 ```json
 {
@@ -189,14 +204,16 @@ payment steps are removed for the MVP.
 
 ## Ask
 
-Ask runs inside the web app (ADR-001). There is no second service and no
-cross-service contract — these are the routes the browser calls.
+Ask is a **Supabase Edge Function**, because it needs the OpenAI key and that key
+can never ship in the app bundle. This is the only server code we write.
 
 ```
-POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
-GET  /api/ask/conversations
-GET  /api/ask/conversations/:id
+POST {SUPABASE_URL}/functions/v1/ask
+Headers: Authorization: Bearer <the user's Supabase JWT>
+Body:    { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
 ```
+
+Conversation history is read straight from Supabase with RLS — no function needed.
 
 Response:
 
@@ -211,9 +228,9 @@ Response:
 }
 ```
 
-The handler, in order:
+The function, in order:
 
-1. Verify the session and that this baby belongs to this parent.
+1. Verify the JWT and that this baby belongs to this parent.
 2. Derive `ageMonths` from `birth_date`. The client never sends an age.
 3. **Run `shouldRedirectToHealth()` from `packages/shared`.** If it returns true,
    return the Health hand-off and stop. No model call happens.
@@ -224,6 +241,9 @@ The handler, in order:
 `redirectedToHealth: true` means the client shows the Health hand-off instead of
 answer text.
 
-**Failure behaviour:** 15s timeout. On any error the client shows a plain
-"couldn't reach the assistant" state. It never falls back to a cached or
-generated answer, and it never degrades toward anything medical.
+**Failure behaviour:** 15s timeout. On any error the app shows a plain "couldn't
+reach the assistant" state. It never falls back to a cached or generated answer,
+and it never degrades toward anything medical.
+
+Unlike the fever checker, Ask genuinely needs a connection — say so plainly when
+there isn't one.

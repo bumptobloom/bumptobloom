@@ -142,8 +142,8 @@ Learn content, product catalog.
 | **Sahasra Miriyala** | 12h |
 | **Rasheed Oyewole** | 8h, GMT+3 |
 
-Owns the Ask module — prompts, context, validation, evals — plus Next.js API
-routes and CRUD, fever-check persistence and the recommendations endpoint.
+Owns the Ask Edge Function — prompts, context, validation, evals — plus the
+app's data layer and Supabase queries, fever-check logging and recommendations.
 
 > Shaff Had's 9–11pm IST is **8:30–10:30am PDT** — the single best bridge window
 > that exists on this team. Protect it; it's how Pod W and Pod I stay in sync at all.
@@ -188,8 +188,9 @@ blocking launch. That's the single most valuable schedule change here.
 Scaffolded, committed, tests green. Clone it, don't rebuild it.
 
 ```
-apps/web/               Next.js 15 · TypeScript · Tailwind · shadcn/ui · PWA
+apps/mobile/            Expo · React Native · TypeScript · NativeWind
 packages/shared/        Ask triage guard · 15 tests passing
+supabase/functions/     Edge Functions — the only place a secret may live
 packages/fever-rules/   ← the important one. 33 cases + 3 brute-force invariants
 supabase/migrations/    19 tables, RLS on every private one, birth_date not age
 docs/                   DECISIONS · API-CONTRACTS · SAFETY · ARCHITECTURE · ONBOARDING

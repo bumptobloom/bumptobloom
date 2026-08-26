@@ -15,9 +15,15 @@ almost never online at the same time.
 git clone git@github.com:bumptobloom/bumptobloom.git
 cd bumptobloom
 npm install
-cp .env.example .env.local     # ask your squad lead for the real values
-npm run dev                    # web app on http://localhost:3000
+cp .env.example .env           # ask your pod lead for the real values
+
+cd apps/mobile
+npx expo start                 # scan the QR code with Expo Go on your phone
 ```
+
+You need a phone. Install **Expo Go** from the App Store or Play Store, scan the
+QR code, and the app opens on your device with live reload. No Xcode, no Android
+Studio, no simulator required to get started.
 
 New to the project? Read [docs/ONBOARDING.md](docs/ONBOARDING.md) first — it takes
 about fifteen minutes and will save you a week.
@@ -28,15 +34,16 @@ about fifteen minutes and will save you a week.
 
 ```
 apps/
-  web/                Next.js 15 + TypeScript + Tailwind + shadcn/ui.
-                      The whole app: every screen, all CRUD, and Ask.
-                      Deploys to Vercel.
+  mobile/             Expo + React Native + TypeScript. The app itself —
+                      every screen, ships to the App Store and Play Store.
 packages/
-  fever-rules/        Pure TypeScript triage engine. No I/O, no deps, heavily tested.
+  fever-rules/        Pure TypeScript triage engine. No I/O, no deps, heavily
+                      tested. Runs ON THE DEVICE so it works offline.
                       See docs/SAFETY.md before touching it.
   shared/             Shared types, Zod schemas, and the Ask triage guard.
 supabase/
   migrations/         SQL, applied in order. Never edit an applied migration.
+  functions/          Edge Functions — the only place a secret key may live.
   seed/               Reference data (milestones, content, products).
 data/                 Source datasets before they become seeds.
 docs/                 Architecture, decisions, API contracts, safety.
@@ -46,17 +53,18 @@ docs/                 Architecture, decisions, API contracts, safety.
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui, PWA |
-| App backend | Next.js Server Actions + API routes |
-| Ask / AI | OpenAI SDK + Zod validation, inside the web app |
-| Database | Supabase Postgres with Row Level Security |
-| Auth | Supabase Auth |
-| Hosting | Vercel |
+| App | Expo (React Native), TypeScript |
+| Navigation | Expo Router |
+| Styling | NativeWind (Tailwind syntax for React Native) |
+| Data + auth | Supabase JS client, guarded by Row Level Security |
+| Server logic | Supabase Edge Functions (Deno, TypeScript) |
+| Ask / AI | OpenAI, called from an Edge Function only |
+| Builds | EAS Build → TestFlight and Play internal testing |
 | CI | GitHub Actions |
-| Tests | Vitest, Playwright, node:test |
+| Tests | Jest + React Native Testing Library, node:test |
 
-One language, one repo, one deploy — and why an earlier hybrid proposal was
-dropped: see [ADR-001](docs/DECISIONS.md#adr-001--one-language-typescript-everywhere).
+Why React Native and not a website: see
+[ADR-005](docs/DECISIONS.md#adr-005--react-native-with-expo-this-is-a-store-app-not-a-website).
 
 ---
 
@@ -66,9 +74,13 @@ dropped: see [ADR-001](docs/DECISIONS.md#adr-001--one-language-typescript-everyw
 Nothing in this codebase stores "month 8". This closes the "what about babies
 between months?" question and gives us preterm corrected-age support for free.
 
-**2. AI never decides anything medical.** The Ask service cannot influence a
-fever result. Triage is `packages/fever-rules`, which is deterministic and has no
-network access. This is architectural, not a convention.
+**2. AI never decides anything medical.** Ask cannot influence a fever result.
+Triage is `packages/fever-rules` — deterministic, no network, running on the
+device. A mother at 2am on bad wifi still gets an answer.
+
+**2b. No secret ever ships in the app bundle.** Anything in a mobile build can be
+extracted in five minutes. The OpenAI key lives in a Supabase Edge Function and
+nowhere else.
 
 **3. Contracts before code.** [docs/API-CONTRACTS.md](docs/API-CONTRACTS.md) is
 frozen at the end of Week 1. Frontend builds against it, backend builds to it,
@@ -81,9 +93,9 @@ squad leads approve.
 
 | Squad | Owns | Lead |
 |---|---|---|
-| Platform | repo, auth, schema, deploy, design system | Sonakshi |
+| Platform | repo, auth, schema, builds, design system | Sonakshi |
 | Experience | Home, Track, Learn UI | Joanna |
-| AI | Ask module, prompts, evals | Keya |
+| AI | Ask Edge Function, prompts, evals | Keya |
 | Data & Safety | datasets, fever rules, Act catalog | Natasha |
 
 Full roster, capacity and timezone map in [docs/ONBOARDING.md](docs/ONBOARDING.md).
