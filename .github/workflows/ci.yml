@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: 
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -27,7 +29,7 @@ jobs:
       - name: Block rules changes that ship without test changes
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
+          git fetch origin ${{ github.base_ref }}
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           if echo "$CHANGED" | grep -q 'packages/fever-rules/src/index.ts'; then
             if ! echo "$CHANGED" | grep -q 'packages/fever-rules/src/index.test.ts'; then
