@@ -46,8 +46,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
+      # npm install, not npm ci: there is no lockfile until apps/web is
+      # scaffolded in Week 1. Switch to `npm ci` + cache once one exists.
+      - name: Install
+        run: npm install --no-audit --no-fund
       - run: npm run lint --if-present
       - run: npm run typecheck --if-present
       - run: npm run test --if-present
@@ -57,7 +59,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Look for committed secrets
+        run: |
+          # Deliberately simple. The gitleaks action needs a paid licence for
+          # organisation repos; this has no licence gate and catches the shapes
+          # that actually get committed by accident. Note the `.+` — an empty
+          # KEY= in .env.example is fine, a filled one is not.
+          PATTERN='sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|AI_SERVICE_TOKEN|SENTRY_DSN)=.+'
+          if grep -rInE "$PATTERN" \
+              --exclude-dir=.git --exclude-dir=node_modules \
+              --exclude-dir=_to_delete --exclude='*.md' . ; then
+            echo "::error::Possible secret committed. Move it to an environment variable."
+            exit 1
+          fi
+          echo "No secrets found."
