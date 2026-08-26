@@ -36,7 +36,7 @@ result screen in the prototype, and the flow lands on a fever article that leads
 with a green *"Usually manageable at home"* block — dress lightly, offer fluids,
 sponge bath.
 
-Anyone clicking that path at Pitch Day sees home-care advice for a scenario that
+Anyone clicking that path in a demo sees home-care advice for a scenario that
 is an emergency-room visit. The engine in this repo now enforces the rule and
 proves it by brute force. Design still owes us the emergency result screen and a
 reordered article that runs severity high-to-low.
@@ -184,10 +184,7 @@ blocking launch. That's the single most valuable schedule change here.
 | **3** | Sep 8–14 | **Learn & fever rules.** Learn feed and content dataset. *Fever rules finalised and sent for clinical review.* First E2E suite. |
 | **4** | Sep 15–21 | **Cart & Ask.** Product catalog with a rationale per item, retailer links, no checkout. Ask goes live: OpenAI, Zod validation, run logging, and the *triage guard that redirects symptom questions before any model call.* |
 | **5** | Sep 22–28 | **Health UI & polish.** Fever Checker form with the measurement-method selector, three result screens ordered high-to-low, persistent 911 banner. *Reviewer feedback applied,* rules version bumped. Mobile, accessibility, Sentry. |
-| **6** | Sep 29–Oct 5 | **Hardening & Pitch Day.** RLS penetration test, full E2E, performance budget, beta with 10–20 real parents. *Clinical sign-off recorded* — the hard gate. Production deploy. |
-
-**Pitch Day: demo the emergency fever path, not the home-care one.** It's the
-strongest thing we'll have built and it tells the safety story.
+| **6** | Sep 29–Oct 5 | **Hardening & Launch.** RLS penetration test, full E2E, performance budget, beta with 10–20 real parents. *Clinical sign-off recorded* — the hard gate. Production deploy. **What the end-of-programme deliverable actually is still needs confirming.** |
 
 ---
 
