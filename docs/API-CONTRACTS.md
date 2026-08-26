@@ -105,8 +105,8 @@ DELETE /api/content/:id/save
 }
 ```
 
-`sourceLabel` is required on every item — PRD §11.4 requires visible attribution
-on every card.
+`sourceLabel` is required on every item. Every card shows where its advice came
+from — that is what separates this from a forum post.
 
 ---
 
@@ -180,7 +180,8 @@ GET /api/products/:id/retailers
 }
 ```
 
-`rationale` is required — PRD §8.5 requires every card to say why. There is no
+`rationale` is required — a recommendation without a reason is just an advert.
+There is no
 cart total and no checkout; per the design-change log, "Add to List" and all
 payment steps are removed for the MVP.
 
@@ -215,7 +216,7 @@ The handler, in order:
 1. Verify the session and that this baby belongs to this parent.
 2. Derive `ageMonths` from `birth_date`. The client never sends an age.
 3. **Run `shouldRedirectToHealth()` from `packages/shared`.** If it returns true,
-   return the Health hand-off and stop. No model call happens. PRD §8.7.
+   return the Health hand-off and stop. No model call happens.
 4. Build context — age in months and developmental stage only. **No name, no
    user id, no email.** Nothing identifying reaches OpenAI.
 5. Call OpenAI, validate the response with Zod, log an `ai_runs` row.

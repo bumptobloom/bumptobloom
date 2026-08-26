@@ -10,10 +10,10 @@ Reference data that ships with the product. Owned by Natasha (Pod E).
 
 Rules:
 
-- Every row carries a `source_label`. PRD §11.4 requires visible attribution on
-  every card in the product.
-- Milestones use the nine PRD checkpoints: 0, 2, 4, 6, 9, 12, 15, 18, 24 months.
-- **All four domains** are required at every checkpoint: physical, cognitive,
-  language, social_emotional. The current Figma shows only three — that is a
-  design bug, not a data decision.
+- Every row carries a `source_label`. Every card in the product shows where its
+  advice came from.
+- Milestones use the nine CDC checkpoints: 0, 2, 4, 6, 9, 12, 15, 18, 24 months.
+- Four domains: physical, cognitive, language, social_emotional. The Master
+  sheet lists social-emotional in one row and says "at least three types" in
+  another; we store all four and treat the fourth as a should-have.
 - Seeds are applied with the service role, never from the client.

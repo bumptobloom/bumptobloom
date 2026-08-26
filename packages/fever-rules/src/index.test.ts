@@ -31,13 +31,14 @@ type Case = {
 
 const CASES: Case[] = [
   // ---------------------------------------------------------------
-  // The under-3-months rule. PRD §8.6: "any fever in an infant under
-  // 3 months is ALWAYS urgent/emergency, with no exceptions."
+  // The under-3-months rule. Standard pediatric guidance: any fever in an
+  // infant under three months is always an emergency, no exceptions.
   // ---------------------------------------------------------------
   { name: 'newborn 0mo at exactly 100.4', ageMonths: 0, tempF: 100.4, expect: 'EMERGENCY', expectRule: 'R2_NEONATE_FEVER' },
   { name: 'newborn 0mo just below threshold', ageMonths: 0, tempF: 100.3, expect: 'CALL', expectRule: 'R4_NEONATE_NO_FEVER' },
   { name: '1mo with fever', ageMonths: 1, tempF: 101.0, expect: 'EMERGENCY', expectRule: 'R2_NEONATE_FEVER' },
-  // This is the exact case shown in the Figma prototype (screen 11).
+  // The exact case shown in the Figma prototype (screen 11), where the flow
+  // currently lands on home-care advice.
   { name: 'THE FIGMA CASE: 2mo at 101.4', ageMonths: 2, tempF: 101.4, expect: 'EMERGENCY', expectRule: 'R2_NEONATE_FEVER' },
   { name: '2.9mo with fever still emergency', ageMonths: 2.9, tempF: 100.5, expect: 'EMERGENCY', expectRule: 'R2_NEONATE_FEVER' },
   { name: '3mo exactly is NOT the neonate rule', ageMonths: 3, tempF: 100.5, expect: 'CALL', expectRule: 'R6_YOUNG_INFANT_FEVER' },

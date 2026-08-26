@@ -2,11 +2,10 @@
 
 **Sonakshi Panda, Lead Engineer · 25 Aug – 5 Oct 2026 · 11 engineers, 4 pods, 74 tasks**
 
-The PRD, the technical stack doc, the Figma prototype and the Master sheet
-disagree with each other in fourteen places. **Where they conflict, the Master
-sheet wins** — it carries the team's MoSCoW priorities and is the most recent
-agreed scope. This document says what we build, who builds it, and what has
-to be settled this week.
+The Master sheet, the technical stack doc and the Figma prototype disagree with
+each other in thirteen places. **Where they conflict, the Master sheet wins** —
+it carries the team's MoSCoW priorities and is the most recent agreed scope. This
+document says what we build, who builds it, and what has to be settled this week.
 
 ---
 
@@ -14,9 +13,9 @@ to be settled this week.
 
 ### We have no pediatric clinical reviewer, and Health cannot ship without one
 
-PRD §10 requires every Health-tab threshold and every line of result copy to be
-authored or reviewed by a licensed pediatric clinician before release. No such
-person is named anywhere in our documents. Until they sign off, the Fever Checker
+We are shipping triage advice to frightened parents at 2am. Every threshold and
+every line of result copy needs a licensed pediatric clinician to review it before
+release. No such person is named anywhere. Until they sign off, the Fever Checker
 cannot go to real parents — however good the code is.
 
 That makes finding them a **week-one product task**, not a week-six checkbox. It
@@ -26,10 +25,10 @@ sitting on the critical path at the end.
 
 **Owner: Shailee Shah. Week 1.**
 
-### The prototype's fever path contradicts the PRD's own hard rule
+### The prototype gives home-care advice for an emergency
 
-PRD §8.6 states: *"any fever in an infant under 3 months is always classified as
-urgent/emergency"* — correct, and consistent with standard pediatric guidance.
+Standard pediatric guidance is unambiguous: **any** fever in an infant under
+three months is an emergency-room visit, every time, no exceptions.
 
 But Figma screen 11 shows a **2-month-old at 101.4°F**, there is no emergency
 result screen in the prototype, and the flow lands on a fever article that leads
@@ -57,32 +56,28 @@ thread the India pod reads nine hours later.
 | **003** | **Fever Checker only.** No symptom library. | The binding constraint isn't engineering time, it's clinical review. Ten topics × four sections is forty pieces of copy needing sign-off from a reviewer who doesn't exist yet. |
 | **004** | **Store `birth_date`, never a month number.** | Answers design's open question about "days/weeks/months data" outright — the answer is a date picker. Fixes "what about kids between months?" and gives preterm corrected age for free. |
 
-Two more recorded: **ADR-005** (naming — Cart in the UI, `act` in code) and
-**ADR-006** (auth is in scope; PRD §12 is stale).
-
 ---
 
-## 3. The fourteen conflicts
+## 3. The thirteen conflicts
 
-**Rule: the Master sheet is the authority.** Where the PRD or the tech-stack doc
+**Rule: the Master sheet is the authority.** Where the tech-stack doc or the Figma
 says something different, the Master sheet is what we build.
 
 | # | Conflict | Where it shows | Severity | Resolution / owner |
 |---|---|---|---|---|
-| 1 | Fever result leads with home-care advice | Figma 11–13 vs PRD §8.6 | **Critical** | Engine enforces it now. Design owes emergency screen + reordered article. |
+| 1 | Fever result leads with home-care advice | Figma 11–13, against standard pediatric guidance | **Critical** | Engine enforces the rule now. Design owes an emergency screen + reordered article. |
 | 2 | Stage state contradicts itself across tabs | Home = Month 18, Learn/Ask/Cart = Week 24, Health = Newborn | **Critical** | Worst case: the "Change age" modal reads Week 24 in the header and Month 18 in the body. Design. |
-| 3 | No pediatric reviewer named | PRD §10 requires one | **Critical** | Hard launch gate. Shailee, week 1. |
-| 4 | COPPA / HIPAA / SaMD exposure unreviewed | PRD §11.2 flags it; nothing followed | **Critical** | We store infant health data with accounts. Katrina, week 1. Legal question, not mine. |
-| 5 | Track domain count | PRD §8.3 says 4. Master sheet says both "Social emotional, Language cognitive and movement" *and* "at least three types Physical, Cognitive and Language" | Medium | Master sheet is internally inconsistent here. Schema stores all four; Figma's three are acceptable for launch, Social/Emotional is a Should-have. Downgraded from Critical after re-reading the Master sheet. |
-| 6 | Track has no disclaimer | PRD §8.3 requires it on every checklist view | High | Approved copy already sits in the Master sheet. Design just has to place it. |
-| 7 | Backend stack vs team skills | I assumed the backend group couldn't write TypeScript | Settled | ADR-001, **all TypeScript**. My assumption was wrong — Keya, Shaff Had and Rehaan all can. Hybrid dropped. |
-| 8 | Pregnancy in scope or not | PRD yes, stack doc 0–24mo, Figma builds it | Settled | ADR-002, out. |
-| 9 | Auth in scope or not | PRD §12 says out; stack doc and Figma both build it | Settled | ADR-006, in. |
+| 3 | No pediatric reviewer | We are shipping medical triage with nobody qualified reviewing it | **Critical** | Hard launch gate. Shailee, week 1. |
+| 4 | COPPA / health-privacy exposure unreviewed | Real accounts, real infants, symptom logs | **Critical** | Katrina, week 1. Legal question, not mine. |
+| 5 | Track domain count | Master sheet says "Social emotional, Language cognitive and movement" in one row and "at least three types" in another | Medium | The Master sheet contradicts itself. Schema stores all four; Figma's three are fine for launch, social-emotional is a should-have. |
+| 6 | Track has no disclaimer | Approved copy sits in the Master sheet; the Figma screen doesn't show it | High | Design just has to place it. Legally the most important screen to have one. |
+| 7 | Backend stack vs team skills | I assumed the backend group couldn't write TypeScript | Settled | ADR-001, **all TypeScript**. My assumption was wrong — Keya, Shaff Had and Rehaan all can. |
+| 8 | Pregnancy in scope or not | Tech-stack doc says 0–24mo; the Figma builds a full pregnancy path | Settled | ADR-002, out. Confirmed in the meeting. |
+| 9 | Health scope | Figma implies a symptom library ("← All topics"); tech-stack doc says fever checker only | Settled | ADR-003, fever checker only. Clinical review is the constraint. |
 | 10 | Onboarding age model unresolved | Design-change log: "Pending: will need Tech team to discuss" | Settled | ADR-004, date picker. Design needs telling. |
-| 11 | Commerce tab has five names | Cart · Act · Sprout Cart · Bloom Cart · Essentials | High | Proposed: Cart in UI, `act` in code. Katrina to ratify. |
-| 12 | PRD corrupted by find-and-replace | "interBloom Cartive", "ImpBloom Cart", "Bloom Cartive users" | High | A global `act → Bloom Cart` replace. Currently unsafe to quote. Shailee. |
-| 13 | Three different timelines | PRD says 8 weeks, stack doc says 7, we have 6 | High | Six. The plan below is what fits, given ADR-002 and ADR-003. |
-| 14 | Learn has three different category sets | Master sheet: Developmental/Feeding/Sleep/**Diaper**. Stack doc: six categories. Figma: Development/Your Body/Wellness. | High | **Master sheet wins** — four categories, including Diaper, which appears nowhere else. Schema updated. |
+| 11 | Commerce tab has five names | Cart · Act · Sprout Cart · Bloom Cart · Essentials | High | **Cart** in the UI, `act` in code and routes. Katrina to ratify. |
+| 12 | Two different timelines | Tech-stack doc says 7 weeks, we have 6 | High | Six. The plan below is what fits, given ADR-002 and ADR-003. |
+| 13 | Learn has three different category sets | Master sheet: Developmental/Feeding/Sleep/**Diaper**. Tech doc: six. Figma: three pregnancy ones. | High | **Master sheet wins** — four categories, including Diaper, which appears nowhere else. Schema updated. |
 
 Smaller design bugs, not tracked above: six bottom-nav items (convention caps at
 five on both platforms), a stray red ★ next to "Month 8" in onboarding, and a

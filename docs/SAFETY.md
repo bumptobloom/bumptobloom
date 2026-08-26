@@ -27,8 +27,7 @@ path to launch and has a long lead time.
 
 ## The rules that cannot be weakened
 
-These come from PRD §8.6 and §10. They are enforced by brute-force tests, not by
-review discipline.
+These are enforced by brute-force tests, not by review discipline.
 
 1. **Any fever in a baby under 3 months returns EMERGENCY.** No exceptions, no
    combination of other inputs. A test sweeps every age/temperature/method
@@ -85,7 +84,7 @@ app gave them bad guidance, we can reconstruct precisely what it said and why.
 Without the rule ID and version, we could not.
 
 That table is under Row Level Security and is never used for analytics or ad
-targeting. It is infant health data (PRD §11.2).
+targeting. It is infant health data.
 
 ## Standing disclaimers
 

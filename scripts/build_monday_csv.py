@@ -25,9 +25,9 @@ def span(week: int) -> tuple[str, str]:
 T = [
     # ---------------- WEEK 1 ----------------
     (1, "DECISION: Confirm pediatric clinical reviewer for Health content", "Shailee Shah", "Product", "Critical",
-     "BLOCKING FOR LAUNCH. PRD 10 requires licensed pediatric sign-off. No reviewer is named today. Longest lead time on the project - start day 1, not week 5."),
+     "BLOCKING FOR LAUNCH. We are shipping triage advice to frightened parents; it needs a doctor's sign-off before release. No reviewer is named today. Longest lead time on the project - start day 1, not week 5."),
     (1, "DECISION: Legal review - COPPA / HIPAA / state health-privacy exposure", "Katrina Ma", "Product", "Critical",
-     "We are storing infant health data with accounts. PRD 11.2 flags this and it is unresolved. Also covers whether the Fever Checker risks SaMD classification."),
+     "We are storing infant health data under real accounts and nobody has checked whether we are allowed to. Also covers whether the Fever Checker risks being classified as a medical device."),
     (1, "Create GitHub org + repo, push scaffold, set branch protection", "Sonakshi Panda", "Pod W", "High",
      "Org bumptobloom. Protect main and develop. Require 1 review + green CI. Add CODEOWNERS handles."),
     (1, "Create Supabase project, apply migration 0001, verify RLS", "Keya Chaudhari", "Pod W", "High",
@@ -39,22 +39,20 @@ T = [
     (1, "Tell design: pregnancy is out of MVP, need a 'coming soon' screen", "Sonakshi Panda", "Pod W", "High",
      "ADR-002. Roughly a third of current Figma screens (every 'Week 24' one) have no v1 implementation. Design needs to hear this explicitly."),
     (1, "Tell design: Track is missing the Social/Emotional domain", "Sonakshi Panda", "Pod W", "High",
-     "Figma shows 3 domains, PRD 8.3 requires 4. Counter says '0 of 9' but only 6 checkboxes render - the missing 3 are the absent section."),
+     "Figma shows 3 domains. Counter says '0 of 9' but only 6 checkboxes render - the missing 3 are the absent section. Master sheet lists social-emotional in one row and says 'at least three' in another, so this is a should-have not a blocker."),
     (1, "Tell design: Track has no disclaimer; copy is already approved", "Sonakshi Panda", "Pod W", "High",
-     "PRD 8.3 requires it on every checklist view. Exact copy already sits in the Master sheet. Legally the most important screen to have it on."),
+     "Exact copy already sits in the Master sheet, approved. Legally the most important screen to have a disclaimer on, and the Figma does not show one."),
     (1, "Tell design: fever article must run severity high-to-low", "Sonakshi Panda", "Pod W", "Critical",
      "Currently leads with a green 'Usually manageable at home' block. An emergency-tier result must never land a parent on home-care advice first."),
-    (1, "Fix PRD find-and-replace corruption, republish clean version", "Shailee Shah", "Product", "High",
-     "A global 'act' -> 'Bloom Cart' replace broke the PRD dozens of times (interBloom Cartive, ImpBloom Cart, Bloom Cartive users). It is currently unsafe to quote."),
     (1, "Ratify naming + nav order", "Katrina Ma", "Product", "Medium",
-     "Commerce tab has 5 names across our docs: Cart, Act, Sprout Cart, Bloom Cart, Essentials. ADR-005 proposes Cart in UI / act in code. Nav order Home-Track-Learn-Ask-Health-Cart."),
+     "Commerce tab has 5 names across our docs: Cart, Act, Sprout Cart, Bloom Cart, Essentials. Proposal: Cart in the UI, act in code and routes. Nav order Home-Track-Learn-Ask-Health-Cart."),
     (1, "Scaffold Next.js app: TypeScript, Tailwind, shadcn/ui, PWA manifest", "Melvin James Bryant III", "Pod E", "High", ""),
     (1, "Supabase Auth: log in, create account, forgot password", "Melvin James Bryant III", "Pod E", "High",
-     "Matches existing Figma screens 1-2. Note PRD 12 wrongly lists auth as out of scope - see ADR-006."),
+     "Matches existing Figma screens 1-2. Master sheet marks login and create-account as Must have."),
     (1, "Extract design tokens from Figma into Tailwind config", "Joanna Zhang", "Pod E", "High",
      "Design-change log item 1 was 'fonts are not consistent throughout'. Tokens are how that stops recurring."),
     (1, "Build nav shell and routing for all six tabs", "Joanna Zhang", "Pod E", "Medium",
-     "Order per ADR-005. Flag: 6 tabs exceeds the 5-item convention on iOS and Android."),
+     "Order: Home-Track-Learn-Ask-Health-Cart. Flag: 6 tabs exceeds the 5-item convention on iOS and Android."),
     (1, "Baby profile: create + edit, date picker, derived age", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "birth_date is the source of truth. Nothing stores 'month 8'. Optional due_date for preterm."),
     (1, "Scaffold the Ask module and wire an /api/ask route stub", "Mohd Shaff Had Khan", "Pod I", "High",
@@ -68,7 +66,7 @@ T = [
 
     # ---------------- WEEK 2 ----------------
     (2, "Seed milestones: 4 domains x 9 checkpoints, with sources", "Natasha Saini", "Pod E", "High",
-     "Every row needs a source_label - PRD 11.4 requires visible attribution."),
+     "Every row needs a source_label. Every card shows where its advice came from - that is what separates this from a forum post."),
     (2, "GET /api/milestones + POST mark-noticed + DELETE", "Tarigopula Sivathmika Chowdary", "Pod I", "High", ""),
     (2, "Track UI: checkpoint navigator, 4 domains, progress counter", "Joanna Zhang", "Pod E", "High",
      "Replace the unlabeled 1-6 pagination in the Figma with real checkpoint months."),
@@ -103,7 +101,7 @@ T = [
 
     # ---------------- WEEK 4 ----------------
     (4, "Build product catalog with a written rationale per product", "Natasha Saini", "Pod E", "High",
-     "PRD 8.5 requires every card to say why it is recommended."),
+     "Every card must say why the product is recommended. A recommendation without a reason is just an advert."),
     (4, "Recommendation rules by age bucket (0-3, 4-8, 9-14, 15-24)", "Rasheed Adebayo OYEWOLE", "Pod I", "Medium", ""),
     (4, "GET /api/recommendations/:babyId", "Rasheed Adebayo OYEWOLE", "Pod I", "Medium", ""),
     (4, "Cart UI with retailer links, no checkout, no list total", "Melvin James Bryant III", "Pod E", "High",
@@ -132,7 +130,7 @@ T = [
     (5, "Wire Sentry into both services", "Melvin James Bryant III", "Pod E", "Medium", ""),
     (5, "Mobile pass: 390px, real devices, both platforms", "Sahasra Miriyala", "Pod I", "High", ""),
     (5, "Accessibility pass toward WCAG 2.1 AA", "Sahasra Miriyala", "Pod I", "Medium",
-     "PRD 11.3. Our users are sleep-deprived and often in low light. Contrast and text scaling matter more than usual here."),
+     "Our users are sleep-deprived and often in low light at 3am. Contrast and text scaling matter more here than on a normal product."),
     (5, "Run Ask evals, tune prompt, pin the winning version", "Keya Chaudhari", "Pod W", "Medium", ""),
 
     # ---------------- WEEK 6 ----------------
@@ -164,9 +162,9 @@ T = [
     (2, "Recruit the beta cohort - 10 to 20 first-time parents", "Vishnu Deenadayal", "Product", "High",
      "Starts week 2, not week 6. Finding, screening and scheduling real first-time moms takes weeks. The week 6 beta task depends entirely on this being done early."),
     (3, "Approve Learn content copy before it ships", "Jasdeep Singh", "Product", "High",
-     "Natasha builds the dataset; someone has to sign off that the copy is accurate and on-brand before it reaches parents. PRD 11.4 also requires every card to carry a source label - check that too."),
+     "Natasha builds the dataset; someone has to sign off that the copy is accurate and on-brand before it reaches parents. Check every card carries a source label too."),
     (4, "Publish privacy policy and Terms of Service", "Vishnu Deenadayal", "Product", "Critical",
-     "Hard gate on the beta. We cannot put real parents' infant health data into a product with no privacy policy. PRD 11.2 requires a stated retention and deletion policy. Pairs with Katrina's legal review."),
+     "Hard gate on the beta. We cannot put real parents' infant health data into a product with no privacy policy, and we need a stated retention and deletion policy. Pairs with Katrina's legal review."),
 ]
 
 HEADERS = ["Group", "Name", "Owner", "Status", "Priority", "Pod", "Start Date", "Due Date", "Week", "Notes"]

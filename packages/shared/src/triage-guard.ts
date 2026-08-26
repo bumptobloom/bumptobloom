@@ -1,7 +1,7 @@
 /**
  * Keeps medical questions out of the generative path.
  *
- * PRD §8.7: symptom questions must route to the Health tab's structured tools
+ * Symptom questions must route to the Health tab's structured tools
  * rather than being answered in free text. This is a coarse keyword gate on
  * purpose — it is a safety net, and a safety net should be simple enough that
  * you can read it and be sure what it does.

@@ -67,7 +67,7 @@ and eval discipline are the hard parts, and those are language-independent.
 
 Three documents disagreed:
 
-- The PRD scopes the product as pregnancy through 24 months.
+- The Figma and the tagline scope the product as pregnancy through 24 months.
 - The technical stack document says "Target: New moms with babies 0–24 months."
 - The Figma prototype has a complete Week-24 pregnancy path — a pregnancy Learn
   feed, pregnancy Ask copy, and a Trimester 2 Cart.
@@ -102,16 +102,16 @@ migration of existing rows.
 
 ### Context
 
-PRD §8.6 requires a library of 10+ symptom topics, each with Overview, Home Care,
-Call Your Pediatrician, and Seek Emergency Care sections. The technical stack
-document narrows this: "For the MVP, Health is intentionally focused on the Fever
-Checker rather than a full AI medical assistant."
+The Figma prototype implies a library of symptom topics — the fever article has
+an "← All topics" link. The technical stack document narrows this: "For the MVP,
+Health is intentionally focused on the Fever Checker rather than a full AI
+medical assistant."
 
-The binding constraint is not engineering time. It is clinical review. PRD §10
-requires every Health-tab item to be authored or reviewed by a licensed pediatric
-clinician before release, and **we do not have a named clinical advisor yet.**
-Ten topics × four sections is forty pieces of copy needing sign-off from a person
-who does not currently exist on this project.
+The binding constraint is not engineering time. It is clinical review. Anything
+in the Health tab is triage advice going to a frightened parent, so every line of
+it needs a licensed pediatric clinician to sign off before release — and **we do
+not have one yet.** Ten topics × four sections is forty pieces of copy waiting on
+a person who does not currently exist on this project.
 
 ### Decision
 
@@ -158,71 +158,3 @@ problem. Preterm support becomes additive later rather than a schema change.
 
 The Figma "Month 8" slider and the "Change age" modal both need redesigning.
 
----
-
-## ADR-005 — One name per thing
-
-**Status:** Accepted, Week 0
-**Decided by:** Sonakshi, needs PM ratification
-
-### Context
-
-The commerce tab currently has five names across our documents: **Cart** (Figma),
-**Act** (technical stack doc), **Sprout Cart** (PRD §7), **Bloom Cart** (PRD §8.5
-and the Figma Cart header), and **Essentials** (the `syeda-design` branch).
-
-"Bloom Cart" exists because someone ran a global find-and-replace of "act" → "Bloom
-Cart" across the PRD. That is also why the PRD now says "interBloom Cartive
-prototype", "ImpBloom Cart", and "Bloom Cartive users" several dozen times. The
-corruption then propagated into the Figma Cart header.
-
-Navigation order is equally unsettled — the design-change log says *"Pending: we
-might need to re-arrange the bar. Need to discuss in team."*
-
-### Decision
-
-The tab is **Cart** in the UI and `act` in code, routes, and analytics
-(`/act`, `recommendations_viewed`). Two names, one for humans and one for
-machines, deliberately and consistently.
-
-Navigation order is fixed at: **Home · Track · Learn · Ask · Health · Cart**
-— frequency of use, left to right.
-
-Six tabs exceeds the five-item convention on both iOS and Android. Flagged for
-design; not blocking.
-
-### Consequences
-
-The PRD needs a clean rewrite — the find-and-replace corruption makes it unsafe
-to quote. **Owner: PM, Week 1.**
-
-Design must update the Cart header and the nav order.
-
----
-
-## ADR-006 — Auth is in scope
-
-**Status:** Accepted, Week 0
-
-### Context
-
-PRD §12 lists "User accounts, authentication, and cross-device data sync" as out
-of scope for v1. But the technical stack document specifies Supabase Auth, the
-Figma has complete Log In and Create Account screens, and the Master sheet marks
-login as a **Must have**.
-
-### Decision
-
-Auth is in. Supabase Auth, email and password, matching the Figma.
-
-### Consequences
-
-The PRD's out-of-scope section is stale and must be corrected, because §11.2's
-privacy requirements (encryption, retention, deletion, HIPAA/COPPA review) only
-bite once accounts exist — and they now do.
-
-The Master sheet's open question **"where is the data stored"** is now answered:
-Supabase Postgres, US region, with Row Level Security on every table holding
-parent or baby data. The harder question — whether storing infant health data
-triggers COPPA or state health-privacy obligations — is a **legal question that
-is still open and is not mine to answer.** Escalated to PM, Week 1.

@@ -8,8 +8,9 @@
  * ⚠️  CLINICAL REVIEW REQUIRED BEFORE LAUNCH
  * Every threshold below is an ENGINEERING PLACEHOLDER drawn from commonly
  * published pediatric guidance. None of it has been reviewed by a licensed
- * clinician. PRD §10 requires pediatric sign-off before release. Until the
- * reviewer signs REVIEW.md, this module must not ship to real users.
+ * clinician. Triage advice going to frightened parents needs a doctor's
+ * sign-off before release. Until the reviewer signs REVIEW.md, this module must
+ * not ship to real users.
  *
  * Design principle: when inputs are ambiguous, escalate. Never de-escalate.
  */
@@ -75,7 +76,11 @@ const FEVER_F = 100.4;
 const HIGH_F = 102.0;
 /** Threshold that warrants urgent care at any age. */
 const VERY_HIGH_F = 104.0;
-/** Below this age, ANY fever is an emergency. Non-negotiable — see PRD §8.6. */
+/**
+ * Below this age, ANY fever is an emergency. Non-negotiable.
+ * Standard pediatric guidance: a rectal temperature of 100.4°F or higher in an
+ * infant under three months warrants immediate evaluation, every time.
+ */
 const NEONATE_MAX_MONTHS = 3;
 /** Below this age, tympanic readings are unreliable. */
 const TYMPANIC_MIN_MONTHS = 6;
@@ -117,7 +122,6 @@ export function assessFever(input: FeverInput): FeverResult {
   // ---- Rules evaluate in strict precedence order. First match wins. ----
 
   // R1 — Any red flag is an emergency regardless of age or temperature.
-  //      PRD §8.6 acceptance criterion.
   if (redFlags.length > 0) {
     return {
       ...base,

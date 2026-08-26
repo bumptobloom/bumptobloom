@@ -58,7 +58,8 @@ create table milestones (
   -- row and "at least three types Physical, Cognitive and Language" in another.
   -- We store all four; social_emotional is a Should-have, not a launch blocker.
   domain        text not null check (domain in ('physical','cognitive','language','social_emotional')),
-  -- Checkpoint in months: 0,2,4,6,9,12,15,18,24 (PRD §8.3)
+  -- Checkpoint in months: 0,2,4,6,9,12,15,18,24 — matches the CDC
+  -- "Learn the Signs. Act Early." schedule.
   checkpoint_month int not null check (checkpoint_month between 0 and 24),
   title         text not null,
   description   text,
@@ -117,7 +118,8 @@ create table content (
   body          text not null,
   min_age_month int not null check (min_age_month >= 0),
   max_age_month int not null check (max_age_month <= 24),
-  -- Displayed on every card. PRD §11.4 requires source attribution.
+  -- Displayed on every card. Parents deserve to know where advice came from,
+  -- and it is what makes this different from a forum post.
   source_label  text not null,
   source_url    text,
   version       int not null default 1,
@@ -172,7 +174,8 @@ create table products (
   id            uuid primary key default uuid_generate_v4(),
   category_id   uuid not null references product_categories(id),
   name          text not null,
-  -- The "why this product" line. PRD §8.5 requires it on every card.
+  -- The "why this product" line. Required on every card — a recommendation
+  -- without a reason is just an advert.
   rationale     text not null,
   indicative_price_cents int,
   image_path    text,
@@ -247,7 +250,7 @@ create table ai_runs (
   latency_ms      int,
   -- Did the response pass Pydantic/Zod validation?
   validation_ok   boolean not null,
-  -- Did we detect a medical question and redirect to Health? (PRD §8.7)
+  -- Did we detect a medical question and redirect to Health?
   redirected_to_health boolean not null default false,
   created_at      timestamptz not null default now()
 );
