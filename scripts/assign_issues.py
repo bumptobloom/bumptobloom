@@ -27,22 +27,29 @@ CSV_PATH = "BumpToBloom-Monday-Import.csv"
 # Name in the CSV -> GitHub username. Add people here as they accept.
 # Anyone missing is skipped, and their issues stay unassigned.
 OVERRIDES: dict[str, str] = {
+    # --- accepted, assignable now ---
     "Sonakshi Panda":                 "sonakshipanda",
     "Keya Chaudhari":                 "keyachaudhari",
     "Melvin James Bryant III":        "MJBIII",
     "Shaikh Mohd Rehaan":             "Rehaan-2006",
-    "Rasheed Adebayo OYEWOLE":        "OyewoleRasheed",   # invite still pending
-    # PM tasks are deliberately NOT auto-assigned. They are proposals until
-    # the PMs agree to them in the team meeting. Add names here only after that.
-    # Still needed:
-    # "Jasdeep Singh":                "",
-    # "Mohd Shaff Had Khan":          "",
-    # "Tarigopula Sivathmika Chowdary": "",
-    # "Sahasra Miriyala":             "",
-    # "Joanna Zhang":                 "",
-    # "Natasha Saini":                "",
+    "Rasheed Adebayo OYEWOLE":        "OyewoleRasheed",
+    "Joanna Zhang":                   "U-sirname",        # confirmed by Joanna
+
+    # --- invite sent, not yet accepted: will fail harmlessly, re-run later ---
+    "Mohd Shaff Had Khan":            "ShaffHadK",
+    "Tarigopula Sivathmika Chowdary": "SivathmikaChowdary",
+
+    # --- still need a username ---
+    # "Natasha Saini":                "",   # pinged
+    # "Sahasra Miriyala":             "",   # unconfirmed whether she is joining
+
+    # --- Product: deliberately left unassigned until the PMs agree to own
+    #     them. Vishnu (VishDeen) and the others have accepted, so it is only
+    #     this comment stopping it. Uncomment once that conversation happens.
+    # "Vishnu Deenadayal":            "VishDeen",
     # "Shailee Shah":                 "",
     # "Katrina Ma":                   "",
+    # "Jasdeep Singh":                "",
 }
 
 DRY = False
