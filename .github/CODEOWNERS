@@ -1,0 +1,25 @@
+# Replace the placeholders with real GitHub handles once the org exists.
+# Left column is a path, right column is who must approve changes to it.
+
+*                             @sonakshi
+
+# Safety-critical. Lead Engineer approval required, always. See docs/SAFETY.md.
+/packages/fever-rules/        @sonakshi
+/docs/SAFETY.md               @sonakshi
+
+# Schema and security. Both Lead Engineers.
+/supabase/                    @sonakshi @keya
+
+# Frozen after Week 1 — changes need both affected pod leads.
+/docs/API-CONTRACTS.md        @sonakshi @keya
+/docs/DECISIONS.md            @sonakshi @keya
+
+# AI service — Pod I lead + AI architect.
+/apps/ai/                     @shaffhad @keya
+
+# Web app — Pod E frontend leads.
+/apps/web/src/app/            @joanna @melvin
+
+# Datasets.
+/data/                        @natasha
+/supabase/seed/               @natasha
