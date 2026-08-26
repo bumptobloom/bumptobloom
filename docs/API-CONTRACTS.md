@@ -101,7 +101,7 @@ DELETE /api/content/:id/save
       "saved": false
     }
   ],
-  "categories": ["development","sleep","feeding","activities","communication","parent_education"]
+  "categories": ["developmental","feeding","sleep","diaper"]
 }
 ```
 
@@ -186,55 +186,43 @@ payment steps are removed for the MVP.
 
 ---
 
-## Ask — the boundary to the Python service
+## Ask
 
-The browser never calls the AI service directly. Next.js proxies, so the OpenAI
-key and the service secret stay server-side.
-
-**Browser → Next.js**
+Ask runs inside the web app (ADR-001). There is no second service and no
+cross-service contract — these are the routes the browser calls.
 
 ```
-POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "…" }
+POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
 GET  /api/ask/conversations
 GET  /api/ask/conversations/:id
-```
-
-**Next.js → FastAPI** — this is the one cross-service contract. Own it carefully.
-
-```
-POST {AI_SERVICE_URL}/ask
-Headers: X-Service-Token: <shared secret>, Authorization: Bearer <supabase jwt>
-```
-
-```json
-{
-  "babyAgeMonths": 18.3,
-  "developmentalStage": "15-24 months",
-  "question": "What activities should I do?",
-  "history": [{ "role": "user", "content": "…" }]
-}
 ```
 
 Response:
 
 ```json
 {
-  "answer": "…",
+  "answer": "...",
+  "conversationId": "uuid",
   "promptVersion": "2026.08.1",
   "model": "gpt-4o-mini",
   "validationOk": true,
-  "redirectedToHealth": false,
-  "usage": { "inputTokens": 412, "outputTokens": 188, "latencyMs": 1240 }
+  "redirectedToHealth": false
 }
 ```
 
-The service receives **only** `babyAgeMonths` — never the baby's name, never the
-parent's identity, never a user ID. Nothing that identifies a family crosses into
-the AI service or reaches OpenAI.
+The handler, in order:
 
-`redirectedToHealth: true` means the question looked like a symptom question. The
-client must show the Health hand-off instead of the answer text. PRD §8.7.
+1. Verify the session and that this baby belongs to this parent.
+2. Derive `ageMonths` from `birth_date`. The client never sends an age.
+3. **Run `shouldRedirectToHealth()` from `packages/shared`.** If it returns true,
+   return the Health hand-off and stop. No model call happens. PRD §8.7.
+4. Build context — age in months and developmental stage only. **No name, no
+   user id, no email.** Nothing identifying reaches OpenAI.
+5. Call OpenAI, validate the response with Zod, log an `ai_runs` row.
 
-**Failure behaviour:** timeout at 15s. On any error, the client shows a plain
+`redirectedToHealth: true` means the client shows the Health hand-off instead of
+answer text.
+
+**Failure behaviour:** 15s timeout. On any error the client shows a plain
 "couldn't reach the assistant" state. It never falls back to a cached or
 generated answer, and it never degrades toward anything medical.

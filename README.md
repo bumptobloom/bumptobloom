@@ -19,15 +19,6 @@ cp .env.example .env.local     # ask your squad lead for the real values
 npm run dev                    # web app on http://localhost:3000
 ```
 
-For the AI service:
-
-```bash
-cd apps/ai
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
 New to the project? Read [docs/ONBOARDING.md](docs/ONBOARDING.md) first — it takes
 about fifteen minutes and will save you a week.
 
@@ -38,13 +29,12 @@ about fifteen minutes and will save you a week.
 ```
 apps/
   web/                Next.js 15 + TypeScript + Tailwind + shadcn/ui.
-                      Owns every screen and all CRUD. Deploys to Vercel.
-  ai/                 FastAPI service. Owns Ask (and only Ask).
-                      Deploys separately. Talks HTTP, never touches the DB directly.
+                      The whole app: every screen, all CRUD, and Ask.
+                      Deploys to Vercel.
 packages/
   fever-rules/        Pure TypeScript triage engine. No I/O, no deps, heavily tested.
-                      Imported by apps/web. See docs/SAFETY.md before touching it.
-  shared/             Types and Zod schemas shared between web and ai.
+                      See docs/SAFETY.md before touching it.
+  shared/             Shared types, Zod schemas, and the Ask triage guard.
 supabase/
   migrations/         SQL, applied in order. Never edit an applied migration.
   seed/               Reference data (milestones, content, products).
@@ -58,15 +48,15 @@ docs/                 Architecture, decisions, API contracts, safety.
 |---|---|
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui, PWA |
 | App backend | Next.js Server Actions + API routes |
-| AI service | Python, FastAPI, Pydantic |
+| Ask / AI | OpenAI SDK + Zod validation, inside the web app |
 | Database | Supabase Postgres with Row Level Security |
 | Auth | Supabase Auth |
-| Hosting | Vercel (web) + Render (ai) |
+| Hosting | Vercel |
 | CI | GitHub Actions |
-| Tests | Vitest, Playwright, pytest |
+| Tests | Vitest, Playwright, node:test |
 
-Why the app is mostly TypeScript but Ask is Python: see
-[ADR-001](docs/DECISIONS.md#adr-001--hybrid-stack).
+One language, one repo, one deploy — and why an earlier hybrid proposal was
+dropped: see [ADR-001](docs/DECISIONS.md#adr-001--one-language-typescript-everywhere).
 
 ---
 
@@ -93,7 +83,7 @@ squad leads approve.
 |---|---|---|
 | Platform | repo, auth, schema, deploy, design system | Sonakshi |
 | Experience | Home, Track, Learn UI | Joanna |
-| AI | Ask service, prompts, evals | Keya |
+| AI | Ask module, prompts, evals | Keya |
 | Data & Safety | datasets, fever rules, Act catalog | Natasha |
 
 Full roster, capacity and timezone map in [docs/ONBOARDING.md](docs/ONBOARDING.md).

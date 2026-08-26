@@ -6,50 +6,55 @@ build something else.
 
 ---
 
-## ADR-001 — Hybrid stack
+## ADR-001 — One language: TypeScript everywhere
 
-**Status:** Accepted, Week 0
-**Decided by:** Sonakshi (Lead Engineer)
+**Status:** Accepted, Week 0. *Supersedes an earlier hybrid proposal.*
+**Decided by:** Sonakshi (Lead Engineer), after checking with the backend group
 
 ### Context
 
 The technical stack document specified an all-TypeScript system: Next.js for the
-frontend, Next.js API routes for the backend, Supabase for data. Clean and
-simple.
+frontend, Next.js API routes for the backend, Supabase for data.
 
-The problem is the team. Three of our four backend engineers — Keya, Shaff Had,
-and Rehaan — list FastAPI, Pydantic, LangChain, PyTorch, and RAG pipelines as
-their expertise. Not one of them lists TypeScript. Under the original plan they
-would spend six weeks writing a language they don't work in, while the AI/RAG
-skills we actually recruited for went unused.
+My first read of the roster pushed against that. Keya, Shaff Had and Rehaan all
+list FastAPI, Pydantic, LangChain, PyTorch and RAG pipelines as their expertise,
+and none of them listed TypeScript on the intake sheet. I drafted a hybrid —
+Next.js for CRUD, one FastAPI service for Ask — on the assumption that asking
+them to work in TypeScript would waste six weeks and the skills we recruited for.
 
-The opposite extreme — a full FastAPI backend — plays to those strengths but
-costs us API contracts, two deploy targets, Supabase token forwarding, and CORS
-for *every* feature, including the ~80% of this app that is forms and lists.
-With eleven part-time engineers across five timezones, integration is where a
-six-week project dies.
+**That assumption was wrong.** All three are comfortable in TypeScript. The
+intake sheet captured what they specialise in, not the limit of what they can
+write. Once that's true, the hybrid's costs have nothing left to buy.
 
 ### Decision
 
-Split on the seam where the skills actually differ.
+Everything in TypeScript. One repository, one language, one deploy.
 
-- **Next.js + Supabase owns all CRUD.** Babies, milestones, content, saved items,
-  products. Server Actions and API routes. One deploy, no cross-service calls.
-- **One FastAPI service owns Ask, and only Ask.** Prompt construction, OpenAI
-  calls, response validation, conversation logging, and the eval harness.
-  A single clean HTTP boundary: `POST /ask`.
-- **Fever rules stay in TypeScript** as a pure package inside the web app. It is
-  deterministic logic with no I/O, it must be trivially unit-testable, and it
-  must not be reachable over a network boundary that could fail open.
+- **Next.js + Supabase owns all CRUD** — babies, milestones, content, saved
+  items, products — through Server Actions and API routes.
+- **Ask is a module inside the web app**, not a separate service. Prompt
+  construction, the OpenAI call, response validation with Zod, conversation
+  logging, and the triage guard all live in `apps/web/src/lib/ask/`.
+- **Fever rules stay a pure package** (`packages/fever-rules`) with no I/O.
+- **Shared safety logic lives in `packages/shared`** — the triage guard was
+  written in Python first and has been ported, tests and all.
 
 ### Consequences
 
-Good: Python engineers own a real, meaty, isolated service. The CRUD majority
-ships without waiting on cross-service plumbing. Exactly one integration seam to
-get right instead of a dozen.
+Good: no cross-service API contract, no second deploy target, no service token,
+no CORS, no timeout handling between our own components, one CI pipeline. In a
+six-week project with eleven part-time engineers across five timezones, every one
+of those is a place integration could have failed, and none of them now exist.
 
-Bad: two deploy targets and two CI pipelines. The AI service needs its own auth
-(a shared secret plus the Supabase JWT, verified server-side). We accept this.
+Bad: we give up Python's AI ecosystem. For MVP Ask — a single OpenAI call with a
+context builder and schema validation — the TypeScript SDK is entirely adequate.
+If we later add real RAG with a vector store and an eval harness, that is the
+point to revisit this, and a Python service can be added then without unpicking
+anything else.
+
+Also worth naming: the AI work is now less differentiated as a specialism. Shaff
+Had and Rehaan still own Ask end to end, because prompt design, context building
+and eval discipline are the hard parts, and those are language-independent.
 
 ---
 

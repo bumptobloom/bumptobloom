@@ -14,8 +14,9 @@
 /docs/API-CONTRACTS.md        @sonakshi @keya
 /docs/DECISIONS.md            @sonakshi @keya
 
-# AI service — Pod I lead + AI architect.
-/apps/ai/                     @shaffhad @keya
+# Ask module — Pod I lead + AI architect.
+/apps/web/src/lib/ask/        @shaffhad @keya
+/packages/shared/             @shaffhad @keya
 
 # Web app — Pod E frontend leads.
 /apps/web/src/app/            @joanna @melvin

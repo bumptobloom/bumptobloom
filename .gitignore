@@ -21,3 +21,6 @@ __pycache__/
 .vercel
 playwright-report/
 test-results/
+
+# local leftovers, safe to remove
+_to_delete/

@@ -2,8 +2,10 @@
 
 **Sonakshi Panda, Lead Engineer · 25 Aug – 5 Oct 2026 · 11 engineers, 4 pods, 74 tasks**
 
-The PRD, the technical stack doc and the Figma prototype disagree with each other
-in thirteen places. This document says what we build, who builds it, and what has
+The PRD, the technical stack doc, the Figma prototype and the Master sheet
+disagree with each other in fourteen places. **Where they conflict, the Master
+sheet wins** — it carries the team's MoSCoW priorities and is the most recent
+agreed scope. This document says what we build, who builds it, and what has
 to be settled this week.
 
 ---
@@ -50,7 +52,7 @@ thread the India pod reads nine hours later.
 
 | ADR | Decision | Why |
 |---|---|---|
-| **001** | **Hybrid stack.** Next.js + Supabase own all CRUD. One FastAPI service owns Ask and nothing else. | The stack doc mandated all-TypeScript, but Keya, Shaff Had and Rehaan are FastAPI/RAG specialists and none of them lists TypeScript. This gives them real work behind one clean HTTP seam, without paying integration cost on the 80% of the app that is forms and lists. |
+| **001** | **One language: TypeScript everywhere.** One repo, one deploy. Ask is a module in the web app, not a separate service. | I first drafted a hybrid with a Python service for Ask, assuming the backend group couldn't work in TypeScript. That was wrong — Keya, Shaff Had and Rehaan all can. Once that's true the hybrid's integration cost buys nothing, so we dropped it. |
 | **002** | **0–24 months only.** Pregnancy is out. "I'm expecting" stays in onboarding and routes to a coming-soon screen. | Confirmed in your meeting. Building both paths roughly doubles the content dataset and adds a maternal-safety review burden we have no reviewer for. Note: roughly a third of the current Figma — every "Week 24" screen — now has no v1 implementation. |
 | **003** | **Fever Checker only.** No symptom library. | The binding constraint isn't engineering time, it's clinical review. Ten topics × four sections is forty pieces of copy needing sign-off from a reviewer who doesn't exist yet. |
 | **004** | **Store `birth_date`, never a month number.** | Answers design's open question about "days/weeks/months data" outright — the answer is a date picker. Fixes "what about kids between months?" and gives preterm corrected age for free. |
@@ -60,7 +62,10 @@ Two more recorded: **ADR-005** (naming — Cart in the UI, `act` in code) and
 
 ---
 
-## 3. The thirteen conflicts
+## 3. The fourteen conflicts
+
+**Rule: the Master sheet is the authority.** Where the PRD or the tech-stack doc
+says something different, the Master sheet is what we build.
 
 | # | Conflict | Where it shows | Severity | Resolution / owner |
 |---|---|---|---|---|
@@ -68,20 +73,29 @@ Two more recorded: **ADR-005** (naming — Cart in the UI, `act` in code) and
 | 2 | Stage state contradicts itself across tabs | Home = Month 18, Learn/Ask/Cart = Week 24, Health = Newborn | **Critical** | Worst case: the "Change age" modal reads Week 24 in the header and Month 18 in the body. Design. |
 | 3 | No pediatric reviewer named | PRD §10 requires one | **Critical** | Hard launch gate. Shailee, week 1. |
 | 4 | COPPA / HIPAA / SaMD exposure unreviewed | PRD §11.2 flags it; nothing followed | **Critical** | We store infant health data with accounts. Katrina, week 1. Legal question, not mine. |
-| 5 | Track missing the Social/Emotional domain | Figma shows 3, PRD §8.3 requires 4 | High | Counter reads "0 of 9" but only 6 checkboxes render — the missing 3 are the absent section. |
+| 5 | Track domain count | PRD §8.3 says 4. Master sheet says both "Social emotional, Language cognitive and movement" *and* "at least three types Physical, Cognitive and Language" | Medium | Master sheet is internally inconsistent here. Schema stores all four; Figma's three are acceptable for launch, Social/Emotional is a Should-have. Downgraded from Critical after re-reading the Master sheet. |
 | 6 | Track has no disclaimer | PRD §8.3 requires it on every checklist view | High | Approved copy already sits in the Master sheet. Design just has to place it. |
-| 7 | Backend stack vs actual team skills | Stack doc mandates all-TS; 3 of 4 backend engineers are Python | Settled | ADR-001, hybrid. |
+| 7 | Backend stack vs team skills | I assumed the backend group couldn't write TypeScript | Settled | ADR-001, **all TypeScript**. My assumption was wrong — Keya, Shaff Had and Rehaan all can. Hybrid dropped. |
 | 8 | Pregnancy in scope or not | PRD yes, stack doc 0–24mo, Figma builds it | Settled | ADR-002, out. |
 | 9 | Auth in scope or not | PRD §12 says out; stack doc and Figma both build it | Settled | ADR-006, in. |
 | 10 | Onboarding age model unresolved | Design-change log: "Pending: will need Tech team to discuss" | Settled | ADR-004, date picker. Design needs telling. |
 | 11 | Commerce tab has five names | Cart · Act · Sprout Cart · Bloom Cart · Essentials | High | Proposed: Cart in UI, `act` in code. Katrina to ratify. |
 | 12 | PRD corrupted by find-and-replace | "interBloom Cartive", "ImpBloom Cart", "Bloom Cartive users" | High | A global `act → Bloom Cart` replace. Currently unsafe to quote. Shailee. |
 | 13 | Three different timelines | PRD says 8 weeks, stack doc says 7, we have 6 | High | Six. The plan below is what fits, given ADR-002 and ADR-003. |
+| 14 | Learn has three different category sets | Master sheet: Developmental/Feeding/Sleep/**Diaper**. Stack doc: six categories. Figma: Development/Your Body/Wellness. | High | **Master sheet wins** — four categories, including Diaper, which appears nowhere else. Schema updated. |
 
 Smaller design bugs, not tracked above: six bottom-nav items (convention caps at
-five on both platforms), the truncated **"2 it"** on the Cart list screen, a stray
-red ★ next to "Month 8" in onboarding, and a stock baby photo as the default
-avatar — which reads as *your* baby before you've uploaded one.
+five on both platforms), a stray red ★ next to "Month 8" in onboarding, and a
+stock baby photo as the default avatar — which reads as *your* baby before you've
+uploaded one.
+
+One earlier finding is now moot: I flagged a truncated **"2 it"** on the Cart list
+screen, but the Master sheet says *"remove your list and add to list
+functionality"* — that whole screen is deleted, not fixed.
+
+Also worth noting: the Master sheet calls the Ask tab **"Bloom AI Chat"**, which
+is a sixth name in circulation. Its spec is explicit and useful though —
+*"generic answers no guardrails"*, plus chat history in a left nav like ChatGPT.
 
 ---
 
@@ -123,7 +137,7 @@ Learn content, product catalog.
 > Joanna works three mornings a week, so UI load is split with Melvin rather than
 > stacked on her. Natasha's after-8pm-EDT slot is 5pm PDT — good overlap with Pod W.
 
-### Pod I — Backend & AI service (IST / GMT+3)
+### Pod I — Backend & Ask (IST / GMT+3)
 
 | Person | Capacity |
 |---|---|
@@ -133,8 +147,8 @@ Learn content, product catalog.
 | **Sahasra Miriyala** | 12h |
 | **Rasheed Oyewole** | 8h, GMT+3 |
 
-Owns the FastAPI Ask service, Next.js API routes and CRUD, fever-check
-persistence and the recommendations endpoint.
+Owns the Ask module — prompts, context, validation, evals — plus Next.js API
+routes and CRUD, fever-check persistence and the recommendations endpoint.
 
 > Shaff Had's 9–11pm IST is **8:30–10:30am PDT** — the single best bridge window
 > that exists on this team. Protect it; it's how Pod W and Pod I stay in sync at all.
@@ -168,7 +182,7 @@ blocking launch. That's the single most valuable schedule change here.
 | **1** | Aug 25–31 | **Foundation & unblocking.** Repo, Supabase, auth, nav shell, baby profile with date picker, AI service reachable. *Contracts freeze.* Five design change-requests go out; both product blockers start. 21 tasks — front-loaded on purpose. |
 | **2** | Sep 1–7 | **Home & Track.** Milestone dataset across all four domains and nine checkpoints. Track UI with a real checkpoint navigator, the disclaimer finally rendered, Home dashboard. *Automated RLS isolation tests* — manual verification will not survive week 5. |
 | **3** | Sep 8–14 | **Learn & fever rules.** Learn feed and content dataset. *Fever rules finalised and sent for clinical review.* First E2E suite. |
-| **4** | Sep 15–21 | **Cart & Ask.** Product catalog with a rationale per item, retailer links, no checkout. Ask service goes live: OpenAI, response validation, run logging, and the *triage guard that redirects symptom questions before any model call.* |
+| **4** | Sep 15–21 | **Cart & Ask.** Product catalog with a rationale per item, retailer links, no checkout. Ask goes live: OpenAI, Zod validation, run logging, and the *triage guard that redirects symptom questions before any model call.* |
 | **5** | Sep 22–28 | **Health UI & polish.** Fever Checker form with the measurement-method selector, three result screens ordered high-to-low, persistent 911 banner. *Reviewer feedback applied,* rules version bumped. Mobile, accessibility, Sentry. |
 | **6** | Sep 29–Oct 5 | **Hardening & Pitch Day.** RLS penetration test, full E2E, performance budget, beta with 10–20 real parents. *Clinical sign-off recorded* — the hard gate. Production deploy. |
 
@@ -183,7 +197,7 @@ Scaffolded, committed, tests green. Clone it, don't rebuild it.
 
 ```
 apps/web/               Next.js 15 · TypeScript · Tailwind · shadcn/ui · PWA
-apps/ai/                FastAPI · Ask only · triage guard + tests passing
+packages/shared/        Ask triage guard · 15 tests passing
 packages/fever-rules/   ← the important one. 33 cases + 3 brute-force invariants
 supabase/migrations/    19 tables, RLS on every private one, birth_date not age
 docs/                   DECISIONS · API-CONTRACTS · SAFETY · ARCHITECTURE · ONBOARDING

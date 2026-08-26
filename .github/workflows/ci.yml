@@ -20,8 +20,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run the safety test table
+      - name: Run the fever rules safety table
         run: node --experimental-strip-types --test packages/fever-rules/src/index.test.ts
+      - name: Run the Ask triage guard tests
+        run: node --experimental-strip-types --test packages/shared/src/triage-guard.test.ts
       - name: Block rules changes that ship without test changes
         if: github.event_name == 'pull_request'
         run: |
@@ -49,22 +51,6 @@ jobs:
       - run: npm run lint --if-present
       - run: npm run typecheck --if-present
       - run: npm run test --if-present
-
-  ai:
-    name: AI service
-    runs-on: ubuntu-latest
-    needs: safety
-    defaults:
-      run:
-        working-directory: apps/ai
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: ruff check .
-      - run: pytest -q
 
   secrets:
     name: Secret scan

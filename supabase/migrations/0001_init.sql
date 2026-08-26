@@ -54,6 +54,9 @@ $$;
 
 create table milestones (
   id            uuid primary key default uuid_generate_v4(),
+  -- Master sheet lists "Social emotional, Language cognitive and movement" in one
+  -- row and "at least three types Physical, Cognitive and Language" in another.
+  -- We store all four; social_emotional is a Should-have, not a launch blocker.
   domain        text not null check (domain in ('physical','cognitive','language','social_emotional')),
   -- Checkpoint in months: 0,2,4,6,9,12,15,18,24 (PRD §8.3)
   checkpoint_month int not null check (checkpoint_month between 0 and 24),
@@ -104,8 +107,12 @@ create index baby_activities_baby_idx on baby_activities(baby_id);
 
 create table content (
   id            uuid primary key default uuid_generate_v4(),
+  -- Categories per the Master sheet ("Baby - Learn": Developmental, Feeding,
+  -- Sleep, Diaper). The tech-stack doc listed six and the Figma showed three
+  -- pregnancy-flavoured ones; the Master sheet is the team's agreed scope and
+  -- wins. Adding a category later is a one-line migration.
   category      text not null check (category in
-                  ('development','sleep','feeding','activities','communication','parent_education')),
+                  ('developmental','feeding','sleep','diaper')),
   title         text not null,
   body          text not null,
   min_age_month int not null check (min_age_month >= 0),

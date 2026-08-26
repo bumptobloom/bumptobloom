@@ -56,9 +56,9 @@ CDC milestones, Learn content, product catalog (Natasha).
 | **Sahasra Miriyala** | Fullstack Engineer | 12h | — |
 | **Rasheed Oyewole** | Back End Engineer | 8h | GMT+3 |
 
-Owns the FastAPI Ask service (Shaff Had, Rehaan), Next.js API routes and CRUD
-(Sivathmika, Sahasra), and fever-check persistence plus the recommendations
-endpoint (Rasheed).
+Owns the Ask module — prompts, context building, validation, evals (Shaff Had,
+Rehaan) — plus Next.js API routes and CRUD (Sivathmika, Sahasra), and
+fever-check persistence and the recommendations endpoint (Rasheed).
 
 > Shaff Had's 9–11pm IST slot is **8:30–10:30am PDT** — the single best bridge
 > window that exists on this team. Protect it. It is how Pod W and Pod I stay in
