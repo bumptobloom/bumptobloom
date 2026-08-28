@@ -17,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: 
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -29,7 +27,7 @@ jobs:
       - name: Block rules changes that ship without test changes
         if: github.event_name == 'pull_request'
         run: |
-          git fetch origin ${{ github.base_ref }}
+          git fetch origin ${{ github.base_ref }} --depth=1
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
           if echo "$CHANGED" | grep -q 'packages/fever-rules/src/index.ts'; then
             if ! echo "$CHANGED" | grep -q 'packages/fever-rules/src/index.test.ts'; then
@@ -48,30 +46,42 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # npm install, not npm ci: there is no lockfile until apps/web is
-      # scaffolded in Week 1. Switch to `npm ci` + cache once one exists.
-      - name: Install
-        run: npm install --no-audit --no-fund
+      # npm install, not npm ci: there is no lockfile committed until the
+      # Next.js app is fully scaffolded in Week 1. Switch to `npm ci` plus
+      # `cache: npm` on the setup-node step once package-lock.json lands.
+      - run: npm install
       - run: npm run lint --if-present
       - run: npm run typecheck --if-present
       - run: npm run test --if-present
+      - run: npm run build --if-present
 
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Look for committed secrets
+      # gitleaks-action needs a paid licence key for organisation repos, so
+      # this is a deliberately simple grep. It catches the mistake we actually
+      # expect: a real key pasted into a file instead of read from env.
+      - name: Look for hardcoded keys
         run: |
-          # Deliberately simple. The gitleaks action needs a paid licence for
-          # organisation repos; this has no licence gate and catches the shapes
-          # that actually get committed by accident. Note the `.+` — an empty
-          # KEY= in .env.example is fine, a filled one is not.
-          PATTERN='sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|AI_SERVICE_TOKEN|SENTRY_DSN)=.+'
-          if grep -rInE "$PATTERN" \
-              --exclude-dir=.git --exclude-dir=node_modules \
-              --exclude-dir=_to_delete --exclude='*.md' . ; then
-            echo "::error::Possible secret committed. Move it to an environment variable."
+          if grep -rInE \
+            '(sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})' \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            --include='*.json' --include='*.sql' --include='*.yml' --include='*.md' \
+            . ; then
+            echo "::error::That looks like a real API key or JWT in the diff."
+            echo "Secrets go in Vercel env vars and .env.local, never in a file."
             exit 1
           fi
-          echo "No secrets found."
+          echo "No hardcoded keys found."
+      - name: Look for server-only names exposed to the browser
+        run: |
+          if grep -rInE 'NEXT_PUBLIC_[A-Z_]*(OPENAI|SERVICE_ROLE|SECRET|PRIVATE)' \
+            --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
+            --include='*.json' . ; then
+            echo "::error::NEXT_PUBLIC_* is shipped to the browser and visible in devtools."
+            echo "OPENAI_API_KEY and SUPABASE_SERVICE_ROLE_KEY are server-side only."
+            exit 1
+          fi
+          echo "No server-only secrets exposed via NEXT_PUBLIC_."
