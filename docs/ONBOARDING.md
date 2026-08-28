@@ -27,9 +27,8 @@ That is not a scheduling problem to solve harder. It is a design constraint. So:
 | **Sonakshi Panda** | Lead Engineer (Fullstack, DS) — pod lead | 16h | flexible |
 | **Keya Chaudhari** | Lead Engineer (Backend, DS) | 16h | Fri + weekends; weekdays after 6pm |
 
-Owns the repo, CI/CD, Supabase project, auth, schema and RLS, deploys, the fever
-rules engine, AI architecture and the eval harness, and code review across all
-pods.
+Owns the repo, CI/CD, Supabase project, auth, schema and RLS, Vercel and deploys,
+the fever rules engine, AI architecture and evals, and code review across all pods.
 
 > Keya has classes mornings and afternoons, so she is effectively a
 > nights-and-weekends contributor. Her work is scoped to things that don't block
@@ -43,10 +42,10 @@ pods.
 | **Melvin Bryant III** | Fullstack Engineer — bridge to Pod W | 10–20h | 8:30am–5:30pm EDT |
 | **Natasha Saini** | Data Scientist — bridge to Pod W | 15h | after 8pm EDT |
 
-Owns Home and Track UI (Joanna), Learn and Cart UI (Melvin), and every dataset:
-CDC milestones, Learn content, product catalog (Natasha).
+Owns Home and Track pages (Joanna), Learn and Cart pages (Melvin), and every
+dataset: CDC milestones, Learn content, product catalog (Natasha).
 
-### Pod I — Backend & AI service (IST / GMT+3)
+### Pod I — Data layer & Ask (IST / GMT+3)
 
 | Person | Role | Capacity | Hours |
 |---|---|---|---|
@@ -56,9 +55,9 @@ CDC milestones, Learn content, product catalog (Natasha).
 | **Sahasra Miriyala** | Fullstack Engineer | 12h | — |
 | **Rasheed Oyewole** | Back End Engineer | 8h | GMT+3 |
 
-Owns the Ask module — prompts, context building, validation, evals (Shaff Had,
-Rehaan) — plus Next.js API routes and CRUD (Sivathmika, Sahasra), and
-fever-check persistence and the recommendations endpoint (Rasheed).
+Owns the Ask route handler — prompts, context building, validation, evals (Shaff
+Had, Rehaan) — plus the data layer and Supabase queries (Sivathmika, Sahasra),
+and fever-check logging and recommendations (Rasheed).
 
 > Shaff Had's 9–11pm IST slot is **8:30–10:30am PDT** — the single best bridge
 > window that exists on this team. Protect it. It is how Pod W and Pod I stay in
@@ -106,6 +105,7 @@ it on rework caused by contradicting documents. Which is exactly what
    arrived; they'll explain most of what looks odd.
 2. Read `docs/API-CONTRACTS.md` for whatever you're building against.
 3. If you touch Health at all, read `docs/SAFETY.md` first. Not optional.
-4. Clone, install, get `npm run dev` working. Ask your pod lead for env values.
+4. Clone, install, get `npm run dev` running. Open it on your laptop and on your
+   phone. Ask your pod lead for env values.
 5. Take a `good-first-issue`. Open a PR. Get it reviewed by someone in a
    different pod — that's how knowledge crosses timezones here.

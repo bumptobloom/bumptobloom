@@ -3,28 +3,16 @@
 We are eleven part-time engineers across 12.5 hours of timezone. These rules
 exist so that nobody has to wait for anybody.
 
-## Start from the issue, not from your editor
-
-Every piece of work on the board is a GitHub issue. Start there:
-
-1. Open your issue on the project board.
-2. In the right sidebar under **Development**, click **Create a branch**.
-   GitHub names it for you and links it to the issue.
-3. Check it out locally: `git fetch && git switch <branch-name>`
-4. When you open the PR, keep `Closes #42` in the description.
-
-That `Closes #` line is what makes the board run itself: the PR shows up in the
-issue's "Linked pull requests" column, and merging it closes the issue and moves
-the card to Done. Nobody drags anything.
-
-If you branch by hand instead, name it `<pod>/<short-description>` —
-`web/track-milestone-list`, `ask/prompt-versioning`, `data/cdc-seed` — and still
-put `Closes #42` in the PR.
+## Branches
 
 ```
 main       protected. production. only release PRs from develop.
 develop    integration branch. everything merges here first.
+<pod>/<short-description>    your work
 ```
+
+Pod prefixes: `platform/`, `app/`, `ask/`, `data/`.
+Examples: `app/track-milestone-list`, `ask/prompt-versioning`, `data/cdc-seed`.
 
 ## Pull requests
 
@@ -55,7 +43,7 @@ approved by both affected pod leads, before the code changes.
 
 ## Definition of done
 
-- [ ] Works on a 390px viewport (we are mobile-first, not mobile-also)
+- [ ] Tested on a phone browser and a laptop — it has to work on both
 - [ ] Loading and error states exist, not just the happy path
 - [ ] No secret, key, or token in the diff
 - [ ] RLS verified if it touches parent or baby data — test with two accounts
