@@ -32,13 +32,14 @@ DETAIL: dict[str, dict] = {
           "If anything is a no, we know what changes",
           "Filed somewhere the team can find it"]},
 
-"Create GitHub org + repo, push scaffold, set branch protection": {
- "do": ["Org and repo exist and the scaffold is pushed.",
-        "Still to do: branch protection on main and develop, and replace the placeholder handles in .github/CODEOWNERS with real usernames."],
- "done": ["main and develop both require one approving review",
-          "Both require CI to pass before merge",
-          "CODEOWNERS has real usernames, no placeholders",
-          "develop is up to date with main"]},
+"Finish repo setup: sync develop with main, verify CODEOWNERS": {
+ "do": ["Done on 29 Aug: the branch ruleset covers main and develop with 1 approving review, three required checks, no force pushes, no deletions.",
+        "Done on 29 Aug: .github/CODEOWNERS now carries real handles instead of placeholders.",
+        "Left to do: develop is behind main. Fast-forward it.",
+        "Left to do: re-check each CODEOWNERS handle as people accept their invite - a handle that is not a collaborator is silently ignored by GitHub."],
+ "done": ["develop is up to date with main",
+          "Every handle in CODEOWNERS belongs to an actual repo collaborator",
+          "A test PR to main shows the CODEOWNERS reviewer being requested automatically"]},
 
 "Create Supabase project, apply migration 0001, verify RLS": {
  "do": ["Create the project in a US region. Name it bumptobloom-dev.",
@@ -60,43 +61,20 @@ DETAIL: dict[str, dict] = {
           "Corrections are merged",
           "The team knows changes now go through a PR with two lead approvals"]},
 
-"Tell design: onboarding becomes a date picker, not a month slider": {
- "do": ["Send Syeda ADR-004 and explain we store the birthday and calculate age from it.",
-        "This answers her open question about days vs weeks vs months — the answer is a date picker.",
-        "Ask for the redesigned onboarding screen and the 'Change age' modal."],
- "done": ["Syeda has confirmed she understands the change",
-          "New onboarding screen is in the Figma",
-          "The 'Month 8' slider and the Change-age modal are both updated"]},
-
-"Tell design: pregnancy is out of MVP, need a 'coming soon' screen": {
- "do": ["Explain ADR-002: 0–24 months only for this version.",
-        "Every 'Week 24' screen has no v1 implementation — she should know before she polishes any of them.",
-        "Ask for one 'coming soon' screen behind the 'I'm expecting' button, with an email capture."],
- "done": ["Syeda knows which screens are out of scope",
-          "A coming-soon screen exists in the Figma",
-          "The 'I'm expecting' button is wired to it"]},
-
-"Tell design: Track is missing the Social/Emotional domain": {
- "do": ["Point out the counter says '0 of 9' but only six checkboxes render.",
-        "The Master sheet lists social-emotional in one row and says 'at least three types' in another, so this is a should-have, not a blocker."],
- "done": ["Syeda knows the counter and the checkboxes disagree",
-          "Either the fourth domain is added or the counter is corrected"]},
-
-"Tell design: Track has no disclaimer; copy is already approved": {
- "do": ["Send her the approved wording — it is already in the Master sheet, she does not need to write it.",
-        "It must appear on every checklist view and must not be dismissible."],
- "done": ["The disclaimer is on the Track screen in the Figma",
-          "It is visible without scrolling",
-          "It has no dismiss or close control"]},
-
-"Tell design: fever article must run severity high-to-low": {
- "do": ["Explain the problem plainly: a 2-month-old at 101.4°F is an emergency room visit, and our current screen opens with 'usually manageable at home, try a sponge bath'.",
-        "Ask for three result screens — monitor, call your doctor, go now — with severity descending on each.",
-        "The emergency one is the priority."],
- "done": ["Three result screens exist in the Figma",
-          "The emergency screen is unmistakable — no green, no home-care advice above the fold",
-          "The fever article reorders so emergency guidance comes first"],
- "note": "Highest-severity design item on the board. If Syeda only does one thing, this is it."},
+"Send design the five change requests": {
+ "do": ["One sitting with Syeda, five items, in this order of importance.",
+        "5) FEVER ARTICLE, do this one first. A 2-month-old at 101.4F is an emergency room visit and our current screen opens with 'usually manageable at home, try a sponge bath'. Ask for three result screens - monitor, call your doctor, go now - with severity descending on each. The emergency one is the priority.",
+        "1) ONBOARDING becomes a date picker, not a month slider. Send her ADR-004: we store the birthday and calculate age from it, which answers her open question about days vs weeks vs months. Ask for the new onboarding screen and the Change-age modal.",
+        "2) PREGNANCY is out of MVP. Every 'Week 24' screen has no v1 implementation and she should know before she polishes any of them. Ask for one coming-soon screen behind 'I am expecting', with an email capture.",
+        "3) TRACK is missing the Social/Emotional domain. The counter says '0 of 9' but only six checkboxes render. Should-have, not a blocker.",
+        "4) TRACK has no disclaimer. The approved copy is already in the Master sheet so she does not need to write it. Every checklist view, non-dismissible, visible without scrolling."],
+ "done": ["Three fever result screens exist in the Figma and the emergency one has no green and no home-care advice above the fold",
+          "The fever article reorders so emergency guidance comes first",
+          "New onboarding screen is in the Figma and the Month-8 slider and Change-age modal are both updated",
+          "A coming-soon screen exists and the 'I am expecting' button is wired to it",
+          "Either the fourth Track domain is added or the counter is corrected",
+          "The Track disclaimer is on the screen, visible without scrolling, with no dismiss control"],
+ "note": "The fever article is the highest-severity design item on the board. If Syeda only does one of the five, it is that one."},
 
 "Ratify naming + nav order": {
  "do": ["Pick one name for the commerce tab. It currently has five across our documents.",
@@ -106,41 +84,43 @@ DETAIL: dict[str, dict] = {
           "Nav order confirmed",
           "Design and engineering both told"]},
 
-"Scaffold the Next.js app: TypeScript, App Router, Tailwind": {
- "do": ["Start from the branch you already pushed — this is finishing it, not restarting.",
-        "Next.js 15, TypeScript, App Router, Tailwind, in `apps/web`.",
-        "Add shadcn/ui and wire the Supabase browser client in `src/lib/supabase.ts`, reading `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.",
-        "Create the folder shape described in `apps/web/README.md`.",
-        "Confirm someone else can clone, `npm install`, `npm run dev`, and see the app."],
- "done": ["`npm run dev` runs and the app opens in a browser",
-          "A second person has done it from a clean clone",
-          "At least two routes navigate",
-          "A Tailwind class renders correctly",
-          "`npm run build` succeeds — a dev-only app is not deployable",
-          "No secret anywhere in the repo, and nothing server-side behind a `NEXT_PUBLIC_` name"],
- "note": "Blocks all UI work. Aim for Wednesday. Your existing branch survived the platform change — nothing you wrote is wasted."},
-
-"PWA manifest, icons and service worker - make it installable": {
- "do": ["`src/app/manifest.ts` — you already started this one. name, short_name, icons at 192 and 512, `display: \"standalone\"`, theme and background colour.",
-        "Add Serwist (`@serwist/next`) for the service worker. Precache the app shell; do not cache Supabase API responses yet — the offline task in Week 5 decides what gets cached.",
-        "Placeholder icons are fine for now; Joanna replaces them in Week 6.",
-        "Test the install on a real Android phone (Chrome offers a prompt) and a real iPhone (Share → Add to Home Screen — there is no prompt on iOS, that is expected)."],
- "done": ["Chrome DevTools → Application → Manifest shows no errors",
-          "A service worker is registered and shows as activated",
-          "Installed on an Android phone, opens with no browser address bar",
-          "Added to the home screen on an iPhone, opens full screen with our icon",
-          "Lighthouse's installability checks all pass"],
- "note": "This is the single task that makes ADR-006 true. Without it we shipped a website."},
-
-"Supabase Auth: log in, create account, forgot password": {
- "do": ["Use `@supabase/ssr` so the session lives in cookies and Server Components can read it. Not localStorage — a Server Component cannot see localStorage.",
-        "Three pages matching the Figma: log in, create account, forgot password.",
+"Supabase client + Auth: log in, create account, forgot password": {
+ "do": ["FIRST, and tell the channel when it lands: the shared Supabase client. There is no @supabase/ssr in apps/web today - the scaffold that merged in PR #113 never wired it. Sivathmika, Sahasra, Rasheed and Shaff Had all import this in week 2.",
+        "Use `@supabase/ssr` so the session lives in cookies and Server Components can read it. Not localStorage - a Server Component cannot see localStorage.",
+        "Client goes in `src/lib/supabase/`, reading NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Never the service-role key.",
+        "THEN the three pages matching the Figma: log in, create account, forgot password.",
         "Middleware routes signed-in users to Home and signed-out users to log in."],
- "done": ["Create account, log out, log in again all work in a browser",
+ "done": ["Another pod can import the client and run one query against Supabase",
+          "Create account, log out, log in again all work in a browser",
           "Closing the tab and reopening the app keeps you signed in",
           "Forgot-password sends an email and the link works",
           "Wrong password shows a readable message, not a raw error",
-          "A parent_profiles row is created on signup"]},
+          "A parent_profiles row is created on signup",
+          "No secret in the repo, and nothing server-side hiding behind a NEXT_PUBLIC_ name"],
+ "note": "Highest-leverage task in week 1. Four people's week 2 starts the day your client lands, so ship that half first even if the screens trail it."},
+
+"Service worker with Serwist: cache the app shell, make the app installable": {
+ "do": ["`src/app/manifest.ts` already exists from Melvin's scaffold. Read it, do not rewrite it.",
+        "Add `@serwist/next` and register a service worker. Precache the app shell only.",
+        "Do NOT cache Supabase API responses yet. Your own week 5 offline task decides what gets cached, and caching health data by accident is a decision, not a default.",
+        "Placeholder icons are fine. Joanna replaces them in week 6.",
+        "Test on a real Android phone (Chrome offers an install prompt) and a real iPhone (Share then Add to Home Screen - there is no prompt on iOS, that is expected, not a bug)."],
+ "done": ["Chrome DevTools, Application, Manifest shows no errors",
+          "A service worker is registered and shows as activated",
+          "Installed on Android, opens with no browser address bar",
+          "Added to the home screen on iPhone, opens full screen with our icon",
+          "Lighthouse installability checks all pass"],
+ "note": "This is the task that makes ADR-006 true. Without it we shipped a website. It needs nothing from anyone else, so it is safe to start on day one."},
+
+"Draft the Home and Learn data-layer signatures for the contract freeze": {
+ "do": ["Write function names and return shapes, not implementations. TypeScript types in a file, or a comment block in docs/API-CONTRACTS.md - either is fine.",
+        "Cover getHome() for week 2 and the Learn fetch, save and unsave calls for week 3.",
+        "For each one, say what a screen gets back. Pages never see raw table rows.",
+        "Send it to Sonakshi before Friday's freeze."],
+ "done": ["Every function you own in weeks 2 and 3 has a name and a return shape written down",
+          "It is in docs/API-CONTRACTS.md before the Friday freeze",
+          "Melvin can build the Home screen against your shape without your code existing yet"],
+ "note": "This is week 1 work because Pod E builds screens against these shapes before you write the code. Getting the shape agreed now is worth more than starting the implementation early."},
 
 "Extract design tokens from Figma into the Tailwind theme": {
  "do": ["Pull colours, font sizes, spacing and radii out of the Figma into one file.",
