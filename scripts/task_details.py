@@ -42,15 +42,17 @@ DETAIL: dict[str, dict] = {
           "A test PR to main shows the CODEOWNERS reviewer being requested automatically"]},
 
 "Create Supabase project, apply migration 0001, verify RLS": {
- "do": ["Create the project in a US region. Name it bumptobloom-dev.",
+ "do": ["Create it inside the bumptobloom organization, NOT a personal account. Project name bumptobloom-dev, region East US (North Virginia) us-east-1, which matches Vercel default iad1 so the database sits next to the code querying it. Free plan for now.",
         "Apply supabase/migrations/0001_init.sql.",
         "Create two test accounts, each with one baby, and prove they cannot see each other.",
-        "Share the URL and anon key with pod leads through the password store, NOT Discord."],
+        "Post the project URL and anon key somewhere the team can find them - a pinned message is fine. They are NOT secrets: the anon key is designed to ship to the browser, and .env.example already says so. RLS is what protects the data, which is exactly why the week 2 RLS test suite is Critical.",
+        "The database password and the service_role key are the real secrets. service_role bypasses RLS completely. It goes into Vercel environment variables and nowhere else - not Discord, not a DM, not the repo."],
  "done": ["All 19 tables exist",
           "Signed in as account A, selecting from `babies` returns exactly one row",
           "Same check passes for baby_milestones, fever_checks, saved_content and ai_conversations",
           "Selecting from prompt_versions or audit_events with the anon key returns nothing",
-          "Connection details are in the password store and .env.example still has no real values"],
+          "URL and anon key are posted where the team can find them, and .env.example still has no real values",
+          "The service_role key exists only in Vercel env vars, and nothing that should be server-side is prefixed NEXT_PUBLIC_"],
  "note": "This blocks almost every other engineering task. If one thing lands first, make it this."},
 
 "Freeze API contracts with all pod leads": {
@@ -310,7 +312,7 @@ DETAIL: dict[str, dict] = {
           "Deliberately breaking a policy makes the suite fail",
           "It runs in CI on every PR",
           "prompt_versions and audit_events return nothing to a client"],
- "note": "On mobile the app talks to Supabase directly, so RLS is the ENTIRE access-control layer. There is no server to catch a mistake."},
+ "note": "The anon key ships to the browser, so a determined user can call Supabase directly with it and skip our Server Actions entirely. RLS is the ENTIRE access-control layer - going through our own server code is a convenience, not a boundary."},
 
 # ============================================================ WEEK 3
 
