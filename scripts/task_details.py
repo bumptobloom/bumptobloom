@@ -32,14 +32,16 @@ DETAIL: dict[str, dict] = {
           "If anything is a no, we know what changes",
           "Filed somewhere the team can find it"]},
 
-"Finish repo setup: sync develop with main, verify CODEOWNERS": {
- "do": ["Done on 29 Aug: the branch ruleset covers main and develop with 1 approving review, three required checks, no force pushes, no deletions.",
-        "Done on 29 Aug: .github/CODEOWNERS now carries real handles instead of placeholders.",
-        "Left to do: develop is behind main. Fast-forward it.",
-        "Left to do: re-check each CODEOWNERS handle as people accept their invite - a handle that is not a collaborator is silently ignored by GitHub."],
- "done": ["develop is up to date with main",
+"Finish repo setup: keep CODEOWNERS handles current": {
+ "do": ["Done 29 Aug: the branch ruleset covers main with 1 approving review, three required checks, no force pushes, no deletions.",
+        "Done 29 Aug: .github/CODEOWNERS carries real handles instead of placeholders.",
+        "Done 3 Sep: deleted the develop branch instead of syncing it. It predated the monorepo restructure and had no apps/web, so anything branched from it failed the Vercel preview build. It cost Shaff Had a morning and made Sivathmika's first PR go red for a reason unrelated to her code. We are trunk-based on main.",
+        "Left to do: strip refs/heads/develop out of the ruleset target so it stops pointing at a branch that no longer exists, and rename the ruleset to match.",
+        "Left to do: re-check each CODEOWNERS handle as people accept their invites. A handle that is not a repo collaborator is silently ignored by GitHub, which is how we ended up with a CODEOWNERS file that did nothing at all for the first week."],
+ "done": ["The ruleset targets only refs/heads/main",
           "Every handle in CODEOWNERS belongs to an actual repo collaborator",
-          "A test PR to main shows the CODEOWNERS reviewer being requested automatically"]},
+          "A test PR shows the CODEOWNERS reviewer being requested automatically"],
+ "note": "The lesson worth keeping: a protection rule that names people who are not collaborators looks like it is working and is not. Check it with a real PR, not by reading the file."},
 
 "Create Supabase project, apply migration 0001, verify RLS": {
  "do": ["Create it inside the bumptobloom organization, NOT a personal account. Project name bumptobloom-dev, region East US (North Virginia) us-east-1, which matches Vercel default iad1 so the database sits next to the code querying it. Free plan for now.",
