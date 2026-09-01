@@ -100,6 +100,72 @@ it on rework caused by contradicting documents. Which is exactly what
 
 ---
 
+## Environments and deploys
+
+### Where things run
+
+| | URL | Deploys from |
+|---|---|---|
+| Production | https://bumptobloom-web.vercel.app | `main`, on every merge |
+| Preview | posted automatically on your PR | your branch, on every push |
+| Local | http://localhost:3000 | `npm run dev` |
+
+**Every pull request gets its own live preview URL.** Vercel posts it as a check
+on the PR. That link is how design and the PMs review work without cloning
+anything, so put it in the message when you ask someone to look at a screen.
+
+### Local setup
+
+Copy `.env.example` to `.env.local` and fill in the two Supabase values. They are
+pinned in the dev channel.
+
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+```
+
+Those two are browser-safe by design. The publishable key ships to every visitor
+in the JavaScript bundle, and Row Level Security is what actually protects the
+data. That is why the RLS test suite is Critical and not a nice-to-have.
+
+`SUPABASE_SECRET_KEY` is not in that list on purpose. It bypasses RLS entirely,
+it lives only in Vercel's environment variables, and nothing on your laptop needs
+it. If you ever think you need it locally, ask first — the answer is almost
+certainly a different design.
+
+Never commit `.env.local`. Never commit `.next/`.
+
+### How the Vercel project is configured
+
+Only relevant if you are changing build settings, but worth knowing when a build
+fails in a way that makes no sense locally.
+
+- **Root Directory** is `apps/web`, not the repo root, with "include files
+  outside the root directory" left on so the `packages/*` workspaces resolve.
+- **Install command** is Vercel's default, which installs from the repo root.
+- **Node 22**, matching `engines` and CI.
+- `next.config.ts` sets `transpilePackages` for `@btb/fever-rules` and
+  `@btb/shared`. They ship raw TypeScript with no build step, so without that
+  line the first import of either one fails the build with a parse error that
+  looks like a Vercel problem and is not.
+
+### Free-tier limits, so nobody is surprised in week 6
+
+Both Vercel and Supabase are on free plans. Two things to know now rather than
+during the demo:
+
+- **Supabase free projects pause after about a week of inactivity**, and there
+  are no automatic backups. If the database looks dead after a quiet weekend, it
+  is probably paused, not broken. Un-pause it from the dashboard.
+- **Vercel Hobby is for non-commercial use** and has bandwidth and build-minute
+  limits. Check Usage in the Vercel dashboard before the beta rather than after.
+  Hobby is also a personal account, so build logs are not visible to the team.
+  Preview URLs are, which covers what most people actually need.
+
+Upgrading either one is a cost decision that needs an owner. It is on the board.
+
+---
+
 ## Your first day
 
 1. Read this file, then `docs/DECISIONS.md`. Six decisions were made before you
@@ -107,6 +173,7 @@ it on rework caused by contradicting documents. Which is exactly what
 2. Read `docs/API-CONTRACTS.md` for whatever you're building against.
 3. If you touch Health at all, read `docs/SAFETY.md` first. Not optional.
 4. Clone, install, get `npm run dev` running. Open it on your laptop and on your
-   phone. Ask your pod lead for env values.
+   phone. Env values and the Vercel setup are in **Environments and deploys**
+   above.
 5. Take a `good-first-issue`. Open a PR. Get it reviewed by someone in a
    different pod — that's how knowledge crosses timezones here.
