@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 46, "column": 0}, "map": {"version":3,"sources":["file:///Users/mjb3/Desktop/BumpToBloom/src/components/PostHogProvider.tsx"],"sourcesContent":["'use client';\n\nimport posthog from 'posthog-js';\nimport { PostHogProvider as PHProvider } from 'posthog-js/react';\nimport { useEffect } from 'react';\n\nexport function PostHogProvider({ children }: { children: React.ReactNode }) {\n  useEffect(() => {\n    if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {\n      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {\n        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',\n        loaded: (ph) => {\n          if (process.env.NODE_ENV === 'development') ph.debug();\n        },\n        autocapture: true,\n      });\n    }\n  }, []);\n\n  return <PHProvider client={posthog}>{children}</PHProvider>;\n}"],"names":["PostHogProvider","children","init","api_host","loaded","ph","debug","autocapture","client"],"mappings":";;;;;AAEA;AACA;AACA;AAJA;;;;;AAMO,SAASA,gBAAgB,EAAEC,QAAQ,EAAiC;IACzE,IAAA,kNAAS,EAAC;QACR,wCAAyC;YACvC,0JAAO,CAACC,IAAI,yDAAsC;gBAChDC,UAAU,gEAAwC;gBAClDC,QAAQ,CAACC;oBACP,wCAA4CA,GAAGC,KAAK;gBACtD;gBACAC,aAAa;YACf;QACF;IACF,GAAG,EAAE;IAEL,qBAAO,8OAAC,iLAAU;QAACC,QAAQ,0JAAO;kBAAGP;;;;;;AACvC"}}]
+}

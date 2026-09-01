@@ -28,16 +28,16 @@ write. Once that's true, the hybrid's costs have nothing left to buy.
 
 ### Decision
 
-Everything in TypeScript. One repository, one language, one deploy.
+Everything in TypeScript. One repository, one language.
 
-- **Next.js + Supabase owns all CRUD** — babies, milestones, content, saved
-  items, products — through Server Actions and API routes.
-- **Ask is a module inside the web app**, not a separate service. Prompt
-  construction, the OpenAI call, response validation with Zod, conversation
-  logging, and the triage guard all live in `apps/web/src/lib/ask/`.
+- **The app and the server logic are the same language**, so a developer can
+  follow a feature end to end without switching.
 - **Fever rules stay a pure package** (`packages/fever-rules`) with no I/O.
 - **Shared safety logic lives in `packages/shared`** — the triage guard was
   written in Python first and has been ported, tests and all.
+
+See ADR-005 for where that TypeScript actually runs, which changed once we
+learned this ships to the app stores.
 
 ### Consequences
 
@@ -158,3 +158,152 @@ problem. Preterm support becomes additive later rather than a schema change.
 
 The Figma "Month 8" slider and the "Change age" modal both need redesigning.
 
+---
+
+## ADR-005 — React Native with Expo (SUPERSEDED)
+
+**Status:** ~~Accepted~~ **Superseded by ADR-006, Week 1.** Kept because the
+reasoning still matters — read it alongside ADR-006 to see what changed and why.
+**Decided by:** Sonakshi, after the team confirmed the target
+
+### Context
+
+I built the first week of planning around Next.js and a progressive web app. That
+was my misreading — nobody had written the target down, and I filled the gap with
+the wrong assumption.
+
+**BumpToBloom ships to the Apple App Store and Google Play.** A Next.js site
+cannot be submitted to either. Wrapping one in a shell is possible but Apple
+routinely rejects thin web wrappers, and it would give first-time moms a worse
+experience than the Figma promises.
+
+### Decision
+
+**React Native, via Expo.** Specifically:
+
+| Concern | Choice |
+|---|---|
+| App framework | Expo (React Native), TypeScript |
+| Navigation | Expo Router — file-based, works like Next.js routing |
+| Styling | NativeWind — Tailwind syntax, compiles to React Native styles |
+| Data + auth | Supabase JS client, called straight from the app, guarded by RLS |
+| Anything needing a secret | Supabase Edge Functions (Deno, TypeScript) |
+| Builds and store submission | EAS Build and EAS Submit |
+| Shipping fixes | EAS Update — pushes JS changes without a store review |
+
+Vercel and Next.js are out. `apps/web` is now `apps/mobile`.
+
+### Two things this changes about safety
+
+**The OpenAI key can never live in the app.** Anything shipped in a mobile bundle
+can be extracted — this is not theoretical, it is a five-minute job. The Ask
+feature therefore calls a **Supabase Edge Function**, which holds the key and
+makes the OpenAI call server-side. The app never sees it.
+
+**The fever rules now run on the device, and that is an improvement.**
+`packages/fever-rules` is pure TypeScript with no I/O, so it runs unchanged inside
+React Native. That means a mother at 2am on bad hotel wifi still gets a triage
+answer. A network round-trip could time out; a local function cannot. The result
+is logged to Supabase afterwards, and logging failing never blocks the answer.
+
+Age is still derived from `birth_date`, which is fetched from the database — so
+the client cannot invent an age, it can only use the one we gave it.
+
+### Consequences
+
+Good: real app-store presence. Native feel. Offline triage. Push notifications
+become possible later. Roughly 60% of the UI work is the same React components
+in slightly different primitives — `View` instead of `div`, `Text` instead of
+`p` — so nobody has to relearn how to build a screen.
+
+Bad, and worth being honest about:
+
+- **Two new paid accounts and a long lead time.** Apple Developer Program is
+  $99/year, Google Play is $25 one-time. Both need registering immediately.
+- **Store review is a queue we do not control.** Apple is typically a few days.
+  Google requires new personal developer accounts to run a closed test with 12
+  testers for 14 continuous days before production release.
+- **We must demo from TestFlight and Play internal testing**, not the public
+  stores. Working back from 6 October, a public listing is not a safe bet. An
+  internal build demos identically and needs no review.
+- Nobody on the team listed React Native experience. The gap from React is small,
+  but it is not zero, and week 1 should account for it.
+
+---
+
+## ADR-006 — A progressive web app, phone-shaped, on any device
+
+**Status:** Accepted, Week 1. Confirmed in writing by Product.
+**Supersedes:** ADR-005.
+
+### Context
+
+The target has now been stated three times: a website, then an App Store and Play
+Store app, and now a progressive web app that works on both phone and laptop.
+This one came with written confirmation from Product, which the previous two did
+not.
+
+A PWA is a website that can be installed. On Android and desktop Chrome the
+browser offers an Install prompt; on iPhone it is Share → Add to Home Screen.
+Once installed it opens without browser chrome, has its own icon, and works
+offline. It is not in the app stores and cannot be found by searching them.
+
+### Decision
+
+**Next.js 15 as a progressive web app.**
+
+| Concern | Choice |
+|---|---|
+| App | Next.js 15, TypeScript, App Router |
+| Styling | Tailwind + shadcn/ui |
+| Installable | `manifest.json` + a service worker (Serwist) |
+| Data + auth | Supabase, called from Server Components and Server Actions |
+| Server logic | Next.js API routes and Server Actions |
+| OpenAI key | Server-side only, in a route handler |
+| Fever rules | `packages/fever-rules`, running in the browser |
+| Hosting | Vercel |
+
+**Melvin's scaffold from Week 1 is the right foundation.** He had already created
+`src/app/manifest.ts` before anyone used the word PWA. The
+`platform/switch-to-expo` PR is closed rather than merged, and his branch stands.
+
+### The phone-shaped layout
+
+Product wants the app to look like a phone even on a laptop — a fixed-width
+column, centred, the way the Figma prototype reads. On a phone it fills the
+screen; on a desktop it sits in the middle.
+
+This is a legitimate choice and it is much faster to build than two real layouts.
+It is worth being honest that a 390px column on a 1440px screen reads as a demo
+rather than a product, and that at some point the desktop view should be allowed
+to breathe. Not a Week 1 problem, and not a reason to argue now.
+
+### What this changes about safety
+
+**The OpenAI key stays server-side**, now in a Next.js route handler rather than
+an Edge Function. Simpler: one deployment, one language, no cross-service call.
+
+**The fever rules still run on the client** and still work offline, because the
+service worker caches the app shell and `packages/fever-rules` is pure
+TypeScript with no I/O. A mother at 2am on bad wifi still gets an answer. That
+property survived all three pivots because the engine never depended on the
+runtime.
+
+### Consequences
+
+Good: no app store accounts, no review queue, no Apple identity verification, no
+Google 14-day testing rule. **$124 of store fees disappear.** Deploys take about
+40 seconds. Anyone opens a link and it works — no install step before a beta
+tester can try it. And it genuinely runs on a laptop, which the mobile plan did
+not.
+
+Bad, and worth naming: no app store presence or discoverability. Push
+notifications work on Android and desktop but are limited on iOS. And this is the
+third runtime in two days — the schema, the fever engine, the pods and the safety
+work have survived every pivot unchanged, but the team's confidence in the plan
+has not, and that is a real cost that does not show up in a task list.
+
+### The rule going forward
+
+The target is now written down. Any further change to it needs the same: written
+confirmation from Product, in the channel, before engineering re-points anything.
