@@ -14,6 +14,8 @@
 /coverage
 
 # next.js
+# Unanchored: catches a build run from the repo root as well as apps/web.
+.next/
 apps/web/.next/
 /out/
 
@@ -39,3 +41,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python bytecode from the task-board scripts
+__pycache__/
+*.pyc
+*.pptx

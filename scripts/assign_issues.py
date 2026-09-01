@@ -35,14 +35,11 @@ OVERRIDES: dict[str, str] = {
     "Rasheed Adebayo OYEWOLE":        "OyewoleRasheed",
     "Joanna Zhang":                   "U-sirname",        # confirmed by Joanna
     "Natasha Saini":                  "NATASHASAINI",     # from Team Members Info
+    "Sahasra Miriyala":               "msahasra19",       # accepted 29 Aug
 
     # --- invite sent, not yet accepted: will fail harmlessly, re-run later ---
     "Mohd Shaff Had Khan":            "ShaffHadK",
     "Tarigopula Sivathmika Chowdary": "SivathmikaChowdary",
-
-    # --- still need a username ---
-    # "Sahasra Miriyala":             "",   # blank in the roster; unconfirmed
-    #                                       # whether she is joining at all
 
     # --- Product: deliberately left unassigned until the PMs agree to own
     #     them. Vishnu (VishDeen) and the others have accepted, so it is only
