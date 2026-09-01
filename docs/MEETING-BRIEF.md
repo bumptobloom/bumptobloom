@@ -193,10 +193,11 @@ So I stopped trying to schedule around it and built the team so it doesn't matte
 Me and Keya. Repo, database, login, deploys, the fever rules, code review.
 
 **Pod E — Frontend and Data (US East)**
-Joanna, Melvin, Natasha. The screens, and all the content and milestone data.
+Joanna and Melvin. The screens. (Natasha left on 1 Sep; the datasets moved to Pod I.)
 
 **Pod I — Backend and Ask (India, Saudi Arabia)**
-Shaff Had, Rehaan, Sivathmika, Sahasra, Rasheed. The APIs and the AI feature.
+Shaff Had, Rehaan, Sivathmika, Sahasra, Rasheed. The APIs, the AI feature, and
+now every dataset too.
 
 **How they connect:** each pod has one bridge person whose hours reach the next
 pod. Shaff Had works 9 to 11pm India time, which is 8:30 to 10:30am for me — the

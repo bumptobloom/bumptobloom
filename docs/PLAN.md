@@ -124,13 +124,16 @@ engine, AI architecture and evals, and review across all pods.
 |---|---|
 | **Joanna Zhang** — Front End | 15h, Mon/Wed/Fri mornings |
 | **Melvin Bryant III** — Fullstack, bridge to Pod W | 10–20h |
-| **Natasha Saini** — Data Scientist, bridge to Pod W | 15h, after 8pm EDT |
 
-Owns Home and Track UI, Learn and Cart UI, and every dataset — CDC milestones,
-Learn content, product catalog.
+Owns Home and Track UI, and Learn and Cart UI.
 
 > Joanna works three mornings a week, so UI load is split with Melvin rather than
-> stacked on her. Natasha's after-8pm-EDT slot is 5pm PDT — good overlap with Pod W.
+> stacked on her.
+>
+> **Natasha Saini left the programme on 1 Sep.** She was the Data Scientist and
+> owned every dataset. Her work moved to Pod I: milestones to Sivathmika, Learn
+> content and the product catalog to Sahasra, and the three DATA analysis tasks
+> to Rehaan. Pod E is now two people and owns UI only.
 
 ### Pod I — Backend & Ask (IST / GMT+3)
 
