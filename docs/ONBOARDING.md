@@ -40,10 +40,11 @@ the fever rules engine, AI architecture and evals, and code review across all po
 |---|---|---|---|
 | **Joanna Zhang** | Front End Engineer | 15h | Mon/Wed/Fri mornings |
 | **Melvin Bryant III** | Fullstack Engineer — bridge to Pod W | 10–20h | 8:30am–5:30pm EDT |
-| **Natasha Saini** | Data Scientist — bridge to Pod W | 15h | after 8pm EDT |
 
-Owns Home and Track pages (Joanna), Learn and Cart pages (Melvin), and every
-dataset: CDC milestones, Learn content, product catalog (Natasha).
+Owns Home and Track pages (Joanna), and Learn and Cart pages (Melvin).
+
+> Natasha Saini left on 1 Sep. The datasets she owned moved to Pod I — see the
+> pod table below and the task board for current owners.
 
 ### Pod I — Data layer & Ask (IST / GMT+3)
 

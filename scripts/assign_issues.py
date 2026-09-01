@@ -34,7 +34,6 @@ OVERRIDES: dict[str, str] = {
     "Shaikh Mohd Rehaan":             "Rehaan-2006",
     "Rasheed Adebayo OYEWOLE":        "OyewoleRasheed",
     "Joanna Zhang":                   "U-sirname",        # confirmed by Joanna
-    "Natasha Saini":                  "NATASHASAINI",     # from Team Members Info
     "Sahasra Miriyala":               "msahasra19",       # accepted 29 Aug
 
     # --- invite sent, not yet accepted: will fail harmlessly, re-run later ---

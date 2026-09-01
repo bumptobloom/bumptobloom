@@ -61,19 +61,19 @@ T = [
      "Every PR should get its own preview URL - that is how design and the PMs review work without cloning anything. Server-side secrets go in Vercel env vars, never in the repo."),
     (1, "Half-day Next.js App Router ramp-up for anyone new to it", "Sonakshi Panda", "Pod W", "High",
      "The gap is not React, it is the App Router: Server Components run on the server and can hold secrets, Client Components ship to the browser and cannot. Getting that wrong is how a key leaks. Do it once, together, rather than eleven people googling separately."),
-    (1, "DATA: Milestone dataset schema, validation rules and data dictionary", "Natasha Saini", "Pod E", "High",
+    (1, "DATA: Milestone dataset schema, validation rules and data dictionary", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Comes BEFORE more extraction. Decide the columns, the allowed values, and what makes a row invalid, then fill. Typing 36 cells into a spreadsheet and discovering afterwards that half have no source is the failure mode this prevents.", "Data"),
     (1, "DATA: Label a triage-guard evaluation set - 200 questions, two raters", "Shaikh Mohd Rehaan", "Pod I", "High",
      "shouldRedirectToHealth() is a classifier and we have never measured it. You cannot tune what you cannot score. Two people label independently so we know how much of the disagreement is the guard and how much is us. This blocks the week 4 measurement task.", "Data"),
     (1, "DATA: Analyse the mom interview data against our feature priorities", "Katrina Ma", "Product", "Medium",
      "There is an Interview Data folder in the Drive that engineering has never opened. Real moms already told us what they need. Code the themes and check them against the Master sheet's Must/Should/Could split - if they disagree, we want to know in week 1, not week 6.", "Data"),
-    (1, "Begin CDC milestone dataset extraction", "Natasha Saini", "Pod E", "High",
+    (1, "Begin CDC milestone dataset extraction", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "cdc.gov/act-early/milestones. All 4 domains x 9 checkpoints (0,2,4,6,9,12,15,18,24)."),
     (1, "Everyone: read DECISIONS + ONBOARDING + SAFETY, get dev env running", "Sonakshi Panda", "All", "High",
      "Six decisions were made before onboarding. Reading them prevents most rework."),
 
     # ---------------- WEEK 2 ----------------
-    (2, "Seed milestones: 4 domains x 9 checkpoints, with sources", "Natasha Saini", "Pod E", "High",
+    (2, "Seed milestones: 4 domains x 9 checkpoints, with sources", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Every row needs a source_label. Every card shows where its advice came from - that is what separates this from a forum post."),
     (2, "Milestones data layer: fetch, mark noticed, unmark", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Direct Supabase calls. RLS is the access control - there is no API server to hide behind."),
@@ -86,7 +86,7 @@ T = [
     (2, "Home screen: profile card, this-week card, quick actions", "Melvin James Bryant III", "Pod E", "High",
      "Per design-change log: Bloom bar removed, nav at bottom, edit icon on profile card."),
     (2, "Activities: table, seed, data layer", "Sahasra Miriyala", "Pod I", "Medium", ""),
-    (2, "DATA: Content coverage matrix - which age x category cells are empty", "Natasha Saini", "Pod E", "High",
+    (2, "DATA: Content coverage matrix - which age x category cells are empty", "Shaikh Mohd Rehaan", "Pod I", "High",
      "9 age checkpoints x 4 Learn categories is 36 cells. Some will have ten articles and some will have zero, and nobody currently knows which. The matrix is what tells the writers where to write instead of guessing.", "Data"),
     (2, "DATA: Define the analytics question set and event schema", "Katrina Ma", "Product", "Medium",
      "Do this BEFORE Melvin wires PostHog in week 4. Write the questions first - where do moms drop out of onboarding, which tab do they open second, how many fever checks end in EMERGENCY - then design events that answer them. Events designed without questions produce dashboards nobody can read.", "Data"),
@@ -98,7 +98,7 @@ T = [
      "Automated, runs in CI. RLS IS our entire access-control layer - there is no separate API server to catch a mistake, and anything the browser can call, a determined user can call directly with the anon key."),
 
     # ---------------- WEEK 3 ----------------
-    (3, "Build Learn content dataset: Developmental, Feeding, Sleep, Diaper", "Natasha Saini", "Pod E", "High", ""),
+    (3, "Build Learn content dataset: Developmental, Feeding, Sleep, Diaper", "Sahasra Miriyala", "Pod I", "High", ""),
     (3, "Learn data layer: fetch by age and category, save, unsave", "Sahasra Miriyala", "Pod I", "High", ""),
     (3, "Learn screen with category filters and save", "Melvin James Bryant III", "Pod E", "High", ""),
     (3, "Finalise fever rules engine, set RULES_VERSION", "Sonakshi Panda", "Pod W", "Critical",
@@ -117,7 +117,7 @@ T = [
      "Playwright, running against a Vercel preview URL in CI. Mobile viewport, not desktop."),
 
     # ---------------- WEEK 4 ----------------
-    (4, "Build product catalog with a written rationale per product", "Natasha Saini", "Pod E", "High",
+    (4, "Build product catalog with a written rationale per product", "Sahasra Miriyala", "Pod I", "High",
      "Every card must say why the product is recommended. A recommendation without a reason is just an advert."),
     (4, "Recommendation rules by age bucket (0-3, 4-8, 9-14, 15-24)", "Rasheed Adebayo OYEWOLE", "Pod I", "Medium", ""),
     (4, "Recommendations data layer + retailer search URLs", "Rasheed Adebayo OYEWOLE", "Pod I", "Medium",
@@ -156,7 +156,7 @@ T = [
     (5, "Run Ask evals, tune prompt, pin the winning version", "Keya Chaudhari", "Pod W", "Medium", "", "Data"),
     (5, "DATA: Does retrieved Learn content improve Ask answers? Run the experiment", "Mohd Shaff Had Khan", "Pod I", "Medium",
      "TIMEBOXED, and a negative result is a success. Score plain age-context against age-context-plus-retrieved-Learn-articles on the golden set. If retrieval does not measurably help, we write that down and ship the simple thing - that is a real finding and it saves us a vector store we do not need.", "Data"),
-    (5, "DATA: Source coverage audit - every content row has a real citation", "Natasha Saini", "Pod E", "High",
+    (5, "DATA: Source coverage audit - every content row has a real citation", "Shaikh Mohd Rehaan", "Pod I", "High",
      "Walk every milestone and Learn row and confirm the source label points at something real and still live. A dead CDC link on a milestone card is the kind of thing a reviewer finds in the demo. Ship a script so this is re-runnable, not a one-off read-through.", "Data"),
 
     # ---------------- WEEK 6 ----------------
@@ -169,7 +169,7 @@ T = [
      "Lighthouse also audits the PWA install requirements, so this task proves installability at the same time. Test throttled, not on campus wifi."),
     (6, "Beta with 10-20 real first-time parents", "Katrina Ma", "Product", "High", ""),
     (6, "Bug triage and fixes from beta", "Sonakshi Panda", "All", "High", ""),
-    (6, "DATA: Beta analysis - funnel, drop-off, and what parents actually asked", "Natasha Saini", "Pod E", "High",
+    (6, "DATA: Beta analysis - funnel, drop-off, and what parents actually asked", "Shaikh Mohd Rehaan", "Pod I", "High",
      "Not 'read the Discord messages'. Where did people stop in onboarding, which tabs went unopened, what did they type into Ask, which fever tiers fired. This is the only real usage data the project will ever have before the demo - it is also the strongest slide in it.", "Data"),
     (6, "Deploy to production on Vercel and smoke test the install flow", "Sonakshi Panda", "Pod W", "Critical",
      "No review queue and no store account - a push to main is live in about 40 seconds. The smoke test is the part that matters: install it on an iPhone and an Android from the real URL and walk all six tabs."),
