@@ -19,9 +19,48 @@ see raw table rows.
 
 ## Home
 
+Owned by Sahasra Miriyala (Pod I) · Implementation landing in Week 2.
+
 ```ts
-getHome(babyId): Promise<HomeData>     // apps/web/src/lib/api/home.ts
+getHome(babyId?: string): Promise<HomeData>     // apps/web/src/lib/api/home.ts
 ```
+
+### TypeScript Types
+
+```ts
+export interface BabySummary {
+  id: string;
+  name: string;
+  birthDate: string;        // ISO 8601 date string (YYYY-MM-DD)
+  dueDate?: string | null;  // ISO 8601 date string, set for preterm babies
+  ageMonths: number;        // Derived server-side, never stored or cached across days
+  ageLabel: string;         // e.g. "18 months", "3 weeks", "Newborn"
+  avatarUrl: string | null;
+}
+
+export interface ThisWeekGuidance {
+  contentId: string;
+  title: string;
+  excerpt: string;
+  sourceLabel: string;      // Required source attribution (e.g. "CDC Learn the Signs. Act Early.")
+  sourceUrl?: string | null;
+}
+
+export interface MilestoneProgress {
+  noticed: number;
+  total: number;
+  checkpointMonth: number;
+}
+
+export interface HomeData {
+  baby: BabySummary | null; // Null if parent has not registered a baby yet
+  thisWeek: ThisWeekGuidance | null;
+  milestoneProgress: MilestoneProgress | null;
+  disclaimer: string;
+}
+```
+
+### Return Shape (JSON)
 
 ```json
 {
@@ -29,6 +68,7 @@ getHome(babyId): Promise<HomeData>     // apps/web/src/lib/api/home.ts
     "id": "uuid",
     "name": "Emma Rose",
     "birthDate": "2025-02-14",
+    "dueDate": null,
     "ageMonths": 18.3,
     "ageLabel": "18 months",
     "avatarUrl": "https://…"
@@ -37,25 +77,33 @@ getHome(babyId): Promise<HomeData>     // apps/web/src/lib/api/home.ts
     "contentId": "uuid",
     "title": "Month 18: what is typical",
     "excerpt": "By 18 months, toddlers combine…",
-    "sourceLabel": "CDC Learn the Signs. Act Early."
+    "sourceLabel": "CDC Learn the Signs. Act Early.",
+    "sourceUrl": "https://…"
   },
-  "milestoneProgress": { "noticed": 6, "total": 9, "checkpointMonth": 18 }
+  "milestoneProgress": {
+    "noticed": 6,
+    "total": 9,
+    "checkpointMonth": 18
+  },
+  "disclaimer": "BumpToBloom is an educational tool, not a medical device. Always consult your paediatrician for clinical concerns."
 }
 ```
 
-`ageMonths` is computed server-side from `birthDate`. Clients must never compute
-it themselves and must never cache it across days.
+- `ageMonths` is computed server-side from `birthDate` (using standard month extraction). Clients must never compute it themselves and must never cache it across days.
+- If `babyId` is omitted, defaults to the user's primary/active baby.
+- If a parent has no registered baby yet, returns `{ baby: null, thisWeek: null, milestoneProgress: null, disclaimer: "..." }`. The Home screen renders the "Add your baby" prompt instead of crashing.
+- `disclaimer` is mandatory and rendered standing at the bottom of the Home view.
 
 ---
 
 ## Track
 
 ```ts
-getMilestones(babyId)                    // milestones for the baby's checkpoint
-markMilestone(babyId, milestoneId)
-unmarkMilestone(babyId, milestoneId)
-getActivities(babyId)
-markActivity(babyId, activityId)
+getMilestones(babyId: string): Promise<MilestonesResponse>   // milestones for baby's checkpoint
+markMilestone(babyId: string, milestoneId: string): Promise<void>
+unmarkMilestone(babyId: string, milestoneId: string): Promise<void>
+getActivities(babyId: string): Promise<ActivityItem[]>
+markActivity(babyId: string, activityId: string): Promise<void>
 ```
 
 `getMilestones` returns:
@@ -86,12 +134,51 @@ client must render it.
 
 ## Learn
 
+Owned by Sahasra Miriyala (Pod I) · Implementation landing in Week 3.
+
 ```ts
-getContent(babyId, category?)
-getContentItem(id)
-saveContent(id)
-unsaveContent(id)
+getContent(babyId: string, category?: LearnCategory): Promise<LearnFeedResponse>
+getContentItem(id: string): Promise<LearnItemDetail>
+saveContent(id: string): Promise<SaveContentResult>
+unsaveContent(id: string): Promise<SaveContentResult>
+getSavedContent(babyId?: string): Promise<LearnItem[]>
 ```
+
+### TypeScript Types
+
+```ts
+export type LearnCategory = 'developmental' | 'feeding' | 'sleep' | 'diaper';
+
+export interface LearnItem {
+  id: string;
+  category: LearnCategory;
+  title: string;
+  excerpt: string;
+  sourceLabel: string;      // Required on every item — cites clinical/educational source
+  sourceUrl: string | null;
+  saved: boolean;           // Computed for authenticated parent
+}
+
+export interface LearnItemDetail extends LearnItem {
+  body: string;             // Full educational guide / article markdown
+  minAgeMonth: number;
+  maxAgeMonth: number;
+}
+
+export interface LearnFeedResponse {
+  items: LearnItem[];
+  categories: LearnCategory[];
+  activeCategory?: LearnCategory | 'all';
+}
+
+export interface SaveContentResult {
+  saved: boolean;
+  contentId: string;
+  savedAt?: string;
+}
+```
+
+### Return Shape (JSON)
 
 ```json
 {
@@ -100,18 +187,23 @@ unsaveContent(id)
       "id": "uuid",
       "category": "sleep",
       "title": "Naps at 18 months",
-      "excerpt": "…",
+      "excerpt": "Most toddlers at 18 months transition to one afternoon nap…",
       "sourceLabel": "CDC-informed guidance",
       "sourceUrl": "https://…",
       "saved": false
     }
   ],
-  "categories": ["developmental","feeding","sleep","diaper"]
+  "categories": ["developmental", "feeding", "sleep", "diaper"],
+  "activeCategory": "all"
 }
 ```
 
-`sourceLabel` is required on every item. Every card shows where its advice came
-from — that is what separates this from a forum post.
+- **Categories**: Exactly 4 agreed categories per Master Sheet (ADR-002): `developmental`, `feeding`, `sleep`, `diaper`.
+- **Age filtering**: `getContent` returns content where `baby.ageMonths` falls within `[min_age_month, max_age_month]`.
+- `sourceLabel` is required on every item. Every card shows where its advice came from — that is what separates this from a forum post.
+- `saved` is resolved per authenticated parent profile. `saveContent` and `unsaveContent` run as Server Actions.
+- `getContentItem` retrieves full article content for modal/detail views.
+- Pages never see raw database columns (e.g., `published` flags, internal `version`, or snake_case fields).
 
 ---
 
