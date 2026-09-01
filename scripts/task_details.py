@@ -32,14 +32,16 @@ DETAIL: dict[str, dict] = {
           "If anything is a no, we know what changes",
           "Filed somewhere the team can find it"]},
 
-"Finish repo setup: sync develop with main, verify CODEOWNERS": {
- "do": ["Done on 29 Aug: the branch ruleset covers main and develop with 1 approving review, three required checks, no force pushes, no deletions.",
-        "Done on 29 Aug: .github/CODEOWNERS now carries real handles instead of placeholders.",
-        "Left to do: develop is behind main. Fast-forward it.",
-        "Left to do: re-check each CODEOWNERS handle as people accept their invite - a handle that is not a collaborator is silently ignored by GitHub."],
- "done": ["develop is up to date with main",
+"Finish repo setup: keep CODEOWNERS handles current": {
+ "do": ["Done 29 Aug: the branch ruleset covers main with 1 approving review, three required checks, no force pushes, no deletions.",
+        "Done 29 Aug: .github/CODEOWNERS carries real handles instead of placeholders.",
+        "Done 3 Sep: deleted the develop branch instead of syncing it. It predated the monorepo restructure and had no apps/web, so anything branched from it failed the Vercel preview build. It cost Shaff Had a morning and made Sivathmika's first PR go red for a reason unrelated to her code. We are trunk-based on main.",
+        "Left to do: strip refs/heads/develop out of the ruleset target so it stops pointing at a branch that no longer exists, and rename the ruleset to match.",
+        "Left to do: re-check each CODEOWNERS handle as people accept their invites. A handle that is not a repo collaborator is silently ignored by GitHub, which is how we ended up with a CODEOWNERS file that did nothing at all for the first week."],
+ "done": ["The ruleset targets only refs/heads/main",
           "Every handle in CODEOWNERS belongs to an actual repo collaborator",
-          "A test PR to main shows the CODEOWNERS reviewer being requested automatically"]},
+          "A test PR shows the CODEOWNERS reviewer being requested automatically"],
+ "note": "The lesson worth keeping: a protection rule that names people who are not collaborators looks like it is working and is not. Check it with a real PR, not by reading the file."},
 
 "Create Supabase project, apply migration 0001, verify RLS": {
  "do": ["Create it inside the bumptobloom organization, NOT a personal account. Project name bumptobloom-dev, region East US (North Virginia) us-east-1, which matches Vercel default iad1 so the database sits next to the code querying it. Free plan for now.",
@@ -134,12 +136,14 @@ DETAIL: dict[str, dict] = {
           "No hardcoded hex anywhere else in the app"],
  "note": "Can start immediately — it only needs Figma."},
 
-"Build the bottom tab navigation for all six tabs": {
+"Build the bottom tab navigation for all five tabs": {
  "do": ["Six tabs: Home, Track, Learn, Ask, Health, Cart. Route folder for Cart is `act`.",
         "Use a route group with a shared layout so the tab bar persists across navigations.",
         "Each tab gets a placeholder page with its name.",
-        "Flag it if six tabs looks cramped at 390px wide — most phone apps carry five."],
- "done": ["All six tabs render and navigate on a phone and on a laptop",
+        "Order is Home, Learn, Ask, Track, Health. Product confirmed this as final on 1 Sep.",
+        "Five tabs, not six. Cart is gone as a tab - shopping is a Recommended for You card on Home now.",
+        "The Figma still shows the old six-tab order. Build to this list, not to the mock, and tell design the mock needs updating."],
+ "done": ["All five tabs render and navigate on a phone and on a laptop",
           "Labels are readable at 390px wide",
           "The active tab is visually obvious",
           "The tab bar does not jump when the page below it changes height",
@@ -294,6 +298,29 @@ DETAIL: dict[str, dict] = {
           "The context builder passes NO name, user id or email",
           "Truncation rule is written down",
           "Reviewed by one other person before it is used"]},
+
+"Rewrite the triage guard response now that Health is a log": {
+ "do": ["Read the current behaviour first: shouldRedirectToHealth() in packages/shared catches symptom-shaped questions before the model is called, and the UI then points the parent at the Health tab.",
+        "That was right when Health gave triage advice. Health is now a temperature log with no guidance, so the redirect would land a frightened parent on a blank data-entry form.",
+        "Replace the destination, not the detection. The keyword and classifier logic stays exactly as it is, and Rehaan's labelled evaluation set is still valid.",
+        "New response is a plain refusal plus a route to real help: we cannot answer questions about symptoms, please contact your doctor or care team, and if this is an emergency call 911. No thresholds, no reassurance, no 'it is probably fine'.",
+        "Write the exact copy into docs/SAFETY.md so it is reviewable in one place rather than buried in a component."],
+ "done": ["A symptom question never reaches the model",
+          "The response contains no triage, no thresholds and no reassurance",
+          "911 is reachable in one tap from that response",
+          "The 15 triage-guard tests still pass, and there is a new test asserting the response is the refusal and not a Health redirect",
+          "The copy is in docs/SAFETY.md"],
+ "note": "This is a safety behaviour changing because Product changed what Health is. It is small but it is Critical, because the failure mode is a scared parent being handed a form instead of an answer."},
+
+"Final MVP walkthrough": {
+ "do": ["One end-to-end pass through the whole product on a real phone, not a laptop browser at 390px.",
+        "PMs and designers in the room. The first time anyone outside engineering sees it joined up must not be the demo.",
+        "Walk all five tabs in the order a real mother would: sign up, add a baby, look at Home, check a milestone, read something in Learn, ask a question, log a temperature.",
+        "Write down everything that breaks or feels wrong, triage it the same day, and be honest about what will not get fixed before the demo."],
+ "done": ["The full flow has been walked on a real phone with Product watching",
+          "Every problem found is written down and triaged, not just discussed",
+          "We have agreed what is knowingly shipping broken"],
+ "note": "Requested by Katrina on 1 Sep. Schedule it early enough in week 6 that there is time to act on what it finds."},
 
 "Age derivation utility + tests, including preterm corrected age": {
  "do": ["One function from birth_date to age in months. Everything uses it.",
@@ -560,9 +587,9 @@ DETAIL: dict[str, dict] = {
           "The anon key alone reaches nothing private",
           "Findings written up, even if all clean"]},
 
-"Full E2E suite green across all six tabs": {
+"Full E2E suite green across all five tabs": {
  "do": ["Every tab, in a mobile viewport, against a Vercel preview URL."],
- "done": ["All six tabs covered",
+ "done": ["All five tabs covered",
           "Green in CI on every PR",
           "Runs against a preview deploy, not localhost",
           "Documented well enough for anyone to run it locally"]},
