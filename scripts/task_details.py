@@ -89,7 +89,7 @@ DETAIL: dict[str, dict] = {
 "Supabase client + Auth: log in, create account, forgot password": {
  "do": ["FIRST, and tell the channel when it lands: the shared Supabase client. There is no @supabase/ssr in apps/web today - the scaffold that merged in PR #113 never wired it. Sivathmika, Sahasra, Rasheed and Shaff Had all import this in week 2.",
         "Use `@supabase/ssr` so the session lives in cookies and Server Components can read it. Not localStorage - a Server Component cannot see localStorage.",
-        "Client goes in `src/lib/supabase/`, reading NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Never the service-role key.",
+        "Client goes in `src/lib/supabase/`, reading NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Never SUPABASE_SECRET_KEY - that one bypasses RLS.",
         "THEN the three pages matching the Figma: log in, create account, forgot password.",
         "Middleware routes signed-in users to Home and signed-out users to log in."],
  "done": ["Another pod can import the client and run one query against Supabase",
@@ -184,7 +184,7 @@ DETAIL: dict[str, dict] = {
 "Set up the Vercel project, preview deploys and environment variables": {
  "do": ["Connect the repo to Vercel. Root directory `apps/web`.",
         "Confirm every pull request gets its own preview URL and that the URL is posted on the PR automatically.",
-        "Set the env vars in three scopes: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` everywhere; `OPENAI_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as server-side only.",
+        "Set the env vars in three scopes: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` everywhere; `OPENAI_API_KEY` and `SUPABASE_SECRET_KEY` as server-side only.",
         "Give the whole team read access to the project so anyone can see build logs.",
         "Write the steps into `docs/ONBOARDING.md` — everyone will need this."],
  "done": ["A PR produces a working preview URL",
@@ -307,9 +307,11 @@ DETAIL: dict[str, dict] = {
 "RLS isolation test suite: two accounts, every private table": {
  "do": ["Seed two accounts with a baby each and data in every private table.",
         "Assert account A sees exactly its own rows and nothing of B's.",
+        "Compare row IDENTITY, not just row count. A count-based check cannot detect a reversed policy: with `!=` instead of `=`, A would see exactly one row and B would see exactly one row, and every count assertion would still pass while each parent read the other's baby. Assert the returned id equals the expected id.",
         "Run it in CI, not by hand."],
  "done": ["Every private table covered: parent_profiles, babies, baby_milestones, baby_activities, saved_content, fever_checks, ai_conversations, ai_messages, ai_runs",
-          "Deliberately breaking a policy makes the suite fail",
+          "Deliberately breaking a policy makes the suite fail - demonstrate it, do not assume it",
+          "Reversing a policy (`=` to `!=`) makes the suite fail, not just dropping one",
           "It runs in CI on every PR",
           "prompt_versions and audit_events return nothing to a client"],
  "note": "The anon key ships to the browser, so a determined user can call Supabase directly with it and skip our Server Actions entirely. RLS is the ENTIRE access-control layer - going through our own server code is a convenience, not a boundary."},

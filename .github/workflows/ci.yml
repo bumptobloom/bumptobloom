@@ -74,7 +74,7 @@ jobs:
       - name: Look for hardcoded keys
         run: |
           if grep -rInE \
-            '(sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})' \
+            '(sk-[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})' \
             --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
             --include='*.json' --include='*.sql' --include='*.yml' --include='*.md' \
             . ; then
@@ -89,7 +89,7 @@ jobs:
             --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' \
             --include='*.json' . ; then
             echo "::error::NEXT_PUBLIC_* is shipped to the browser and visible in devtools."
-            echo "OPENAI_API_KEY and SUPABASE_SERVICE_ROLE_KEY are server-side only."
+            echo "OPENAI_API_KEY and SUPABASE_SECRET_KEY are server-side only."
             exit 1
           fi
           echo "No server-only secrets exposed via NEXT_PUBLIC_."
