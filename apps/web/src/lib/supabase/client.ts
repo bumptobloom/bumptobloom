@@ -3,11 +3,16 @@ import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ss
 function getEnvVar(name: string): string {
   const value = process.env[name];
   if (!value) {
-    // Avoid blowing up Next.js build/prerender phase if env vars aren't provided in CI preview
-    if (process.env.NODE_ENV === 'production' && typeof window === 'undefined' && !process.env.VERCEL) {
-      return '';
-    }
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
 }
+
+export function createBrowserClient() {
+  const url = getEnvVar('NEXT_PUBLIC_SUPABASE_URL');
+  const key = getEnvVar('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+
+  return createSupabaseBrowserClient(url, key);
+}
+
+export const createClient = createBrowserClient;
