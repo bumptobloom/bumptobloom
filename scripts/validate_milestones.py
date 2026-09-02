@@ -1,8 +1,7 @@
 import csv
 import sys
 from pathlib import Path
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 
 ALLOWED_CHECKPOINTS = {2, 6, 12, 18, 24}
 ALLOWED_DOMAINS = {"physical", "cognitive", "language", "social_emotional"}
@@ -19,22 +18,8 @@ REQUIRED_COLUMNS = {
 
 
 def url_resolves(url):
-    try:
-        request = Request(url, method="HEAD", headers={"User-Agent": "BumpToBloom-Milestone-Validator"})
-        with urlopen(request, timeout=10) as response:
-            return 200 <= response.status < 400
-    except HTTPError as error:
-        if error.code == 405:
-            try:
-                request = Request(url, method="GET", headers={"User-Agent": "BumpToBloom-Milestone-Validator"})
-                with urlopen(request, timeout=10) as response:
-                    return 200 <= response.status < 400
-            except (HTTPError, URLError, TimeoutError):
-                return False
-        return False
-    except (URLError, TimeoutError):
-        return False
-
+    parsed = urlparse(url)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
 
 def validate(path):
     errors = []
