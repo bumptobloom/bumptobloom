@@ -95,9 +95,11 @@ migration of existing rows.
 
 ---
 
-## ADR-003 — Health is the Fever Checker only
+## ADR-003 — Health is the Fever Checker only (SUPERSEDED)
 
-**Status:** Accepted, Week 0
+**Status:** ~~Accepted~~ **Superseded by ADR-007, Week 2.** Kept because the
+reasoning about clinical review still explains why we built what we built.
+**Original status:** Accepted, Week 0
 **Decided by:** Sonakshi
 
 ### Context
@@ -307,3 +309,93 @@ has not, and that is a real cost that does not show up in a task list.
 
 The target is now written down. Any further change to it needs the same: written
 confirmation from Product, in the channel, before engineering re-points anything.
+
+---
+
+## ADR-007 — Health is a temperature log, not a triage tool
+
+**Status:** Accepted, Week 2, 2 September.
+**Supersedes:** ADR-003.
+**Decided by:** Katrina (Product), after her own legal research. Confirmed in
+writing, with the Figma to match.
+
+### Context
+
+ADR-003 scoped Health as a Fever Checker: a parent enters an age, a temperature
+and any red flags, and the app returns one of three tiers — home, call your
+doctor, or go now. We built the engine for it. `packages/fever-rules` holds 33
+tests including three brute-force invariants, and it proves by exhaustive sweep
+that no baby under three months with a fever can ever be told to stay home.
+
+The problem was never the code. It was that every threshold in it is an
+engineering placeholder taken from published guidance, and shipping triage
+advice to a frightened parent needs a licensed pediatric clinician to sign those
+numbers. We never found one. It was the longest-lead item on the project and the
+one blocker engineering could not solve for itself.
+
+While researching fever thresholds, Katrina reached the same conclusion from the
+legal side and proposed removing the advice rather than sourcing a doctor for it.
+
+### Decision
+
+**Health becomes a temperature log.** A parent records a temperature, how it was
+taken, the time, and an optional note. They can see today's readings and a
+summary of the highest one and how many there were.
+
+The app makes **no judgement at all** about any reading. No tiers, no colour
+coding, no ordering by severity, no red styling on the highest value.
+
+Two things followed from that during review and are part of this decision:
+
+The first draft of the design put a red, amber or green dot beside each reading.
+That is a medical judgement without words, and it would have kept the legal
+exposure while discarding the engineering that made the original safe. It was
+also inverted in the mock — 100.4 showed red while a hotter 100.8 showed amber.
+**The dots are removed.**
+
+The first draft of the disclaimer read "General guidance based on your baby's age
+and temperature." The screen provides no guidance and does not collect an age.
+A disclaimer asserting a medical capability we deliberately removed is worse than
+no disclaimer. **That line is removed.**
+
+### Consequences
+
+**We no longer need a pediatric clinical reviewer to launch.** Five tasks are
+deleted: finding a reviewer, sending them the rules, applying their feedback,
+recording the sign-off, and building the evidence pack. That is the single
+largest risk reduction on this project so far.
+
+**The legal review is NOT cancelled.** A temperature reading tied to a named baby
+is still health data about a real infant under a real parent account. Katrina's
+COPPA and health-privacy task stands unchanged, and so does the privacy policy
+before the beta.
+
+**`packages/fever-rules` ships nothing in v1.** 33 tests, three brute-force
+invariants, no consumer. We are keeping the package and leaving it in CI, where
+it costs nothing and stays green. We are not deleting it. This product's scope
+has changed three times in two weeks and the engine survived every platform
+pivot unchanged.
+
+**One safety behaviour changes as a direct result.** The Ask triage guard catches
+symptom questions before they reach the model and redirected them to Health.
+Sending a frightened parent to a blank data-entry form is worse than not catching
+her at all. The guard now refuses plainly and routes to a doctor and to 911. The
+detection logic is unchanged, so the labelled evaluation set is still valid.
+
+**The database needs a migration.** `fever_checks` cannot store a plain reading:
+`age_months_at_check`, `rectal_equivalent_f`, `red_flags`, `tier`, `rule_id` and
+`rules_version` are all `not null`. It has no `notes` column, and the design has
+one. The method values differ too. Migration 0002 adds `temperature_readings`.
+`fever_checks` stays in place, unused.
+
+**The 911 banner is gone from Health.** It was Critical on every Health screen
+when Health gave advice. On a log it reintroduces emergency framing to a screen
+we just stripped of it, and 911 now lives in the Ask refusal, which is where
+someone actually types a worried question.
+
+### What this cost, honestly
+
+Roughly a week of engineering: the rules engine, its test table, the result
+screens that were specced and never built. Set against removing the only launch
+gate we had no route through, that is a good trade, and Product finding it
+themselves rather than handing us the risk is the right way round.
