@@ -1,6 +1,7 @@
 # Seed data
 
-Reference data that ships with the product. Owned by Natasha (Pod E).
+Reference data that ships with the product. Owned by Pod I: milestones by
+Sivathmika, Learn content and the product catalog by Sahasra.
 
 | File | Source | Status |
 |---|---|---|
@@ -12,7 +13,9 @@ Rules:
 
 - Every row carries a `source_label`. Every card in the product shows where its
   advice came from.
-- Milestones use the nine CDC checkpoints: 0, 2, 4, 6, 9, 12, 15, 18, 24 months.
+- Milestones use five CDC checkpoints for v1: 2, 6, 12, 18, 24 months.
+  The CDC also publishes 0, 4, 9 and 15. Those are additive: adding them later
+  is new rows, not a migration.
 - Four domains: physical, cognitive, language, social_emotional. The Master
   sheet lists social-emotional in one row and says "at least three types" in
   another; we store all four and treat the fourth as a should-have.

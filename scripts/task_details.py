@@ -201,10 +201,10 @@ DETAIL: dict[str, dict] = {
 
 "Begin CDC milestone dataset extraction": {
  "do": ["Source: cdc.gov/act-early/milestones.",
-        "Nine checkpoints: 0, 2, 4, 6, 9, 12, 15, 18, 24 months.",
+        "Five checkpoints for v1: 2, 6, 12, 18, 24 months. The CDC also publishes 0, 4, 9 and 15; those are additive and get backfilled after the demo.",
         "Four domains per checkpoint: physical, cognitive, language, social_emotional.",
         "A spreadsheet is fine — we will convert it to SQL."],
- "done": ["All nine checkpoints covered",
+ "done": ["All five checkpoints covered",
           "All four domains present at each",
           "Every row has a source label and a URL",
           "Wording is plain enough for a tired parent",
@@ -222,11 +222,11 @@ DETAIL: dict[str, dict] = {
 
 # ============================================================ WEEK 2
 
-"Seed milestones: 4 domains x 9 checkpoints, with sources": {
- "do": ["Turn Natasha's dataset into supabase/seed/milestones.sql.",
+"Seed the milestone dataset with sources": {
+ "do": ["Turn the extracted dataset into supabase/seed/milestones.sql.",
         "Apply it with the service role, never from the app."],
  "done": ["Every row has a source_label",
-          "All nine checkpoints and all four domains present",
+          "All five checkpoints and all four domains present",
           "Seed is re-runnable without creating duplicates",
           "A signed-in test account can read milestones but not write them"]},
 
@@ -673,13 +673,14 @@ DETAIL: dict[str, dict] = {
           "Reviewed alongside Katrina's legal answer"]},
 
 # ============================================================ DATA SCIENCE
-# The four people whose roster Role carries DS: Natasha, Keya, Rehaan, Sonakshi.
+# The people whose roster Role carries DS: Keya, Rehaan, Sonakshi.
+# (Natasha also did, until she left on 1 Sep. Her DATA tasks moved to Rehaan.)
 # There is no model training here — six weeks, no users, no training data.
 # The data science on this project is measurement, data quality and evaluation.
 
 "DATA: Milestone dataset schema, validation rules and data dictionary": {
  "do": ["Decide the columns before filling any more rows: age_months, domain, text, source_label, source_url, and whichever else you need.",
-        "Write the validation rules down as rules, not as vibes. Age must be one of the nine checkpoints. Domain must be one of the four. source_url must be non-empty and must resolve.",
+        "Write the validation rules down as rules, not as vibes. Age must be one of the five v1 checkpoints. Domain must be one of the four. source_url must be non-empty and must resolve.",
         "Write a one-page data dictionary: what each column means and what a valid value looks like.",
         "Ship a small validation script that reads the dataset and fails loudly on a bad row — the seed task in Week 2 should run it."],
  "done": ["Schema written down and agreed with whoever writes the SQL seed",
@@ -687,7 +688,7 @@ DETAIL: dict[str, dict] = {
           "A deliberately broken row makes it fail — you tested the test",
           "Data dictionary is in the repo, not in a chat message",
           "The rule 'no row without a working source URL' is enforced by the script, not by memory"],
- "note": "Do this before extracting more. Filling 36 cells and then discovering half have no source is the failure this prevents."},
+ "note": "Do this before extracting more. Filling 20 cells and then discovering half have no source is the failure this prevents."},
 
 "DATA: Label a triage-guard evaluation set - 200 questions, two raters": {
  "do": ["Collect ~200 realistic questions a first-time mom would type. Half ordinary parenting, half symptom-shaped, and deliberately include the hard middle — 'she's been really fussy since her shots' is genuinely ambiguous.",
@@ -715,11 +716,11 @@ DETAIL: dict[str, dict] = {
  "note": "Week 1 on purpose. If this changes a priority, we want to know before the thing is built."},
 
 "DATA: Content coverage matrix - which age x category cells are empty": {
- "do": ["Nine age checkpoints across four Learn categories is 36 cells.",
+ "do": ["Five age checkpoints across four Learn categories is 20 cells.",
         "Count what exists in each. Produce the grid, with counts, as a committed file.",
         "Flag the zeros and the ones — a 4-month-old whose Sleep category is empty gets an empty tab, and that is what a demo reviewer will click on.",
         "Hand the gaps to whoever is writing content, ranked by how likely that age is to be demoed."],
- "done": ["The 36-cell grid exists with real counts",
+ "done": ["The 20-cell grid exists with real counts",
           "Empty and near-empty cells are listed explicitly",
           "Gaps handed to the content owner with a priority order",
           "Re-runnable as a script, because the counts change every week"]},

@@ -111,7 +111,7 @@ markActivity(babyId: string, activityId: string): Promise<void>
 ```json
 {
   "checkpointMonth": 18,
-  "checkpoints": [0, 2, 4, 6, 9, 12, 15, 18, 24],
+  "checkpoints": [2, 6, 12, 18, 24],
   "domains": [
     {
       "domain": "physical",
