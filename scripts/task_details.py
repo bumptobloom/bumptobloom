@@ -84,7 +84,10 @@ DETAIL: dict[str, dict] = {
         "Use `@supabase/ssr` so the session lives in cookies and Server Components can read it. Not localStorage - a Server Component cannot see localStorage.",
         "Client goes in `src/lib/supabase/`, reading NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Never SUPABASE_SECRET_KEY - that one bypasses RLS.",
         "THEN the three pages matching the Figma: log in, create account, forgot password.",
-        "Middleware routes signed-in users to Home and signed-out users to log in."],
+        "Middleware routes signed-in users to Home and signed-out users to log in.",
+        "Product answered the open rules on 2 Sep. Minimum password is 8 characters with at least one letter and one number. Password reset links expire after 15 minutes and are single use.",
+        "NO email verification for the MVP. Product's call. Consequence to know: a mother who mistypes her address can never reset her password, because the reset goes somewhere she does not own. Acceptable for a recruited beta, not for a public launch.",
+        "Terms and Privacy is a required checkbox. She cannot continue without ticking it, and if she tries, prompt her rather than failing silently. The linked pages do not exist until Week 4, so point at placeholders for now."],
  "done": ["Another pod can import the client and run one query against Supabase",
           "Create account, log out, log in again all work in a browser",
           "Closing the tab and reopening the app keeps you signed in",
@@ -386,6 +389,15 @@ DETAIL: dict[str, dict] = {
           "Corrected age is right for a baby born 8 weeks early",
           "Rejects future dates",
           "Nothing else in the codebase computes age independently"]},
+
+"check_anonymous can pass vacuously if the sentinel rows are missing": {
+ "do": ["check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables happened to be empty, it passes having proved nothing.",
+        "Same shape as the count-vs-identity problem you already solved for the account checks: zero is not evidence unless you know there was something to find.",
+        "Fix: confirm the sentinel rows exist as an authenticated user first, then assert the anonymous role sees zero."],
+ "done": ["The check fails if the sentinel rows are absent",
+          "The check still fails if anonymous can read them",
+          "Negative control run and the output recorded on the PR"],
+ "note": "Follow-up from PR #164. Small, but it is the one check in the suite that can currently pass without proving anything."},
 
 "RLS isolation test suite: two accounts, every private table": {
  "do": ["Seed two accounts with a baby each and data in every private table.",
@@ -751,7 +763,7 @@ DETAIL: dict[str, dict] = {
 
 "DATA: Measure triage guard precision and recall, write down the trade-off": {
  "do": ["Score the guard against the labelled set from Week 1. Report precision, recall and a confusion matrix.",
-        "Then write down, in the repo, the decision: we optimise for RECALL. Missing a symptom question is a safety incident. Sending someone to the Fever Checker unnecessarily costs one tap.",
+        "Then write down, in the repo, the decision: we optimise for RECALL. Missing a symptom question is a safety incident. Handing someone off to their doctor unnecessarily costs one tap.",
         "Review every false negative individually — each one is a phrasing we did not think of, and it should become a test case.",
         "Tune, re-measure, and report the before and after. Never tune against a number you did not write down first."],
  "done": ["Precision, recall and confusion matrix reported on the labelled set",

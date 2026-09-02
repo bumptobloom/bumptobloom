@@ -101,6 +101,9 @@ T = [
     (2, "RLS isolation test suite: two accounts, every private table", "Keya Chaudhari", "Pod W", "Critical",
      "Automated, runs in CI. RLS IS our entire access-control layer - there is no separate API server to catch a mistake, and anything the browser can call, a determined user can call directly with the anon key."),
 
+    (2, "check_anonymous can pass vacuously if the sentinel rows are missing", "Keya Chaudhari", "Pod W", "High",
+     "Follow-up from PR #164. check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables were empty it would pass having proved nothing - the same count-vs-identity trap the account checks already avoid."),
+
     # ---------------- WEEK 3 ----------------
     (3, "Build Learn content dataset: Developmental, Feeding, Sleep, Diaper", "Sahasra Miriyala", "Pod I", "High", ""),
     (3, "Learn data layer: fetch by age and category, save, unsave", "Sahasra Miriyala", "Pod I", "High", ""),
