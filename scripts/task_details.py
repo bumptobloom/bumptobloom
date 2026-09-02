@@ -15,15 +15,6 @@ DETAIL: dict[str, dict] = {
 
 # ============================================================ WEEK 1
 
-"DECISION: Confirm pediatric clinical reviewer for Health content": {
- "do": ["Ask AI4ALL mentors, university contacts, and anyone's family GP first — a pediatric nurse practitioner is enough, it does not have to be an MD.",
-        "Scope the ask honestly: one page of thresholds and about six short screens of copy. Roughly an hour of their time.",
-        "Agree a turnaround date. We send in Week 3 and need it back by Week 5."],
- "done": ["A named person has agreed in writing",
-          "They know what they're reviewing and roughly how long it takes",
-          "A return date is agreed and in the calendar",
-          "Their name is in docs/SAFETY.md"]},
-
 "DECISION: Legal review - COPPA / HIPAA / state health-privacy exposure": {
  "do": ["Ask the programme whether they have counsel we can use. University legal clinics also do this for student projects.",
         "The three questions: may we store infant health data under a parent account, does COPPA apply when the account holder is the adult, and does a fever triage tool risk being classed as a medical device.",
@@ -322,6 +313,71 @@ DETAIL: dict[str, dict] = {
           "We have agreed what is knowingly shipping broken"],
  "note": "Requested by Katrina on 1 Sep. Schedule it early enough in week 6 that there is time to act on what it finds."},
 
+"Migration 0002: temperature_readings table": {
+ "do": ["fever_checks cannot store a plain reading. age_months_at_check, rectal_equivalent_f, red_flags, tier, rule_id and rules_version are all NOT NULL and a log fills none of them.",
+        "It also has no notes column, and the Figma has a notes field on the add-reading form.",
+        "And the method values disagree: the design offers Ear, Armpit, Forehead, Rectal; the table allows rectal, oral, axillary, temporal, tympanic. Use the design's four, and store them as the clinical names (tympanic, axillary, temporal, rectal) with the friendly labels in the UI.",
+        "New table: temperature_readings with baby_id, temp_f, method, notes, created_at.",
+        "RLS on, owner-scoped, same policy shape as the other private tables. Add it to Keya's isolation suite in the same PR.",
+        "Leave fever_checks in place and unused. Do not alter six NOT NULL constraints on a table nothing writes to."],
+ "done": ["temperature_readings exists with RLS enabled",
+          "Keya's isolation suite covers it and still passes, including the identity assertion",
+          "fever_checks is untouched",
+          "The migration is in supabase/migrations/ and has been applied to bumptobloom-dev"],
+ "note": "Blocks Rasheed's data layer and Joanna's screen. Do it early in the week."},
+
+"Temperature readings: data layer and today's summary": {
+ "do": ["Save a reading: temperature, method, optional note, timestamp.",
+        "List today's readings, newest first.",
+        "Compute Today's Summary - highest reading and total count. Derive it, do not store it.",
+        "No tier, no rule_id, no rules_version, no rectal-equivalent conversion. None of that exists any more."],
+ "done": ["A reading saves and appears in today's list",
+          "The summary matches the list",
+          "Another account cannot read or write these rows"],
+ "note": "Replaces the old fever_checks logging task. Depends on migration 0002."},
+
+"Health: temperature log screen": {
+ "do": ["Build exactly what the Figma shows and nothing more.",
+        "Today's Summary: highest reading and total count. No red styling on Highest.",
+        "Add Temperature: value with a degF unit, a Mode of Measurement dropdown, optional notes, Save Reading, and the timestamp underneath.",
+        "Today's Readings: time, temperature, a note indicator where one exists, and the method. NO colour coding, no dots, no severity, no ordering by seriousness.",
+        "Disclaimer copy comes from Product. The final version drops the old 'general guidance based on your baby's age and temperature' line - that described a product we no longer build."],
+ "done": ["A reading can be added and appears in today's list",
+          "Nothing on the screen evaluates or ranks a reading",
+          "The disclaimer matches Product's final wording",
+          "Works at 390px"],
+ "note": "ASK BEFORE INVENTING: the Figma puts a chevron on each reading row but does not show what is behind it, and it does not say whether there is history beyond today. Get both from design rather than guessing."},
+
+"Recommended for You: product list and product detail screens": {
+ "do": ["Entry point is the Recommended for You card on Home, not a tab. Cart stopped being a tab on 1 Sep.",
+        "List screen: age-appropriate products for this baby, each with a one-line reason.",
+        "Detail screen: why it is helpful at this age, then a Shop now button out to a third-party retailer.",
+        "Keep both lines that are in the Figma: 'we only link to trusted retailers' on the list, and 'general suggestions, do not replace professional medical advice' on the detail.",
+        "No checkout, no basket, no total. We are not a shop."],
+ "done": ["Home card opens the list, a product opens the detail, Shop now opens the retailer",
+          "Every product shows a reason, not just a name",
+          "Both disclaimers are present"],
+ "note": "Renamed from the Cart screen. Retailer links are plain search URLs, not affiliate - see Jasdeep's week 1 task."},
+
+"Offline pass: cache the app shell so the app opens with no network": {
+ "do": ["Airplane mode, open the installed app, confirm the shell loads rather than a browser error page.",
+        "Decide and write down what is cached and what is not. Do NOT cache other people's data.",
+        "Reading data needs a network. That is fine and expected - just fail clearly rather than showing a blank screen."],
+ "done": ["The installed app opens with no network",
+          "What is cached is written down",
+          "A data-dependent screen with no network shows a readable message, not a crash"],
+ "note": "Rewritten. The old version promised the fever checker worked offline, and there is no fever checker now. The offline claim is smaller and honest: the app opens."},
+
+"Triage guard final pass before launch": {
+ "do": ["The fever half of the old safety table ships nothing in v1, so this is the guard only.",
+        "Re-read the guard's tests, its refusal copy, and Rehaan's precision and recall numbers.",
+        "Confirm the refusal still routes to real help and contains no triage language.",
+        "Confirm we still optimise for recall and that the reasoning is written in docs/SAFETY.md."],
+ "done": ["The guard's tests pass and cover the current refusal behaviour",
+          "Precision and recall are recorded with a date",
+          "docs/SAFETY.md matches what the code actually does"],
+ "note": "Rescoped from the fever safety table. This is now the only safety-critical thing left in the product, which makes it more important rather than less."},
+
 "Age derivation utility + tests, including preterm corrected age": {
  "do": ["One function from birth_date to age in months. Everything uses it.",
         "Corrected age when due_date is set.",
@@ -368,41 +424,6 @@ DETAIL: dict[str, dict] = {
           "Save toggles and persists",
           "Empty state is a real message, not a blank screen"]},
 
-"Finalise fever rules engine, set RULES_VERSION": {
- "do": ["The engine and its 33 tests already exist. This is the review and version pin.",
-        "Read every threshold once more, deliberately.",
-        "Set RULES_VERSION and make sure every logged check records it."],
- "done": ["RULES_VERSION is set and used in every fever_checks row",
-          "All 33 tests plus 3 invariants pass",
-          "Thresholds re-read line by line",
-          "Ready to hand to the clinical reviewer"]},
-
-"Send fever rules and result copy to clinical reviewer": {
- "do": ["Send a plain one-page table of age, temperature, red flags and outcome. Not code.",
-        "Include the three result screens' copy.",
-        "Ask specifically: is any threshold wrong, and does any wording read as diagnosis?"],
- "done": ["Reviewer has the table and the copy",
-          "They know the return date",
-          "They have been told this is educational triage, not diagnosis"],
- "note": "Deliberately Week 3 so review runs Weeks 4–6 in parallel instead of blocking launch."},
-
-"Wire the fever engine into the app and log results": {
- "do": ["Import @btb/fever-rules and call assessFever on the device.",
-        "Age comes from birth_date fetched at login. Never ask the parent for an age.",
-        "Log the result to Supabase fire-and-forget."],
- "done": ["A result appears with the phone in airplane mode",
-          "A logging failure never shows an error to the parent",
-          "Every check writes rule_id and rules_version",
-          "Invalid input shows an error and the emergency banner, never a reassuring result"],
- "note": "Runs on the device on purpose. A network timeout during a fever check would be the worst bug this product could have."},
-
-"fever_checks logging with rule_id and rules_version": {
- "do": ["Persist inputs, rectal-equivalent, tier, rule_id and rules_version.",
-        "Without rule_id and version we cannot reconstruct what the app told a parent."],
- "done": ["Every field populated on every check",
-          "Rows are readable only by the owning parent",
-          "Never used for analytics or ad targeting"]},
-
 "E2E test: onboarding -> home -> track, with Playwright": {
  "do": ["Playwright, running in a mobile viewport (390x844), not desktop.",
         "Point it at a Vercel preview URL in CI, not localhost — that is what catches deploy-only failures.",
@@ -436,15 +457,6 @@ DETAIL: dict[str, dict] = {
  "done": ["All three retailers return a working search for every product",
           "Terms with spaces and punctuation are encoded correctly",
           "Links open in the phone's browser, not inside the app"]},
-
-"Cart screen with retailer links, no checkout, no list total": {
- "do": ["Per the Master sheet: remove 'Add to List' and every payment step.",
-        "Cards with name, rationale, indicative price, three retailer buttons.",
-        "Standing disclaimer that these are suggestions, not medical necessity."],
- "done": ["No list, no total, no checkout anywhere",
-          "Every card shows its rationale",
-          "Retailer buttons open the right search",
-          "Disclaimer present"]},
 
 "Ask: OpenAI integration and context builder": {
  "do": ["In the `/api/ask` route handler only. Key from `process.env.OPENAI_API_KEY`, never the client.",
@@ -483,42 +495,6 @@ DETAIL: dict[str, dict] = {
 
 # ============================================================ WEEK 5
 
-"Fever Checker screen: auto age, method selector, red-flag list": {
- "do": ["Age is filled automatically from the baby's birthday. Never ask.",
-        "Add the measurement-method selector — rectal, oral, axillary, temporal, tympanic. This is new versus the Figma and it matters.",
-        "Red-flag checklist exactly as in the engine."],
- "done": ["Age is pre-filled and not editable here",
-          "Method selector present and changes the result correctly",
-          "An axillary reading of 99.5°F for a 2-month-old returns EMERGENCY",
-          "Tympanic under 6 months shows the reliability caution",
-          "Impossible temperatures are rejected with a clear message"],
- "note": "An axillary reading runs about 1°F below rectal. Without the method selector we would tell that parent to go back to bed."},
-
-"Three fever result screens, severity high-to-low": {
- "do": ["MONITOR, CALL, EMERGENCY. Severity descending on every screen.",
-        "The emergency screen must be unmistakable — no green, no home-care advice above the fold.",
-        "No medication dosing anywhere. Ever."],
- "done": ["All three render correctly for their tier",
-          "Emergency shows call-911 guidance first",
-          "No drug name appears with a dose or frequency",
-          "The client never re-derives or overrides the tier"]},
-
-"Persistent 911 banner above the fold on every Health screen": {
- "do": ["Visible without scrolling on entry to every Health screen. Not dismissible."],
- "done": ["Visible without scrolling on every Health screen",
-          "No dismiss control",
-          "Readable at the largest text size",
-          "Present on the result screens too, not just the form"]},
-
-"Apply clinical reviewer feedback to rules and copy": {
- "do": ["Apply every change they asked for. Do not argue with a threshold by yourself.",
-        "Update the test table in the SAME PR.",
-        "Bump RULES_VERSION."],
- "done": ["Every piece of feedback applied or explicitly discussed with them",
-          "Test table updated in the same PR",
-          "RULES_VERSION bumped",
-          "All tests pass"]},
-
 "Ask conversation history and sidebar": {
  "do": ["Per the Master sheet: history in a side navigation, like ChatGPT."],
  "done": ["Past conversations are listed and openable",
@@ -544,20 +520,6 @@ DETAIL: dict[str, dict] = {
           "Nothing is cut off at 390px, and nothing is cut off by the iPhone home indicator",
           "Usable on the slow device — no frozen taps",
           "Issues filed with screenshots"]},
-
-"Offline pass: cache the app shell, fever checker works with no network": {
- "do": ["Configure the service worker to precache the app shell and the Health route.",
-        "Decide explicitly what is NOT cached: Supabase reads and the Ask route should fail cleanly offline rather than serve stale data. Stale milestone data is confusing; a stale AI answer is worse.",
-        "Show a plain 'you are offline' state on the pages that need the network. Never a blank page.",
-        "The fever engine is already pure TypeScript with no I/O, so it works offline for free — this task is proving it, and making sure logging failure never blocks the answer.",
-        "Test the real way: install the app, turn on airplane mode, force-quit, reopen."],
- "done": ["Airplane mode: the installed app opens, no browser error page",
-          "A full fever check runs offline and returns the right tier",
-          "The 911 banner and the disclaimer still render offline",
-          "Supabase logging fails silently — the parent sees the answer, never an error",
-          "The check is written to Supabase when the network comes back, or is dropped deliberately and that choice is written down",
-          "Network-dependent pages show an offline state, not a blank screen"],
- "note": "This is the claim we make in the demo, so it has to be literally true. Test it on a real phone in airplane mode, not with DevTools' offline checkbox."},
 
 "Accessibility pass: VoiceOver, TalkBack, keyboard nav, 200% zoom": {
  "do": ["Our users are sleep-deprived and often in low light at 3am. This matters more here than on a normal product.",
@@ -593,21 +555,6 @@ DETAIL: dict[str, dict] = {
           "Green in CI on every PR",
           "Runs against a preview deploy, not localhost",
           "Documented well enough for anyone to run it locally"]},
-
-"Safety test table final pass and sign-off": {
- "do": ["Read all 33 cases and the 3 invariants once more, deliberately.",
-        "Confirm nothing was weakened to make CI pass."],
- "done": ["All tests pass",
-          "No case has been deleted or weakened since Week 3",
-          "The under-3-months invariant still sweeps every combination",
-          "Signed off in writing"]},
-
-"Record clinical sign-off in REVIEW.md": {
- "do": ["Reviewer name, credentials, date, RULES_VERSION reviewed, and what they approved."],
- "done": ["REVIEW.md exists with all of it",
-          "The version reviewed matches the version shipping",
-          "docs/SAFETY.md status table updated to cleared"],
- "note": "HARD LAUNCH GATE. Without this the Health tab cannot ship to real parents."},
 
 "Performance: Lighthouse 90+, first load under 3s on throttled 4G": {
  "do": ["Run Lighthouse in mobile mode against the production URL, throttled. Not on campus wifi.",
@@ -800,19 +747,6 @@ DETAIL: dict[str, dict] = {
           "The harness runs and reports a score per dimension",
           "A prompt change can be compared before and after, numerically"],
  "note": "Your roster lists AI Evaluation, so this one is yours by right. Without a rubric, 'the prompt got better' is a feeling."},
-
-"DATA: Fever rules evidence pack for the clinical reviewer": {
- "do": ["The clinician is the longest-lead item on the project. Make their job small.",
-        "Generate every (age band x temperature x method) combination and what we output for it, with the rule id beside each row.",
-        "Group it so the reviewer reads structure, not 400 rows: the under-3-months block first, then the thresholds.",
-        "State the method normalisation explicitly — an axillary reading runs about 1F low, and that offset is the single thing most worth a doctor's eye.",
-        "Include what we deliberately do NOT do: no medication, no dosing, no diagnosis."],
- "done": ["Every combination generated, nothing hand-picked",
-          "Rule id shown for each outcome so a disagreement is traceable to a line of code",
-          "The method offsets are called out on their own page",
-          "RULES_VERSION stamped on the document",
-          "Sent to the reviewer with a specific question, not just 'please review'"],
- "note": "A doctor can sign a table. Nobody can sign 400 lines of TypeScript."},
 
 "DATA: Measure triage guard precision and recall, write down the trade-off": {
  "do": ["Score the guard against the labelled set from Week 1. Report precision, recall and a confusion matrix.",
