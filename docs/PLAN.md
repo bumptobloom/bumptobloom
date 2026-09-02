@@ -178,7 +178,7 @@ blocking launch. That's the single most valuable schedule change here.
 | Week | Dates | Focus |
 |---|---|---|
 | **1** | Aug 25–31 | **Foundation & unblocking.** Repo, Supabase, auth, nav shell, baby profile with date picker, AI service reachable. *Contracts freeze.* Five design change-requests go out; both product blockers start. 21 tasks — front-loaded on purpose. |
-| **2** | Sep 1–7 | **Home & Track.** Milestone dataset across all four domains and nine checkpoints. Track UI with a real checkpoint navigator, the disclaimer finally rendered, Home dashboard. *Automated RLS isolation tests* — manual verification will not survive week 5. |
+| **2** | Sep 1–7 | **Home & Track.** Milestone dataset across all four domains and the five v1 checkpoints. Track UI with a real checkpoint navigator, the disclaimer finally rendered, Home dashboard. *Automated RLS isolation tests* — manual verification will not survive week 5. |
 | **3** | Sep 8–14 | **Learn & fever rules.** Learn feed and content dataset. *Fever rules finalised and sent for clinical review.* First E2E suite. |
 | **4** | Sep 15–21 | **Cart & Ask.** Product catalog with a rationale per item, retailer links, no checkout. Ask goes live: OpenAI, Zod validation, run logging, and the *triage guard that redirects symptom questions before any model call.* |
 | **5** | Sep 22–28 | **Health UI & polish.** Fever Checker form with the measurement-method selector, three result screens ordered high-to-low, persistent 911 banner. *Reviewer feedback applied,* rules version bumped. Mobile, accessibility, Sentry. |

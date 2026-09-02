@@ -84,7 +84,10 @@ DETAIL: dict[str, dict] = {
         "Use `@supabase/ssr` so the session lives in cookies and Server Components can read it. Not localStorage - a Server Component cannot see localStorage.",
         "Client goes in `src/lib/supabase/`, reading NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Never SUPABASE_SECRET_KEY - that one bypasses RLS.",
         "THEN the three pages matching the Figma: log in, create account, forgot password.",
-        "Middleware routes signed-in users to Home and signed-out users to log in."],
+        "Middleware routes signed-in users to Home and signed-out users to log in.",
+        "Product answered the open rules on 2 Sep. Minimum password is 8 characters with at least one letter and one number. Password reset links expire after 15 minutes and are single use.",
+        "NO email verification for the MVP. Product's call. Consequence to know: a mother who mistypes her address can never reset her password, because the reset goes somewhere she does not own. Acceptable for a recruited beta, not for a public launch.",
+        "Terms and Privacy is a required checkbox. She cannot continue without ticking it, and if she tries, prompt her rather than failing silently. The linked pages do not exist until Week 4, so point at placeholders for now."],
  "done": ["Another pod can import the client and run one query against Supabase",
           "Create account, log out, log in again all work in a browser",
           "Closing the tab and reopening the app keeps you signed in",
@@ -201,10 +204,10 @@ DETAIL: dict[str, dict] = {
 
 "Begin CDC milestone dataset extraction": {
  "do": ["Source: cdc.gov/act-early/milestones.",
-        "Nine checkpoints: 0, 2, 4, 6, 9, 12, 15, 18, 24 months.",
+        "Five checkpoints for v1: 2, 6, 12, 18, 24 months. The CDC also publishes 0, 4, 9 and 15; those are additive and get backfilled after the demo.",
         "Four domains per checkpoint: physical, cognitive, language, social_emotional.",
         "A spreadsheet is fine — we will convert it to SQL."],
- "done": ["All nine checkpoints covered",
+ "done": ["All five checkpoints covered",
           "All four domains present at each",
           "Every row has a source label and a URL",
           "Wording is plain enough for a tired parent",
@@ -222,11 +225,11 @@ DETAIL: dict[str, dict] = {
 
 # ============================================================ WEEK 2
 
-"Seed milestones: 4 domains x 9 checkpoints, with sources": {
- "do": ["Turn Natasha's dataset into supabase/seed/milestones.sql.",
+"Seed the milestone dataset with sources": {
+ "do": ["Turn the extracted dataset into supabase/seed/milestones.sql.",
         "Apply it with the service role, never from the app."],
  "done": ["Every row has a source_label",
-          "All nine checkpoints and all four domains present",
+          "All five checkpoints and all four domains present",
           "Seed is re-runnable without creating duplicates",
           "A signed-in test account can read milestones but not write them"]},
 
@@ -386,6 +389,28 @@ DETAIL: dict[str, dict] = {
           "Corrected age is right for a baby born 8 weeks early",
           "Rejects future dates",
           "Nothing else in the codebase computes age independently"]},
+
+"Supabase Storage: private avatars bucket, policies and signed URLs": {
+ "do": ["Create the bucket PRIVATE. Never public. getPublicUrl only returns a working URL for a public bucket, and a public bucket means anyone holding the link can fetch an infant's photograph with no sign-in at all.",
+        "Write storage policies so a parent can read and write only her own baby's avatar. Row level security covers table rows; files need their own rules and do not inherit anything.",
+        "Decide and document the object path convention up front, so a policy can be written against it.",
+        "The app serves short-lived signed URLs, created server-side. No public URL ever reaches the browser.",
+        "Add the bucket to the RLS suite, or say plainly in the PR why storage is out of its scope. Right now the suite covers tables only."],
+ "done": ["The bucket exists and is private",
+          "A signed-in parent can upload and read her own baby's avatar",
+          "A second account cannot read the first account's avatar - tested with two accounts, the same way as the table checks",
+          "An unsigned URL to a known object path returns denied",
+          "The path convention and the policies are written down"],
+ "note": "Blocks Sivathmika's photo upload on the baby profile, and #174 tried to serve avatars with getPublicUrl. Two people reached this from opposite directions on 2 Sep, so it gets designed once rather than discovered twice."},
+
+"check_anonymous can pass vacuously if the sentinel rows are missing": {
+ "do": ["check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables happened to be empty, it passes having proved nothing.",
+        "Same shape as the count-vs-identity problem you already solved for the account checks: zero is not evidence unless you know there was something to find.",
+        "Fix: confirm the sentinel rows exist as an authenticated user first, then assert the anonymous role sees zero."],
+ "done": ["The check fails if the sentinel rows are absent",
+          "The check still fails if anonymous can read them",
+          "Negative control run and the output recorded on the PR"],
+ "note": "Follow-up from PR #164. Small, but it is the one check in the suite that can currently pass without proving anything."},
 
 "RLS isolation test suite: two accounts, every private table": {
  "do": ["Seed two accounts with a baby each and data in every private table.",
@@ -673,13 +698,14 @@ DETAIL: dict[str, dict] = {
           "Reviewed alongside Katrina's legal answer"]},
 
 # ============================================================ DATA SCIENCE
-# The four people whose roster Role carries DS: Natasha, Keya, Rehaan, Sonakshi.
+# The people whose roster Role carries DS: Keya, Rehaan, Sonakshi.
+# (Natasha also did, until she left on 1 Sep. Her DATA tasks moved to Rehaan.)
 # There is no model training here — six weeks, no users, no training data.
 # The data science on this project is measurement, data quality and evaluation.
 
 "DATA: Milestone dataset schema, validation rules and data dictionary": {
  "do": ["Decide the columns before filling any more rows: age_months, domain, text, source_label, source_url, and whichever else you need.",
-        "Write the validation rules down as rules, not as vibes. Age must be one of the nine checkpoints. Domain must be one of the four. source_url must be non-empty and must resolve.",
+        "Write the validation rules down as rules, not as vibes. Age must be one of the five v1 checkpoints. Domain must be one of the four. source_url must be non-empty and must resolve.",
         "Write a one-page data dictionary: what each column means and what a valid value looks like.",
         "Ship a small validation script that reads the dataset and fails loudly on a bad row — the seed task in Week 2 should run it."],
  "done": ["Schema written down and agreed with whoever writes the SQL seed",
@@ -687,7 +713,7 @@ DETAIL: dict[str, dict] = {
           "A deliberately broken row makes it fail — you tested the test",
           "Data dictionary is in the repo, not in a chat message",
           "The rule 'no row without a working source URL' is enforced by the script, not by memory"],
- "note": "Do this before extracting more. Filling 36 cells and then discovering half have no source is the failure this prevents."},
+ "note": "Do this before extracting more. Filling 20 cells and then discovering half have no source is the failure this prevents."},
 
 "DATA: Label a triage-guard evaluation set - 200 questions, two raters": {
  "do": ["Collect ~200 realistic questions a first-time mom would type. Half ordinary parenting, half symptom-shaped, and deliberately include the hard middle — 'she's been really fussy since her shots' is genuinely ambiguous.",
@@ -715,11 +741,11 @@ DETAIL: dict[str, dict] = {
  "note": "Week 1 on purpose. If this changes a priority, we want to know before the thing is built."},
 
 "DATA: Content coverage matrix - which age x category cells are empty": {
- "do": ["Nine age checkpoints across four Learn categories is 36 cells.",
+ "do": ["Five age checkpoints across four Learn categories is 20 cells.",
         "Count what exists in each. Produce the grid, with counts, as a committed file.",
         "Flag the zeros and the ones — a 4-month-old whose Sleep category is empty gets an empty tab, and that is what a demo reviewer will click on.",
         "Hand the gaps to whoever is writing content, ranked by how likely that age is to be demoed."],
- "done": ["The 36-cell grid exists with real counts",
+ "done": ["The 20-cell grid exists with real counts",
           "Empty and near-empty cells are listed explicitly",
           "Gaps handed to the content owner with a priority order",
           "Re-runnable as a script, because the counts change every week"]},
@@ -750,7 +776,7 @@ DETAIL: dict[str, dict] = {
 
 "DATA: Measure triage guard precision and recall, write down the trade-off": {
  "do": ["Score the guard against the labelled set from Week 1. Report precision, recall and a confusion matrix.",
-        "Then write down, in the repo, the decision: we optimise for RECALL. Missing a symptom question is a safety incident. Sending someone to the Fever Checker unnecessarily costs one tap.",
+        "Then write down, in the repo, the decision: we optimise for RECALL. Missing a symptom question is a safety incident. Handing someone off to their doctor unnecessarily costs one tap.",
         "Review every false negative individually — each one is a phrasing we did not think of, and it should become a test case.",
         "Tune, re-measure, and report the before and after. Never tune against a number you did not write down first."],
  "done": ["Precision, recall and confusion matrix reported on the labelled set",
