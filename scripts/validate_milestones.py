@@ -1,7 +1,9 @@
 import csv
 import sys
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 ALLOWED_CHECKPOINTS = {2, 6, 12, 18, 24}
 ALLOWED_DOMAINS = {"physical", "cognitive", "language", "social_emotional"}
@@ -16,12 +18,36 @@ REQUIRED_COLUMNS = {
     "sort_order",
 }
 
-
 def url_resolves(url):
     parsed = urlparse(url)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return False
 
-def validate(path):
+    try:
+        request = Request(
+            url,
+            method="HEAD",
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+        with urlopen(request, timeout=10) as response:
+            return 200 <= response.status < 400
+    except HTTPError as error:
+        if error.code == 405:
+            try:
+                request = Request(
+                    url,
+                    method="GET",
+                    headers={"User-Agent": "Mozilla/5.0"}
+                )
+                with urlopen(request, timeout=10) as response:
+                    return 200 <= response.status < 400
+            except (HTTPError, URLError, TimeoutError):
+                return False
+        return False
+    except (URLError, TimeoutError):
+        return False
+
+def validate(path, check_urls=False):
     errors = []
 
     with open(path, newline="", encoding="utf-8") as file:
@@ -72,14 +98,17 @@ def validate(path):
 
             if not source_url:
                 errors.append(f"Row {row_number}: source_url is empty.")
-            elif not source_url.startswith(("http://", "https://")):
-                errors.append(
-                    f"Row {row_number}: source_url must use HTTP or HTTPS."
-                )
-            elif not url_resolves(source_url):
-                errors.append(
-                    f"Row {row_number}: source_url does not resolve: {source_url}"
-                )
+            else:
+                parsed = urlparse(source_url)
+
+                if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                    errors.append(
+                        f"Row {row_number}: source_url must be a valid HTTP or HTTPS URL."
+                    )
+                elif check_urls and not url_resolves(source_url):
+                    errors.append(
+                        f"Row {row_number}: source_url does not resolve: {source_url}"
+                    )
 
             if not sort_order:
                 errors.append(f"Row {row_number}: sort_order is empty.")
@@ -93,10 +122,18 @@ def validate(path):
 
     return errors
 
-
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 scripts/validate_milestones.py <csv-file>")
+    if len(sys.argv) not in {2, 3}:
+        print(
+            "Usage: python3 scripts/validate_milestones.py "
+            "<csv-file> [--check-urls]"
+        )
+        sys.exit(1)
+
+    check_urls = len(sys.argv) == 3 and sys.argv[2] == "--check-urls"
+
+    if len(sys.argv) == 3 and not check_urls:
+        print("Unknown option.")
         sys.exit(1)
 
     csv_path = Path(sys.argv[1])
@@ -105,7 +142,7 @@ if __name__ == "__main__":
         print(f"File not found: {csv_path}")
         sys.exit(1)
 
-    errors = validate(csv_path)
+    errors = validate(csv_path, check_urls)
 
     if errors:
         print("Milestone validation FAILED")
