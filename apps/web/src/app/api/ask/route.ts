@@ -25,5 +25,10 @@ export async function POST() {
 
   return NextResponse.json({
     answer: "Ask isn't wired up yet — check back soon.",
+    conversationId: null,
+    promptVersion: null,
+    model: null,
+    validationOk: true,
+    redirectedToHealth: false,
   })
 }
