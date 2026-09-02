@@ -390,6 +390,19 @@ DETAIL: dict[str, dict] = {
           "Rejects future dates",
           "Nothing else in the codebase computes age independently"]},
 
+"Supabase Storage: private avatars bucket, policies and signed URLs": {
+ "do": ["Create the bucket PRIVATE. Never public. getPublicUrl only returns a working URL for a public bucket, and a public bucket means anyone holding the link can fetch an infant's photograph with no sign-in at all.",
+        "Write storage policies so a parent can read and write only her own baby's avatar. Row level security covers table rows; files need their own rules and do not inherit anything.",
+        "Decide and document the object path convention up front, so a policy can be written against it.",
+        "The app serves short-lived signed URLs, created server-side. No public URL ever reaches the browser.",
+        "Add the bucket to the RLS suite, or say plainly in the PR why storage is out of its scope. Right now the suite covers tables only."],
+ "done": ["The bucket exists and is private",
+          "A signed-in parent can upload and read her own baby's avatar",
+          "A second account cannot read the first account's avatar - tested with two accounts, the same way as the table checks",
+          "An unsigned URL to a known object path returns denied",
+          "The path convention and the policies are written down"],
+ "note": "Blocks Sivathmika's photo upload on the baby profile, and #174 tried to serve avatars with getPublicUrl. Two people reached this from opposite directions on 2 Sep, so it gets designed once rather than discovered twice."},
+
 "check_anonymous can pass vacuously if the sentinel rows are missing": {
  "do": ["check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables happened to be empty, it passes having proved nothing.",
         "Same shape as the count-vs-identity problem you already solved for the account checks: zero is not evidence unless you know there was something to find.",

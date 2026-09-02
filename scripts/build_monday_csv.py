@@ -104,6 +104,9 @@ T = [
     (2, "check_anonymous can pass vacuously if the sentinel rows are missing", "Keya Chaudhari", "Pod W", "High",
      "Follow-up from PR #164. check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables were empty it would pass having proved nothing - the same count-vs-identity trap the account checks already avoid."),
 
+    (2, "Supabase Storage: private avatars bucket, policies and signed URLs", "Keya Chaudhari", "Pod W", "High",
+     "Blocks the photo half of the baby profile. RLS protects table rows, not files - a storage bucket needs its own policies. These are photographs of infants, so the bucket is private and the app serves signed URLs. A public bucket would put them outside every protection we have."),
+
     # ---------------- WEEK 3 ----------------
     (3, "Build Learn content dataset: Developmental, Feeding, Sleep, Diaper", "Sahasra Miriyala", "Pod I", "High", ""),
     (3, "Learn data layer: fetch by age and category, save, unsave", "Sahasra Miriyala", "Pod I", "High", ""),
