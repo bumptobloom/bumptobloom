@@ -93,3 +93,19 @@ jobs:
             exit 1
           fi
           echo "No server-only secrets exposed via NEXT_PUBLIC_."
+
+  rls:
+    name: RLS isolation suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify private-row isolation through the public API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          RLS_TEST_A_PASSWORD: ${{ secrets.RLS_TEST_A_PASSWORD }}
+          RLS_TEST_B_PASSWORD: ${{ secrets.RLS_TEST_B_PASSWORD }}
+        run: python3 supabase/tests/btb_rls_check.py

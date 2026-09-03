@@ -6,13 +6,20 @@ exist so that nobody has to wait for anybody.
 ## Branches
 
 ```
-main       protected. production. only release PRs from develop.
-develop    integration branch. everything merges here first.
-<pod>/<short-description>    your work
+main                          protected. the only long-lived branch.
+                              everything merges here.
+<type>/<short-description>    your work
 ```
 
-Pod prefixes: `platform/`, `app/`, `ask/`, `data/`.
-Examples: `app/track-milestone-list`, `ask/prompt-versioning`, `data/cdc-seed`.
+Prefix your branch with the type of change, not your pod: `feat/`, `fix/`,
+`chore/`, `docs/`, `test/`, `refactor/`.
+Examples: `feat/track-milestone-list`, `fix/transpile-workspace-packages`,
+`docs/environments-and-deploys`.
+
+**There is no `develop` branch.** It existed in week 1, fell behind `main`, and
+broke two people's first PRs, so it was deleted on 1 Sep. If you still have a
+local copy, delete it with `git branch -D develop` so you do not branch off it
+by accident.
 
 ## Pull requests
 
