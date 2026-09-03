@@ -14,5 +14,3 @@ export function createBrowserClient() {
 
   return createSupabaseBrowserClient(url, key);
 }
-
-export const createClient = createBrowserClient;
