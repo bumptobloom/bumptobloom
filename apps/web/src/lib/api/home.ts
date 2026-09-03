@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase';
 import type {
   HomeData,
   ThisWeekGuidance,
@@ -90,7 +90,7 @@ export async function getHome(babyId?: string): Promise<HomeData> {
     disclaimer: STANDING_DISCLAIMER,
   };
 
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   // 1. Session check: unauthenticated requests return empty Home for auth redirect
   const {
