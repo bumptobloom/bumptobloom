@@ -7,12 +7,12 @@ from urllib.request import Request, urlopen
 
 ALLOWED_CHECKPOINTS = {2, 6, 12, 18, 24}
 ALLOWED_DOMAINS = {"physical", "cognitive", "language", "social_emotional"}
+ALLOWED_SOURCE_HOSTS = {"cdc.gov", "aap.org", "who.int"}
 
 REQUIRED_COLUMNS = {
     "checkpoint_month",
     "domain",
     "title",
-    "description",
     "source",
     "source_url",
     "sort_order",
@@ -22,12 +22,11 @@ def url_resolves(url):
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         return False
-
     try:
         request = Request(
             url,
             method="HEAD",
-            headers={"User-Agent": "Mozilla/5.0"}
+            headers={"User-Agent": "Mozilla/5.0"},
         )
         with urlopen(request, timeout=10) as response:
             return 200 <= response.status < 400
@@ -37,7 +36,7 @@ def url_resolves(url):
                 request = Request(
                     url,
                     method="GET",
-                    headers={"User-Agent": "Mozilla/5.0"}
+                    headers={"User-Agent": "Mozilla/5.0"},
                 )
                 with urlopen(request, timeout=10) as response:
                     return 200 <= response.status < 400
@@ -49,6 +48,8 @@ def url_resolves(url):
 
 def validate(path, check_urls=False):
     errors = []
+    seen_cells = set()
+    seen_sort_orders = set()
 
     with open(path, newline="", encoding="utf-8") as file:
         reader = csv.DictReader(file)
@@ -58,7 +59,6 @@ def validate(path, check_urls=False):
             return errors
 
         missing_columns = REQUIRED_COLUMNS - set(reader.fieldnames)
-
         if missing_columns:
             errors.append(
                 "Missing required columns: " + ", ".join(sorted(missing_columns))
@@ -72,6 +72,8 @@ def validate(path, check_urls=False):
             source = row["source"].strip()
             source_url = row["source_url"].strip()
             sort_order = row["sort_order"].strip()
+
+            checkpoint_value = None
 
             if not checkpoint:
                 errors.append(f"Row {row_number}: checkpoint_month is empty.")
@@ -90,6 +92,10 @@ def validate(path, check_urls=False):
             if domain not in ALLOWED_DOMAINS:
                 errors.append(f"Row {row_number}: invalid domain '{domain}'.")
 
+            if checkpoint_value in ALLOWED_CHECKPOINTS and domain in ALLOWED_DOMAINS:
+                cell = (checkpoint_value, domain)
+                seen_cells.add(cell)
+
             if not title:
                 errors.append(f"Row {row_number}: title is empty.")
 
@@ -105,20 +111,57 @@ def validate(path, check_urls=False):
                     errors.append(
                         f"Row {row_number}: source_url must be a valid HTTP or HTTPS URL."
                     )
-                elif check_urls and not url_resolves(source_url):
-                    errors.append(
-                        f"Row {row_number}: source_url does not resolve: {source_url}"
-                    )
+                else:
+                    hostname = parsed.hostname.lower().rstrip(".")
+                    if not any(
+                        hostname == host or hostname.endswith("." + host)
+                        for host in ALLOWED_SOURCE_HOSTS
+                    ):
+                        errors.append(
+                            f"Row {row_number}: source_url host is not approved: {hostname}"
+                        )
+                    elif check_urls and not url_resolves(source_url):
+                        errors.append(
+                            f"Row {row_number}: source_url does not resolve: {source_url}"
+                        )
 
             if not sort_order:
                 errors.append(f"Row {row_number}: sort_order is empty.")
             else:
                 try:
-                    int(sort_order)
+                    sort_order_value = int(sort_order)
+                    if (
+                        checkpoint_value in ALLOWED_CHECKPOINTS
+                        and domain in ALLOWED_DOMAINS
+                    ):
+                        sort_key = (checkpoint_value, domain, sort_order_value)
+                        if sort_key in seen_sort_orders:
+                            errors.append(
+                                f"Row {row_number}: duplicate sort_order "
+                                f"'{sort_order}' for checkpoint_month "
+                                f"'{checkpoint_value}' and domain '{domain}'."
+                            )
+                        else:
+                            seen_sort_orders.add(sort_key)
                 except ValueError:
                     errors.append(
                         f"Row {row_number}: sort_order must be an integer."
                     )
+
+        expected_cells = {
+            (checkpoint, domain)
+            for checkpoint in ALLOWED_CHECKPOINTS
+            for domain in ALLOWED_DOMAINS
+        }
+
+        missing_cells = expected_cells - seen_cells
+
+        if missing_cells:
+            for checkpoint, domain in sorted(missing_cells):
+                errors.append(
+                    f"Missing milestone coverage: checkpoint_month "
+                    f"'{checkpoint}', domain '{domain}'."
+                )
 
     return errors
 

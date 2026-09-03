@@ -11,7 +11,6 @@ Each milestone row must contain:
 | `checkpoint_month` | integer | yes |
 | `domain` | string | yes |
 | `title` | string | yes |
-| `description` | string | no |
 | `source` | string | yes |
 | `source_url` | string | yes |
 | `sort_order` | integer | yes |
@@ -47,7 +46,10 @@ A row is invalid when:
 4. `title` is empty.
 5. `source` is empty.
 6. `source_url` is empty.
-7. `source_url` does not resolve successfully.
-8. `sort_order` is not a valid integer.
+7. `source_url` is not hosted on an approved source domain (`cdc.gov`, `aap.org`, or `who.int`).
+8. `source_url` does not resolve successfully when `--check-urls` is enabled.
+9. `sort_order` is not a valid integer.
+10. `sort_order` is duplicated within the same `checkpoint_month` and `domain`.
+11. The dataset does not contain at least one row for every checkpoint/domain combination.
 
-Every milestone must have a working source URL.
+Every milestone must have a source URL. When `--check-urls` is enabled, every source URL must resolve successfully.
