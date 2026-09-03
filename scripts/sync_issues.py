@@ -169,14 +169,31 @@ def main():
     want = {r["Name"]: r for r in rows}
     print(f"CSV has {len(want)} tasks\n")
 
+    # Fetch BOTH open and closed. A closed issue whose task is still on the
+    # board is finished work, not a missing issue. Looking only at open ones
+    # made every completed task look absent and recreated it on the next run.
     out = gh(["issue", "list", "--repo", REPO, "--limit", "400",
-              "--state", "open", "--json", "number,title,body"])
-    have = {i["title"]: i for i in json.loads(out or "[]")}
-    print(f"GitHub has {len(have)} open issues\n")
+              "--state", "all", "--json", "number,title,body,state"])
+    all_issues = json.loads(out or "[]")
+    have = {i["title"]: i for i in all_issues if i.get("state") == "OPEN"}
+    done = {i["title"]: i for i in all_issues if i.get("state") != "OPEN"}
+    print(f"GitHub has {len(have)} open issues, {len(done)} closed\n")
 
+    # Close: open issues whose task has left the board.
     stale = [t for t in have if t not in want]
-    fresh = [t for t in want if t not in have]
+    # Create: board tasks with no issue at all, open OR closed. A task whose
+    # issue is closed has been done; recreating it would undo someone's work.
+    fresh = [t for t in want if t not in have and t not in done]
+    # Refresh: open issues still on the board. Closed ones are left alone so
+    # we do not reopen or churn finished work.
     both = [t for t in want if t in have]
+
+    revived = [t for t in want if t in done]
+    if revived:
+        print(f"Leaving {len(revived)} completed task(s) closed:")
+        for t in revived:
+            print(f"   ok #{done[t]['number']}  {t[:62]}")
+        print()
 
     # ---------- 1. close what no longer exists ----------
     print(f"[1/3] Closing {len(stale)} obsolete issues")
