@@ -12,6 +12,9 @@ export const SECONDS_PER_MONTH = 2629746.0;
 export const MS_PER_MONTH = SECONDS_PER_MONTH * 1000;
 export const MS_PER_DAY = 86400000;
 
+// Clinically, preterm correction applies for babies born before 37 weeks (>= 21 days before due date)
+export const PRETERM_THRESHOLD_DAYS = 21;
+
 export interface AgeOptions {
   dueDate?: string | Date | null;
   referenceDate?: Date;
@@ -38,43 +41,6 @@ function parseDate(input: string | Date): Date {
     return new Date(Date.UTC(year, month - 1, day));
   }
   return new Date(input);
-}
-
-/**
- * Derives baby age in months rounded to 1 decimal place.
- *
- * @param birthDateInput - Birth date string (YYYY-MM-DD) or Date
- * @param options - Optional due date for preterm correction and reference date
- * @returns Age in months (e.g. 0.0, 18.3, 23.0)
- */
-export function deriveAgeMonths(
-  birthDateInput: string | Date,
-  options?: AgeOptions
-): number {
-  const ref = options?.referenceDate ?? new Date();
-  const birthDate = parseDate(birthDateInput);
-
-  if (birthDate.getTime() > ref.getTime()) {
-    throw new Error('Birth date cannot be in the future');
-  }
-
-  // Preterm baby: if due_date is provided and baby was born early (birth_date < due_date)
-  let effectiveDate = birthDate;
-  if (options?.dueDate) {
-    const dueDate = parseDate(options.dueDate);
-    if (dueDate.getTime() > birthDate.getTime()) {
-      // Use due date for developmental milestone age
-      effectiveDate = dueDate;
-    }
-  }
-
-  const diffMs = ref.getTime() - effectiveDate.getTime();
-  if (diffMs <= 0) {
-    return 0;
-  }
-
-  const rawMonths = diffMs / MS_PER_MONTH;
-  return Math.round(rawMonths * 10) / 10;
 }
 
 /**
@@ -108,7 +74,18 @@ export function formatAgeLabel(ageMonths: number, diffDays?: number): string {
 }
 
 /**
- * Comprehensive age derivation utility returning both ageMonths, ageLabel, and preterm details.
+ * Comprehensive age derivation utility returning developmental ageMonths, ageLabel, and preterm details.
+ *
+ * NOTE FOR PRODUCT & UI DEVELOPERS:
+ * - `ageMonths` returns the developmental (corrected) age for preterm babies (born >= 21 days early),
+ *   which is clinically appropriate for developmental milestone checkpoints and guidance.
+ * - `chronologicalAgeMonths` is the real chronological age since birth.
+ *   Displaying developmental age vs chronological age to the parent is a product decision (e.g. displaying
+ *   chronological age with an explanatory label for milestone adjustment).
+ *
+ * NOTE ON DATABASE ALIGNMENT:
+ * - The Supabase SQL function `baby_age_months()` calculates pure chronological age without preterm correction.
+ *   Therefore, the database value and the app's developmental `ageMonths` will intentionally differ for preterm babies.
  */
 export function calculateBabyAge(
   birthDateInput: string | Date,
@@ -131,7 +108,11 @@ export function calculateBabyAge(
 
   if (options?.dueDate) {
     const dueDate = parseDate(options.dueDate);
-    if (dueDate.getTime() > birthDate.getTime()) {
+    const earlyDiffMs = dueDate.getTime() - birthDate.getTime();
+    const earlyDays = Math.floor(earlyDiffMs / MS_PER_DAY);
+
+    // Only apply correction if born at least 21 days (3 weeks) before due date (< 37 weeks gestational age)
+    if (earlyDays >= PRETERM_THRESHOLD_DAYS) {
       isPreterm = true;
       const correctedDiffMs = ref.getTime() - dueDate.getTime();
       correctedAgeMonths = Math.max(0, Math.round((correctedDiffMs / MS_PER_MONTH) * 10) / 10);
@@ -148,4 +129,19 @@ export function calculateBabyAge(
     correctedAgeMonths,
     isPreterm,
   };
+}
+
+/**
+ * Derives baby age in months rounded to 1 decimal place.
+ * Delegates directly to calculateBabyAge to ensure a single source of truth.
+ *
+ * @param birthDateInput - Birth date string (YYYY-MM-DD) or Date
+ * @param options - Optional due date for preterm correction and reference date
+ * @returns Age in months (e.g. 0.0, 18.3, 23.0)
+ */
+export function deriveAgeMonths(
+  birthDateInput: string | Date,
+  options?: AgeOptions
+): number {
+  return calculateBabyAge(birthDateInput, options).ageMonths;
 }
