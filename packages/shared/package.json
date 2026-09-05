@@ -6,6 +6,6 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/triage-guard.test.ts src/age.test.ts"
+    "test": "node --experimental-strip-types --test src/triage-guard.test.ts src/age.test.ts src/ask-context.test.ts src/ask-prompt.test.ts"
   }
 }
