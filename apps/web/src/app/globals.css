@@ -5,6 +5,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+
+--color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-canvas: var(--canvas);
+  --color-page-surface: var(--page-surface);
+  --color-card-primary: var(--card-primary);
+  --color-card-secondary: var(--card-secondary);
+  --color-surface-terra: var(--surface-terra);
+  --color-surface-moss: var(--surface-moss);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-brand: var(--text-brand);
+  --color-text-accent-warm: var(--text-accent-warm);
+  --color-text-accent-terracotta: var(--text-accent-terracotta);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-card: var(--border-card);
+  --radius-inp: var(--radius-inp);
+  --radius-pab: var(--radius-pab);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -49,6 +68,25 @@
 }
 
 :root {
+
+--brand-primary: #e2b150;
+  --brand-secondary: #33502f;
+  --canvas: #f5f5f5;
+  --page-surface: #faf3e7;
+  --card-primary: #fffcf4;
+  --card-secondary: #fcfaf0;
+  --surface-terra: #f7e3d6;
+  --surface-moss: #e9efdf;
+  --text-primary: #2c3a2c;
+  --text-secondary: #6e7a68;
+  --text-brand: #4c6b4a;
+  --text-accent-warm: #4a3418;
+  --text-accent-terracotta: #9a5638;
+  --border-subtle: #e6dcc8;
+  --border-card: #e5dbc7;
+  --radius-inp: 14px;
+  --radius-pab: 24px;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
