@@ -135,5 +135,6 @@ export async function unsaveContent(contentId: string): Promise<SaveContentResul
  * @returns Promise<LearnItem[]>
  */
 export async function getSavedContent(babyId?: string): Promise<LearnItem[]> {
+  void babyId;
   return MOCK_LEARN_ITEMS.filter((item) => item.saved);
 }
