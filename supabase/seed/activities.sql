@@ -2,6 +2,19 @@
 -- ACTIVITIES SEED DATA
 -- Age-appropriate activities for 0–24 months
 -- Four domains: physical, cognitive, language, social_emotional
+--
+-- Source Provenance & References:
+-- Derived from public pediatric developmental play guidance and parent toolkits:
+-- 1. CDC "Learn the Signs. Act Early." Positive Parenting Tips (0–24 months)
+--    https://www.cdc.gov/ncbddd/actearly/milestones/index.html
+-- 2. American Academy of Pediatrics (AAP) HealthyChildren: Developmental Play & Milestones
+--    https://www.healthychildren.org/English/ages-stages/baby/Pages/default.aspx
+-- 3. ZERO TO THREE & Help Me Grow National: Early Interaction & Play Frameworks
+--    https://www.zerotothree.org/resources/series/play-activities-for-babies-and-toddlers
+--
+-- Note: The `activities` schema in migration 0001 does not currently contain
+-- `source_label` or `source_url` columns. Sources are recorded here pending
+-- Product decision on whether play activities require explicit per-row citations.
 -- ============================================================
 
 insert into activities (id, title, description, min_age_month, max_age_month, domain)

@@ -84,17 +84,14 @@ export async function getActivities(
 ): Promise<ActivityItem[]> {
   const supabase = await createServerClient();
 
-  // 1. Session check: unauthenticated requests return filtered mock activities or empty array
+  // 1. Session check: unauthenticated requests return empty array (matching getHome)
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    const targetAge = ageMonthsOverride ?? 18;
-    return MOCK_ACTIVITIES.filter(
-      (a) => targetAge >= a.minAgeMonth && targetAge <= a.maxAgeMonth
-    );
+    return [];
   }
 
   // 2. Resolve baby profile and derived age
