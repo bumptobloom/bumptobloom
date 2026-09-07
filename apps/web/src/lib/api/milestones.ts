@@ -2,27 +2,11 @@ import { deriveAgeMonths } from '@btb/shared/src/age';
 import { createServerClient } from '@/lib/supabase';
 import type { MilestonesResponse } from './types';
 import { STANDING_DISCLAIMER } from './types';
-
-const CHECKPOINTS = [2, 6, 12, 18, 24];
-
-const DOMAIN_LABELS = {
-  physical: 'Physical',
-  cognitive: 'Cognitive',
-  language: 'Language',
-  social_emotional: 'Social & Emotional',
-} as const;
-
-function getCheckpoint(ageMonths: number): number {
-  const currentMonth = Math.floor(ageMonths);
-
-  for (let i = CHECKPOINTS.length - 1; i >= 0; i--) {
-    if (currentMonth >= CHECKPOINTS[i]) {
-      return CHECKPOINTS[i];
-    }
-  }
-
-  return CHECKPOINTS[0];
-}
+import {
+  CHECKPOINTS,
+  buildMilestoneDomains,
+  getCheckpoint,
+} from './milestone-utils';
 
 export async function getMilestones(
   babyId: string
@@ -86,27 +70,15 @@ export async function getMilestones(
   }
 
   const noticedIds = new Set(
-    (noticedResult.data ?? []).map((row: { milestone_id: string }) => row.milestone_id)
+    (noticedResult.data ?? []).map(
+      (row: { milestone_id: string }) => row.milestone_id
+    )
   );
-
-  const domains = (
-    Object.keys(DOMAIN_LABELS) as Array<keyof typeof DOMAIN_LABELS>
-  ).map((domain) => ({
-    domain,
-    label: DOMAIN_LABELS[domain],
-    items: (milestonesResult.data ?? [])
-      .filter((milestone) => milestone.domain === domain)
-      .map((milestone) => ({
-        id: milestone.id,
-        title: milestone.title,
-        noticed: noticedIds.has(milestone.id),
-      })),
-  }));
 
   return {
     checkpointMonth,
-    checkpoints: CHECKPOINTS,
-    domains,
+    checkpoints: [...CHECKPOINTS],
+    domains: buildMilestoneDomains(milestonesResult.data ?? [], noticedIds),
     disclaimer: STANDING_DISCLAIMER,
   };
 }
