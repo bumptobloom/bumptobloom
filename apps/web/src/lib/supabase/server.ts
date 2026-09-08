@@ -33,5 +33,3 @@ export async function createServerClient() {
     },
   });
 }
-
-export const createClient = createServerClient;

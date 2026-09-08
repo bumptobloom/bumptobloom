@@ -107,3 +107,23 @@ export interface ActivityItem {
   completed: boolean;
   completedAt: string | null;
 }
+
+
+export interface MilestoneItem {
+  id: string;
+  title: string;
+  noticed: boolean;
+}
+
+export interface MilestoneDomain {
+  domain: 'physical' | 'cognitive' | 'language' | 'social_emotional';
+  label: string;
+  items: MilestoneItem[];
+}
+
+export interface MilestonesResponse {
+  checkpointMonth: number;
+  checkpoints: number[];
+  domains: MilestoneDomain[];
+  disclaimer: string;
+}
