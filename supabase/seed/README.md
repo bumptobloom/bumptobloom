@@ -6,6 +6,7 @@ Sivathmika, Learn content and the product catalog by Sahasra.
 | File | Source | Status |
 |---|---|---|
 | `milestones.sql` | CDC "Learn the Signs. Act Early." | Week 2 |
+| `activities.sql` | Evidence-based developmental play (0–24mo) | Week 2 |
 | `content.sql` | CDC / AAP / WHO derived | Week 3 |
 | `products.sql` | curated, hand-written rationales | Week 4 |
 

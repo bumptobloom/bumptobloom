@@ -1,3 +1,4 @@
+import { calculateBabyAge } from '@btb/shared';
 import { createServerClient } from '@/lib/supabase';
 import type {
   HomeData,
@@ -6,37 +7,6 @@ import type {
 import { STANDING_DISCLAIMER } from './types';
 
 export * from './types';
-
-// Seconds per average Gregorian month (ADR-004 / SQL baby_age_months)
-const MS_PER_MONTH = 2629746000;
-const MS_PER_DAY = 86400000;
-
-/**
- * Local helper to compute ageMonths and ageLabel server-side.
- * Formula matches SQL baby_age_months(): round(extract(epoch from (now() - birth_date)) / 2629746.0, 1)
- */
-function deriveBabyAge(birthDateStr: string): { ageMonths: number; ageLabel: string } {
-  const birthDate = new Date(birthDateStr);
-  const now = new Date();
-  const diffMs = Math.max(0, now.getTime() - birthDate.getTime());
-  const diffDays = Math.floor(diffMs / MS_PER_DAY);
-  const ageMonths = Math.round((diffMs / MS_PER_MONTH) * 10) / 10;
-
-  let ageLabel: string;
-  if (ageMonths <= 0 || diffDays < 7) {
-    ageLabel = 'Newborn';
-  } else if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    ageLabel = weeks <= 1 ? '1 week' : `${weeks} weeks`;
-  } else if (ageMonths < 1) {
-    ageLabel = 'Newborn';
-  } else {
-    const floorMonths = Math.floor(ageMonths);
-    ageLabel = floorMonths === 1 ? '1 month' : `${floorMonths} months`;
-  }
-
-  return { ageMonths, ageLabel };
-}
 
 /**
  * Mock data matching the frozen API contract for getHome().
@@ -126,8 +96,10 @@ export async function getHome(babyId?: string): Promise<HomeData> {
     return emptyHomeState;
   }
 
-  // 3. Compute dynamic age from birth_date
-  const { ageMonths, ageLabel } = deriveBabyAge(baby.birth_date);
+  // 3. Compute dynamic age from birth_date (and due_date for preterm babies via shared age derivation)
+  const { ageMonths, ageLabel } = calculateBabyAge(baby.birth_date, {
+    dueDate: baby.due_date,
+  });
   const currentMonthFloor = Math.floor(ageMonths);
 
   // V1 5-checkpoint schedule: 2, 6, 12, 18, 24 months
