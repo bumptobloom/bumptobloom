@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 
 export default function SignupPage() {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,6 +35,11 @@ export default function SignupPage() {
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     const passError = validatePassword(password);
     if (passError) {
       setError(passError);
@@ -38,7 +47,7 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
+    const supabase = createBrowserClient();
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -54,15 +63,21 @@ export default function SignupPage() {
     if (data.user) {
       const { error: profileError } = await supabase
         .from('parent_profiles')
-        .insert([{ id: data.user.id, email: data.user.email }]);
+        .insert([
+          {
+            user_id: data.user.id,
+            full_name: fullName,
+          },
+        ]);
 
       if (profileError) {
-        console.error('Failed to create parent profile record:', profileError);
+        setError(profileError.message);
+        setLoading(false);
+        return;
       }
-    }
 
-    router.push('/');
-    router.refresh();
+      router.push('/');
+    }
   };
 
   return (
@@ -70,6 +85,17 @@ export default function SignupPage() {
       <h1 className="text-2xl font-bold">Create Account</h1>
       {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
       <form onSubmit={handleSignup} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium">Full Name</label>
+          <input
+            type="text"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full border p-2 rounded mt-1"
+            placeholder="Jane Doe"
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium">Email</label>
           <input
@@ -82,13 +108,41 @@ export default function SignupPage() {
         </div>
         <div>
           <label className="block text-sm font-medium">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded mt-1"
-          />
+          <div className="relative mt-1">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border p-2 pr-10 rounded"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Confirm Password</label>
+          <div className="relative mt-1">
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full border p-2 pr-10 rounded"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700"
+            >
+              {showConfirmPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <input
