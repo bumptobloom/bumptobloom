@@ -56,7 +56,7 @@ When the limit is exceeded:
 3. Never remove or shorten the system prompt.
 4. Never remove the privacy-safe baby context.
 5. Never remove or shorten the parent’s current question.
-6. Never include messages that the triage guard redirected to Health.
+6. Never include clinical messages that the triage guard blocked.
 
 Issue #71 owns implementation of this rule. This document defines the contract that implementation must follow.
 
@@ -68,7 +68,7 @@ The server must perform these steps in order:
 2. Verify that the requested baby belongs to the authenticated parent.
 3. Derive the baby’s age on the server.
 4. Run the deterministic triage guard on the current question.
-5. Stop and return the Health handoff when the guard redirects.
+5. Stop and return the safety refusal and real-help guidance when the guard blocks a clinical question.
 6. Build the privacy-safe context.
 7. Apply the conversation-history truncation rule.
 8. Call OpenAI with the versioned prompt.

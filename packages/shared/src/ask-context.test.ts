@@ -58,4 +58,14 @@ test('rejects invalid ages', () => {
     () => buildAskBabyContext(Number.POSITIVE_INFINITY),
     /ageMonths must be a non-negative finite number/,
   );
+
+   assert.throws(
+    () => buildAskBabyContext(24.1),
+    /ageMonths must be 24 or less/,
+  );
+
+  assert.throws(
+    () => buildAskBabyContext(200),
+    /ageMonths must be 24 or less/,
+  );
 });

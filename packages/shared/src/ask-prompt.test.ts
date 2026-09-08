@@ -13,7 +13,13 @@ test('system prompt has an explicit version', () => {
 test('system prompt requires a warm, plain, non-diagnostic response', () => {
   assert.match(ASK_SYSTEM_PROMPT, /warm, calm, plain-language tone/i);
   assert.match(ASK_SYSTEM_PROMPT, /must never diagnose/i);
-  assert.match(ASK_SYSTEM_PROMPT, /Health section/i);
+  assert.match(
+    ASK_SYSTEM_PROMPT,
+    /cannot answer questions about symptoms/i,
+  );
+  assert.match(ASK_SYSTEM_PROMPT, /doctor or care team/i);
+  assert.match(ASK_SYSTEM_PROMPT, /call 911 in an emergency/i);
+  assert.doesNotMatch(ASK_SYSTEM_PROMPT, /Health section|Vitals/i);
   assert.match(ASK_SYSTEM_PROMPT, /not a substitute for professional medical advice/i);
 });
 

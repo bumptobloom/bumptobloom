@@ -26,6 +26,9 @@ export function getDevelopmentalStage(
   if (!Number.isFinite(ageMonths) || ageMonths < 0) {
     throw new RangeError('ageMonths must be a non-negative finite number');
   }
+  if (ageMonths > 24) {
+    throw new RangeError('ageMonths must be 24 or less');
+  }
 
   if (ageMonths < 4) return 'early infancy';
   if (ageMonths < 9) return 'infancy';
