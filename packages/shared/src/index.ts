@@ -1,4 +1,4 @@
-export { shouldRedirectToHealth, REDIRECT_ANSWER } from './triage-guard';
+export { shouldRedirectToHealth, REDIRECT_ANSWER } from './triage-guard.ts';
 export {
   calculateBabyAge,
   deriveAgeMonths,
@@ -8,7 +8,7 @@ export {
   MS_PER_DAY,
   type AgeOptions,
   type BabyAgeResult,
-} from './age';
+} from './age.ts';
 
 export {
   buildAskBabyContext,
