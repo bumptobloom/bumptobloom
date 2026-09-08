@@ -79,7 +79,7 @@ export default function BabyProfileForm({
     >
       <div className="space-y-2">
         <label htmlFor="baby-name" className="block text-sm font-medium">
-          Baby's name
+          Baby&apos;s name
         </label>
         <input
           id="baby-name"
