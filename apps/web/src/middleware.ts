@@ -10,6 +10,16 @@ export async function updateSession(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) {
+    const missingVars = [
+      !url && 'NEXT_PUBLIC_SUPABASE_URL',
+      !key && 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+    ]
+      .filter(Boolean)
+      .join(', ');
+
+    console.error(
+      `[Middleware] Missing required Supabase environment variable(s): ${missingVars}. Session refresh bypassed.`
+    );
     return supabaseResponse;
   }
 
