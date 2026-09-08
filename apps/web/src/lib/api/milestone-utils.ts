@@ -16,6 +16,7 @@ type MilestoneRow = {
 };
 
 export function getCheckpoint(ageMonths: number): number {
+  // Deliberately use the 2-month V1 checkpoint for babies younger than 2 months.
   const currentMonth = Math.floor(ageMonths);
 
   for (let i = CHECKPOINTS.length - 1; i >= 0; i--) {

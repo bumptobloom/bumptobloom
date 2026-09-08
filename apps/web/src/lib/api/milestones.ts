@@ -1,4 +1,4 @@
-import { deriveAgeMonths } from '@btb/shared/src/age';
+import { deriveAgeMonths } from '@btb/shared';
 import { createServerClient } from '@/lib/supabase';
 import type { MilestonesResponse } from './types';
 import { STANDING_DISCLAIMER } from './types';
@@ -100,10 +100,16 @@ export async function markMilestone(
 
   const { error } = await supabase
     .from('baby_milestones')
-    .insert({
-      baby_id: babyId,
-      milestone_id: milestoneId,
-    });
+    .upsert(
+      {
+        baby_id: babyId,
+        milestone_id: milestoneId,
+      },
+      {
+        onConflict: 'baby_id,milestone_id',
+        ignoreDuplicates: true,
+      }
+    );
 
   if (error) {
     console.error('[markMilestone] Database error:', error);
