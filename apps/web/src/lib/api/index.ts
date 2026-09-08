@@ -1,5 +1,5 @@
 export * from './types';
 export * from './home';
 export * from './learn';
-
 export * from './milestones';
+export * from './activities';
