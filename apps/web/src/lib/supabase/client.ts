@@ -14,3 +14,6 @@ export function createBrowserClient() {
 
   return createSupabaseBrowserClient(url, key);
 }
+
+// Alias export to match auth components
+export const createClient = createBrowserClient;
