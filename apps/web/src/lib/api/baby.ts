@@ -130,7 +130,7 @@ export async function updateBaby(
 ): Promise<BabyProfile> {
   const supabase = await createServerClient();
 
-  await getParentId(supabase);
+  const parentId = await getParentId(supabase);
   const validated = validateBabyInput(input);
 
   const { data: baby, error } = await supabase
@@ -141,6 +141,7 @@ export async function updateBaby(
       due_date: validated.dueDate,
     })
     .eq('id', babyId)
+    .eq('parent_id', parentId)
     .select('id, name, birth_date, due_date')
     .single();
 

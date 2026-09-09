@@ -59,3 +59,59 @@ test('requires a baby name', () => {
     /Baby name is required/
   );
 });
+
+test('accepts due date exactly 126 days after birth date', () => {
+  assert.doesNotThrow(() =>
+    validateBabyInput({
+      name: 'Emma',
+      birthDate: '2026-01-01',
+      dueDate: '2026-05-07',
+    })
+  );
+});
+
+test('rejects due date 127 days after birth date', () => {
+  assert.throws(
+    () =>
+      validateBabyInput({
+        name: 'Emma',
+        birthDate: '2026-01-01',
+        dueDate: '2026-05-08',
+      }),
+    /Please check the due date, it looks too far from the birth date/
+  );
+});
+
+test('accepts due date exactly 21 days before birth date', () => {
+  assert.doesNotThrow(() =>
+    validateBabyInput({
+      name: 'Emma',
+      birthDate: '2026-01-22',
+      dueDate: '2026-01-01',
+    })
+  );
+});
+
+test('rejects due date 22 days before birth date', () => {
+  assert.throws(
+    () =>
+      validateBabyInput({
+        name: 'Emma',
+        birthDate: '2026-01-23',
+        dueDate: '2026-01-01',
+      }),
+    /Please check the due date, it looks too far from the birth date/
+  );
+});
+
+test('rejects an invalid due date', () => {
+  assert.throws(
+    () =>
+      validateBabyInput({
+        name: 'Emma',
+        birthDate: '2026-01-10',
+        dueDate: 'not-a-date',
+      }),
+    /Please check the due date, it looks invalid/
+  );
+});
