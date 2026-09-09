@@ -51,7 +51,7 @@ function toBabyProfile(baby: {
   birth_date: string;
   due_date: string | null;
 }): BabyProfile {
-  const age = calculateBabyAge(baby.birth_date);
+  const age = calculateBabyAge(baby.birth_date, { dueDate: baby.due_date });
 
   return {
     id: baby.id,
