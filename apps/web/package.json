@@ -1,15 +1,18 @@
 {
-  "name": "bumptobloom",
-  "private": true,
+  "name": "web",
   "version": "0.1.0",
-  "workspaces": ["apps/*", "packages/*"],
-  "engines": { "node": ">=22" },
+  "private": true,
   "scripts": {
-    "dev": "npm run dev --workspace=apps/web",
-    "build": "npm run build --workspace=apps/web",
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "test:safety": "npm run test --workspace=packages/fever-rules && npm run test --workspace=packages/shared"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "posthog-js": "^1.150.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
