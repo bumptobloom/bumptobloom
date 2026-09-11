@@ -14,6 +14,8 @@ export const MS_PER_DAY = 86400000;
 
 // Clinically, preterm correction applies for babies born before 37 weeks (>= 21 days before due date)
 export const PRETERM_THRESHOLD_DAYS = 21;
+export const MAX_DUE_DATE_AFTER_BIRTH_DAYS = 126; // 18 weeks early, earliest viability
+export const MAX_DUE_DATE_BEFORE_BIRTH_DAYS = 21; // 3 weeks late, past induction
 
 export interface AgeOptions {
   dueDate?: string | Date | null;
