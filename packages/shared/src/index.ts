@@ -1,4 +1,4 @@
-export { shouldRedirectToHealth, REDIRECT_ANSWER } from './triage-guard';
+export { shouldRedirectToHealth, REDIRECT_ANSWER } from './triage-guard.ts';
 export {
   calculateBabyAge,
   deriveAgeMonths,
@@ -10,17 +10,17 @@ export {
   MAX_DUE_DATE_BEFORE_BIRTH_DAYS,
   type AgeOptions,
   type BabyAgeResult,
-} from './age';
+} from './age.ts';
 
 export {
   buildAskBabyContext,
   getDevelopmentalStage,
   type AskBabyContext,
   type DevelopmentalStage,
-} from './ask-context';
+} from './ask-context.ts';
 
 export {
   ASK_SYSTEM_PROMPT,
   ASK_SYSTEM_PROMPT_VERSION,
   buildAskSystemPrompt,
-} from './ask-prompt';
+} from './ask-prompt.ts';
