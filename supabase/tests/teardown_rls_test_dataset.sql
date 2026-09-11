@@ -1,16 +1,14 @@
 -- Removes everything seed_rls_test_dataset.sql creates.
 --
--- Run this after the RLS suite, every time. The seed script ends in COMMIT
--- rather than ROLLBACK because the verification scripts run in separate
--- sessions and need the fixtures to still be there, which means nothing
--- removes them on its own.
+-- DO NOT run this against the shared database as routine tidy-up.
+-- .github/workflows/ci.yml runs btb_rls_check.py on every pull request, and
+-- that script asserts the nine per-account fixture rows EXIST. Removing them
+-- makes the RLS isolation suite fail on every PR until they are seeded again.
+-- That is exactly what happened on 11 Sep 2026.
 --
--- This is not hypothetical tidiness. On 11 Sep 2026 the August fixtures were
--- still in the production database: a milestone titled "Test milestone" sitting
--- at the 6-month checkpoint, a published content row reading "Synthetic RLS
--- test content" which was the ONLY row in the content table and therefore the
--- one the Home screen would have shown, and a prompt_versions row with
--- active = true and model 'synthetic-model'.
+-- Use this when you are working against a scratch or branch database, or when
+-- you deliberately want a clean slate and intend to re-run
+-- seed_rls_test_dataset.sql immediately afterwards.
 --
 -- The two Auth users (mom-a@bumptobloom.test, mom-b@bumptobloom.test) are
 -- deliberately NOT deleted. They are created out of band, the seed script

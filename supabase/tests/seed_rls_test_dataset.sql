@@ -1,16 +1,24 @@
 -- Seeds the fixtures the RLS verification scripts read.
 --
--- ALWAYS run supabase/tests/teardown_rls_test_dataset.sql afterwards. This
--- script ends in COMMIT, not ROLLBACK, because the verification scripts run in
--- separate sessions and need the rows to still exist. Nothing removes them on
--- its own, so if you skip the teardown they stay in the database forever.
+-- This script ends in COMMIT, not ROLLBACK, because the verification scripts
+-- run in separate sessions and need the rows to still exist. That is
+-- deliberate, not an oversight.
 --
--- The shared reference rows below (milestone, activity, content, prompt
--- version) are not scoped to a test account. Anything left behind here is
--- visible to every real user, so they are deliberately chosen to be inert if
--- that happens: the milestone sits at checkpoint 0, which is a valid value but
--- not one of the five V1 checkpoints the app ever queries, and the prompt
--- version is inactive so it can never be picked up as the live prompt.
+-- These fixtures are expected to LIVE PERMANENTLY in the shared database.
+-- .github/workflows/ci.yml runs supabase/tests/btb_rls_check.py on every pull
+-- request, and that script asserts these exact rows exist and are visible to
+-- the right account. Delete them and CI fails on every PR, including ones that
+-- touch nothing but CSS. That happened on 11 Sep 2026.
+--
+-- The nine per-account rows are safe to leave: RLS scopes them, so nobody but
+-- the two test accounts can see them.
+--
+-- The four shared reference rows are the ones that needed care, because they
+-- sit in tables every user reads. Each is now inert even when left behind:
+--   milestone       checkpoint 0, which the app never queries
+--   activity        24 to 24 months, the narrowest window the schema allows
+--   content         unpublished, so the read policy hides it from everyone
+--   prompt version  inactive, so it can never become the live system prompt
 
 begin;
 
@@ -72,7 +80,10 @@ insert into activities (
   '40000000-0000-4000-8000-000000000001',
   'Test activity',
   'Synthetic RLS test data',
-  0,
+  -- Narrowed to the 24-month band. activities has no published flag and the
+  -- schema caps max_age_month at 24, so this is the smallest window available.
+  -- It exists only as the FK parent for baby_activities; nothing reads it.
+  24,
   24,
   'physical'
 )
@@ -90,7 +101,10 @@ insert into content (
   24,
   'Synthetic test source',
   'https://example.com',
-  true
+  -- Unpublished on purpose. The "read content" policy requires published, so
+  -- an unpublished row is invisible to every user while still serving as the
+  -- FK parent for saved_content, which is what the RLS check actually reads.
+  false
 )
 on conflict do nothing;
 

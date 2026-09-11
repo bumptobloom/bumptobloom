@@ -19,7 +19,7 @@ part of the run, not an optional extra.**
 | 6 | `verify_private_table_total_counts.sql` | Admin-only tables return zero |
 | 7 | `negative_control_reverse_babies_policy.sql` | Breaks a policy on purpose, proves the tests catch it |
 | 8 | `restore_own_babies_policy.sql` | Puts that policy back |
-| 9 | **`teardown_rls_test_dataset.sql`** | **Removes every fixture. Do not skip.** |
+| 9 | `teardown_rls_test_dataset.sql` | Only on a scratch database. See below. |
 
 Steps 7 and 8 are a pair. If you run 7, you must run 8, or the babies policy
 stays reversed.
@@ -28,24 +28,37 @@ The two Auth users, `mom-a@bumptobloom.test` and `mom-b@bumptobloom.test`, are
 created by hand in the Supabase Auth dashboard and are not touched by any of
 these scripts. Step 2 refuses to run if they do not exist.
 
-## Why the teardown matters
+## Why the fixtures stay
 
 `seed_rls_test_dataset.sql` ends in `COMMIT`, not `ROLLBACK`, because steps 3
-to 6 run in separate sessions and need the rows to still be there. So nothing
-cleans up on its own.
+to 6 run in separate sessions and need the rows to still be there. The fixtures
+are meant to live permanently in the shared database.
 
-Most of the fixtures are scoped to the two test accounts and are invisible to
-everyone else. Four are not. The milestone, activity, content and prompt version
-rows live in shared reference tables that every user reads.
+**Do not tear them down on the shared database as tidy-up.** CI runs
+`btb_rls_check.py` on every pull request and that script asserts the nine
+per-account rows exist. Delete them and the RLS isolation suite fails on every
+PR, including ones that touch nothing but CSS. That happened on 11 September
+2026 and blocked an unrelated PR.
 
-This has already bitten us once. The August fixtures were still in the
-production database on 11 September: a milestone called "Test milestone" sitting
-at the 6-month checkpoint, a published content row reading "Synthetic RLS test
-content" which was the only row in the `content` table and therefore the one the
-Home screen would have rendered, and a `prompt_versions` row marked active with
-model `synthetic-model`.
+The per-account rows are safe to leave. RLS scopes them, so only the two test
+accounts can see them.
 
-Those four rows have since been made inert where possible. The milestone sits at
-checkpoint 0, which the app never queries, and the prompt version is inactive so
-it cannot be picked up as the live prompt. That is a second line of defence, not
-a reason to skip step 9.
+The four shared reference rows were the real risk, because they sit in tables
+every user reads. On 11 September the August fixtures were still live: a
+milestone called "Test milestone" at the 6-month checkpoint, a published
+content row reading "Synthetic RLS test content" which was the only row in the
+`content` table and therefore the one the Home screen would have rendered, an
+activity spanning 0 to 24 months, and a `prompt_versions` row marked active
+with model `synthetic-model`.
+
+All four are now inert by construction rather than by clean-up:
+
+| Row | Made harmless by |
+|---|---|
+| milestone | checkpoint 0, which the app never queries |
+| activity | narrowed to 24–24 months, the smallest window the schema allows |
+| content | `published = false`, so the read policy hides it from everyone |
+| prompt version | `active = false`, so it can never become the live prompt |
+
+The teardown is for scratch and branch databases, or for a deliberate clean
+slate you intend to re-seed straight away.
