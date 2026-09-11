@@ -76,6 +76,15 @@ T = [
      "Taken over from Sivathmika on 11 Sep: the empty milestones table blocks every screen in the demo, so this moved onto the critical path."),
     (2, "Milestones data layer: fetch, mark noticed, unmark", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Direct Supabase calls. RLS is the access control - there is no API server to hide behind."),
+    (2, "Track: filter milestones to the three V1 domains in the data layer", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
+     "PRD and Figma confirm Physical, Cognitive and Language. Social and Emotional drops for V1. "
+     "This cannot be a UI change: buildMilestoneDomains iterates every key in DOMAIN_LABELS, and getHome "
+     "computes totalCount from an unfiltered row count. Hide a domain on screen only and the progress "
+     "counter still counts it, so a mom sees '3 of 20 noticed' with 15 reachable and can never finish a "
+     "checkpoint. Dropping Social and Emotional removes 4 milestones at 2mo, 3 at 6, 1 at 12, 5 at 18 and "
+     "2 at 24, so the 18-month list goes from 15 to 10. Keep all four in DOMAIN_LABELS and all four in the "
+     "seed; filter at read time so turning it back on is one line. Needs a test that the domain array has "
+     "three entries and a test that totalCount counts only those three - the second one is the actual bug."),
     (2, "Track screen: checkpoint navigator, 4 domains, progress counter", "Joanna Zhang", "Pod E", "High",
      "Replace the unlabeled 1-6 pagination in the Figma with real checkpoint months."),
     (2, "Render the Track disclaimer on every checklist view", "Joanna Zhang", "Pod E", "Critical",

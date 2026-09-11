@@ -169,13 +169,18 @@ def main():
     want = {r["Name"]: r for r in rows}
     print(f"CSV has {len(want)} tasks\n")
 
+    # Fetch every state, not just open. A task that was finished and closed is
+    # still in the CSV, so listing only open issues puts it in `fresh` and the
+    # sync recreates it as new work. Completed tasks must stay completed.
     out = gh(["issue", "list", "--repo", REPO, "--limit", "400",
-              "--state", "open", "--json", "number,title,body"])
-    have = {i["title"]: i for i in json.loads(out or "[]")}
-    print(f"GitHub has {len(have)} open issues\n")
+              "--state", "all", "--json", "number,title,body,state"])
+    all_issues = json.loads(out or "[]")
+    have = {i["title"]: i for i in all_issues if i.get("state") == "OPEN"}
+    done = {i["title"]: i for i in all_issues if i.get("state") != "OPEN"}
+    print(f"GitHub has {len(have)} open and {len(done)} closed issues\n")
 
     stale = [t for t in have if t not in want]
-    fresh = [t for t in want if t not in have]
+    fresh = [t for t in want if t not in have and t not in done]
     both = [t for t in want if t in have]
 
     # ---------- 1. close what no longer exists ----------
