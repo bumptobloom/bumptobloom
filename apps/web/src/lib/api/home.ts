@@ -1,3 +1,4 @@
+import { calculateBabyAge } from '@btb/shared';
 import { createServerClient } from '@/lib/supabase';
 import type {
   HomeData,
@@ -7,37 +8,8 @@ import { STANDING_DISCLAIMER } from './types';
 
 export * from './types';
 
-// Seconds per average Gregorian month (ADR-004 / SQL baby_age_months)
-const MS_PER_MONTH = 2629746000;
-const MS_PER_DAY = 86400000;
-
-/**
- * Local helper to compute ageMonths and ageLabel server-side.
- * Formula matches SQL baby_age_months(): round(extract(epoch from (now() - birth_date)) / 2629746.0, 1)
- */
-function deriveBabyAge(birthDateStr: string): { ageMonths: number; ageLabel: string } {
-  const birthDate = new Date(birthDateStr);
-  const now = new Date();
-  const diffMs = Math.max(0, now.getTime() - birthDate.getTime());
-  const diffDays = Math.floor(diffMs / MS_PER_DAY);
-  const ageMonths = Math.round((diffMs / MS_PER_MONTH) * 10) / 10;
-
-  let ageLabel: string;
-  if (ageMonths <= 0 || diffDays < 7) {
-    ageLabel = 'Newborn';
-  } else if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    ageLabel = weeks <= 1 ? '1 week' : `${weeks} weeks`;
-  } else if (ageMonths < 1) {
-    ageLabel = 'Newborn';
-  } else {
-    const floorMonths = Math.floor(ageMonths);
-    ageLabel = floorMonths === 1 ? '1 month' : `${floorMonths} months`;
-  }
-
-  return { ageMonths, ageLabel };
-}
-
+const BABY_AVATARS_BUCKET = 'baby-avatars';
+const AVATAR_SIGNED_URL_TTL_SECONDS = 60 * 60;
 /**
  * Mock data matching the frozen API contract for getHome().
  */
@@ -73,8 +45,8 @@ export const MOCK_HOME_DATA: HomeData = {
  * Requirements (Week 2 - Sahasra Miriyala):
  * - Reads happen server-side using the parent's Supabase session cookies.
  * - If `babyId` is omitted, defaults to the parent's active/most recent baby.
- * - Explicit column selection (`id, name, birth_date, due_date`).
- * - Avatar URL returned as null pending private bucket design.
+ * - Explicit column selection (`id, name, birth_date, due_date, avatar_path`).
+ * - Avatar paths remain private; Home returns a one-hour signed URL.
  * - Checkpoint list aligned to V1 5-checkpoint schedule: [2, 6, 12, 18, 24].
  * - Milestone total reflects query count (does not invent a fallback when empty).
  * - Proper error separation: missing session returns empty Home, DB errors logged & thrown.
@@ -105,7 +77,7 @@ export async function getHome(babyId?: string): Promise<HomeData> {
   // 2. Fetch baby row with explicit columns
   let babyQuery = supabase
     .from('babies')
-    .select('id, name, birth_date, due_date');
+    .select('id, name, birth_date, due_date, avatar_path');
 
   if (babyId) {
     babyQuery = babyQuery.eq('id', babyId);
@@ -126,8 +98,27 @@ export async function getHome(babyId?: string): Promise<HomeData> {
     return emptyHomeState;
   }
 
-  // 3. Compute dynamic age from birth_date
-  const { ageMonths, ageLabel } = deriveBabyAge(baby.birth_date);
+  let avatarUrl: string | null = null;
+
+  if (baby.avatar_path) {
+    const { data: signedAvatar, error: avatarError } = await supabase.storage
+      .from(BABY_AVATARS_BUCKET)
+      .createSignedUrl(
+        baby.avatar_path,
+        AVATAR_SIGNED_URL_TTL_SECONDS,
+      );
+
+    if (avatarError) {
+      console.error('[getHome] Unable to sign baby avatar:', avatarError);
+    } else {
+      avatarUrl = signedAvatar.signedUrl;
+    }
+  }
+
+  // Compute age using the shared utility, including preterm correction.
+  const { ageMonths, ageLabel } = calculateBabyAge(baby.birth_date, {
+    dueDate: baby.due_date,
+  });
   const currentMonthFloor = Math.floor(ageMonths);
 
   // V1 5-checkpoint schedule: 2, 6, 12, 18, 24 months
@@ -209,7 +200,7 @@ export async function getHome(babyId?: string): Promise<HomeData> {
       dueDate: baby.due_date ?? null,
       ageMonths,
       ageLabel,
-      avatarUrl: null, // Always null pending private storage bucket design
+      avatarUrl,
     },
     thisWeek,
     milestoneProgress: {

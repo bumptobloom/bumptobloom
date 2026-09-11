@@ -71,8 +71,9 @@ T = [
      "Six decisions were made before onboarding. Reading them prevents most rework."),
 
     # ---------------- WEEK 2 ----------------
-    (2, "Seed the milestone dataset with sources", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
-     "Every row needs a source_label. Every card shows where its advice came from - that is what separates this from a forum post."),
+    (2, "Seed the milestone dataset with sources", "Sonakshi Panda", "Pod I", "High",
+     "Every row needs a source_label. Every card shows where its advice came from - that is what separates this from a forum post. "
+     "Taken over from Sivathmika on 11 Sep: the empty milestones table blocks every screen in the demo, so this moved onto the critical path."),
     (2, "Milestones data layer: fetch, mark noticed, unmark", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Direct Supabase calls. RLS is the access control - there is no API server to hide behind."),
     (2, "Track screen: checkpoint navigator, 4 domains, progress counter", "Joanna Zhang", "Pod E", "High",
