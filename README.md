@@ -15,7 +15,7 @@ almost never online at the same time.
 git clone git@github.com:bumptobloom/bumptobloom.git
 cd bumptobloom
 npm install
-cp .env.example .env.local     # ask your pod lead for the real values
+cp .env.example apps/web/.env.local     # ask your pod lead for the real values
 npm run dev                    # http://localhost:3000
 ```
 
