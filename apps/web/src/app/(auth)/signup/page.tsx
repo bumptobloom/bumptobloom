@@ -7,6 +7,7 @@ import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { createParentProfile } from './actions';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -69,12 +70,9 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('parent_profiles')
-        .insert([{ user_id: data.user.id, full_name: fullName }]);
-
-      if (profileError) {
-        setError(profileError.message);
+      const result = await createParentProfile(data.user.id, fullName);
+      if (!result.success) {
+        setError("We couldn't finish setting up your account. Please try again or contact support.");
         setLoading(false);
         return;
       }
