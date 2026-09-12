@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { createParentProfile } from './actions';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -61,21 +62,12 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('parent_profiles')
-        .insert([
-          {
-            user_id: data.user.id,
-            full_name: fullName,
-          },
-        ]);
-
-      if (profileError) {
-        setError(profileError.message);
+      const result = await createParentProfile(data.user.id, fullName);
+      if (!result.success) {
+        setError("We couldn't finish setting up your account. Please try again or contact support.");
         setLoading(false);
         return;
       }
-
       router.push('/');
     }
   };
