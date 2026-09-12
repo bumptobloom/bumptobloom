@@ -35,7 +35,7 @@ test('rejects a future birth date', () => {
 
 test('rejects a birth date outside the 0–24 month range', () => {
   const oldestAllowed = new Date();
-  oldestAllowed.setMonth(oldestAllowed.getMonth() - 25);
+  oldestAllowed.setDate(oldestAllowed.getDate() - 800);
 
   const birthDate = oldestAllowed.toISOString().slice(0, 10);
 
