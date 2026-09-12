@@ -1,14 +1,11 @@
-import BabyProfileForm from '@/components/baby-profile-form';
 import { getBaby } from '@/lib/api/baby';
+import { OnboardingForm } from '@/components/onboarding-form';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * The baby profile form from #195 lives here, not at `/`.
  * `/` is Home. A parent with no baby is sent here from Home or Track.
- *
- * This route depends on #195. It will not type-check until that PR is merged,
- * because `components/baby-profile-form` and `lib/api/baby` arrive with it.
  */
 export default async function OnboardingPage() {
   const baby = await getBaby().catch(() => null);
@@ -24,7 +21,7 @@ export default async function OnboardingPage() {
             ? 'Update your baby’s details below.'
             : 'We use the birth date to work out which milestones to show you.'}
         </p>
-        <BabyProfileForm baby={baby} />
+        <OnboardingForm baby={baby} />
       </div>
     </div>
   );
