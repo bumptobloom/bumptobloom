@@ -1,3 +1,25 @@
+-- Seeds the fixtures the RLS verification scripts read.
+--
+-- This script ends in COMMIT, not ROLLBACK, because the verification scripts
+-- run in separate sessions and need the rows to still exist. That is
+-- deliberate, not an oversight.
+--
+-- These fixtures are expected to LIVE PERMANENTLY in the shared database.
+-- .github/workflows/ci.yml runs supabase/tests/btb_rls_check.py on every pull
+-- request, and that script asserts these exact rows exist and are visible to
+-- the right account. Delete them and CI fails on every PR, including ones that
+-- touch nothing but CSS. That happened on 11 Sep 2026.
+--
+-- The nine per-account rows are safe to leave: RLS scopes them, so nobody but
+-- the two test accounts can see them.
+--
+-- The four shared reference rows are the ones that needed care, because they
+-- sit in tables every user reads. Each is now inert even when left behind:
+--   milestone       checkpoint 0, which the app never queries
+--   activity        24 to 24 months, the narrowest window the schema allows
+--   content         unpublished, so the read policy hides it from everyone
+--   prompt version  inactive, so it can never become the live system prompt
+
 begin;
 
 do $$
@@ -41,7 +63,10 @@ insert into milestones (
 ) values (
   '30000000-0000-4000-8000-000000000001',
   'physical',
-  6,
+  -- Checkpoint 0 on purpose. The app only queries 2, 6, 12, 18 and 24, so if
+  -- this row is ever left behind it cannot appear on the Track screen. It used
+  -- to be 6, and in September it did show up in the live database.
+  0,
   'Test milestone',
   'Synthetic RLS test data',
   'Synthetic test source',
@@ -55,7 +80,10 @@ insert into activities (
   '40000000-0000-4000-8000-000000000001',
   'Test activity',
   'Synthetic RLS test data',
-  0,
+  -- Narrowed to the 24-month band. activities has no published flag and the
+  -- schema caps max_age_month at 24, so this is the smallest window available.
+  -- It exists only as the FK parent for baby_activities; nothing reads it.
+  24,
   24,
   'physical'
 )
@@ -73,7 +101,10 @@ insert into content (
   24,
   'Synthetic test source',
   'https://example.com',
-  true
+  -- Unpublished on purpose. The "read content" policy requires published, so
+  -- an unpublished row is invisible to every user while still serving as the
+  -- FK parent for saved_content, which is what the RLS check actually reads.
+  false
 )
 on conflict do nothing;
 
@@ -214,7 +245,11 @@ insert into prompt_versions (
   'test-1',
   'Synthetic test prompt',
   'synthetic-model',
-  true
+  -- Inactive on purpose. The admin-only access tests only check that
+  -- non-admin roles see zero rows, which does not depend on this flag. An
+  -- active synthetic row would be picked up as the live system prompt once
+  -- Ask reads its prompt from this table.
+  false
 )
 on conflict do nothing;
 

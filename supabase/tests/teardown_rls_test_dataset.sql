@@ -1,0 +1,108 @@
+-- Removes everything seed_rls_test_dataset.sql creates.
+--
+-- DO NOT run this against the shared database as routine tidy-up.
+-- .github/workflows/ci.yml runs btb_rls_check.py on every pull request, and
+-- that script asserts the nine per-account fixture rows EXIST. Removing them
+-- makes the RLS isolation suite fail on every PR until they are seeded again.
+-- That is exactly what happened on 11 Sep 2026.
+--
+-- Use this when you are working against a scratch or branch database, or when
+-- you deliberately want a clean slate and intend to re-run
+-- seed_rls_test_dataset.sql immediately afterwards.
+--
+-- The two Auth users (mom-a@bumptobloom.test, mom-b@bumptobloom.test) are
+-- deliberately NOT deleted. They are created out of band, the seed script
+-- refuses to run without them, and deleting them would cascade.
+--
+-- Safe to run more than once, and safe to run when the fixtures were never
+-- seeded.
+
+begin;
+
+-- Ask: runs -> messages -> conversations
+delete from ai_runs where id in (
+  '72000000-0000-4000-8000-000000000001',
+  '72000000-0000-4000-8000-000000000002'
+);
+
+delete from ai_messages where id in (
+  '71000000-0000-4000-8000-000000000001',
+  '71000000-0000-4000-8000-000000000002'
+);
+
+delete from ai_conversations where id in (
+  '70000000-0000-4000-8000-000000000001',
+  '70000000-0000-4000-8000-000000000002'
+);
+
+-- Vitals
+delete from fever_checks where id in (
+  '60000000-0000-4000-8000-000000000001',
+  '60000000-0000-4000-8000-000000000002'
+);
+
+-- Learn
+delete from saved_content where id in (
+  '51000000-0000-4000-8000-000000000001',
+  '51000000-0000-4000-8000-000000000002'
+);
+
+-- Track and activities
+delete from baby_activities where id in (
+  '41000000-0000-4000-8000-000000000001',
+  '41000000-0000-4000-8000-000000000002'
+);
+
+delete from baby_milestones where id in (
+  '31000000-0000-4000-8000-000000000001',
+  '31000000-0000-4000-8000-000000000002'
+);
+
+-- Babies, then the profiles that own them
+delete from babies where id in (
+  '20000000-0000-4000-8000-000000000001',
+  '20000000-0000-4000-8000-000000000002'
+);
+
+delete from parent_profiles where id in (
+  '10000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000002'
+);
+
+-- Shared reference rows. These are the dangerous ones: they are not scoped to
+-- a test account, so anything left here is visible to every real user.
+delete from content    where id = '50000000-0000-4000-8000-000000000001';
+delete from activities where id = '40000000-0000-4000-8000-000000000001';
+delete from milestones where id = '30000000-0000-4000-8000-000000000001';
+
+-- Admin-only sentinels
+delete from prompt_versions where id = '80000000-0000-4000-8000-000000000001';
+delete from audit_events   where id = '90000000-0000-4000-8000-000000000001';
+
+-- Fail loudly rather than reporting success on a partial clean-up.
+do $$
+declare
+  leftovers int;
+begin
+  select
+    (select count(*) from milestones      where id = '30000000-0000-4000-8000-000000000001')
+  + (select count(*) from activities      where id = '40000000-0000-4000-8000-000000000001')
+  + (select count(*) from content         where id = '50000000-0000-4000-8000-000000000001')
+  + (select count(*) from prompt_versions where id = '80000000-0000-4000-8000-000000000001')
+  + (select count(*) from audit_events    where id = '90000000-0000-4000-8000-000000000001')
+  + (select count(*) from babies          where id in (
+      '20000000-0000-4000-8000-000000000001',
+      '20000000-0000-4000-8000-000000000002'))
+  + (select count(*) from parent_profiles where id in (
+      '10000000-0000-4000-8000-000000000001',
+      '10000000-0000-4000-8000-000000000002'))
+  into leftovers;
+
+  if leftovers <> 0 then
+    raise exception 'FAIL: % RLS fixture row(s) survived teardown', leftovers;
+  end if;
+
+  raise notice 'PASS: no RLS test fixtures remain';
+end $$;
+
+commit;

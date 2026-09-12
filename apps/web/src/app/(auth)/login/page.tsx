@@ -65,7 +65,7 @@ export default function LoginPage() {
         </Button>
       </form>
       <div className="flex justify-between text-sm">
-        <Link href="/forgot-password text-blue-600 hover:underline">Forgot password?</Link>
+        <Link href="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>
         <Link href="/signup" className="text-blue-600 hover:underline">Create account</Link>
       </div>
     </div>

@@ -8,6 +8,8 @@ import { STANDING_DISCLAIMER } from './types';
 
 export * from './types';
 
+const BABY_AVATARS_BUCKET = 'baby-avatars';
+const AVATAR_SIGNED_URL_TTL_SECONDS = 60 * 60;
 /**
  * Mock data matching the frozen API contract for getHome().
  */
@@ -43,8 +45,8 @@ export const MOCK_HOME_DATA: HomeData = {
  * Requirements (Week 2 - Sahasra Miriyala):
  * - Reads happen server-side using the parent's Supabase session cookies.
  * - If `babyId` is omitted, defaults to the parent's active/most recent baby.
- * - Explicit column selection (`id, name, birth_date, due_date`).
- * - Avatar URL returned as null pending private bucket design.
+ * - Explicit column selection (`id, name, birth_date, due_date, avatar_path`).
+ * - Avatar paths remain private; Home returns a one-hour signed URL.
  * - Checkpoint list aligned to V1 5-checkpoint schedule: [2, 6, 12, 18, 24].
  * - Milestone total reflects query count (does not invent a fallback when empty).
  * - Proper error separation: missing session returns empty Home, DB errors logged & thrown.
@@ -75,7 +77,7 @@ export async function getHome(babyId?: string): Promise<HomeData> {
   // 2. Fetch baby row with explicit columns
   let babyQuery = supabase
     .from('babies')
-    .select('id, name, birth_date, due_date');
+    .select('id, name, birth_date, due_date, avatar_path');
 
   if (babyId) {
     babyQuery = babyQuery.eq('id', babyId);
@@ -96,7 +98,24 @@ export async function getHome(babyId?: string): Promise<HomeData> {
     return emptyHomeState;
   }
 
-  // 3. Compute dynamic age from birth_date (and due_date for preterm babies via shared age derivation)
+  let avatarUrl: string | null = null;
+
+  if (baby.avatar_path) {
+    const { data: signedAvatar, error: avatarError } = await supabase.storage
+      .from(BABY_AVATARS_BUCKET)
+      .createSignedUrl(
+        baby.avatar_path,
+        AVATAR_SIGNED_URL_TTL_SECONDS,
+      );
+
+    if (avatarError) {
+      console.error('[getHome] Unable to sign baby avatar:', avatarError);
+    } else {
+      avatarUrl = signedAvatar.signedUrl;
+    }
+  }
+
+  // Compute age using the shared utility, including preterm correction.
   const { ageMonths, ageLabel } = calculateBabyAge(baby.birth_date, {
     dueDate: baby.due_date,
   });
@@ -181,7 +200,7 @@ export async function getHome(babyId?: string): Promise<HomeData> {
       dueDate: baby.due_date ?? null,
       ageMonths,
       ageLabel,
-      avatarUrl: null, // Always null pending private storage bucket design
+      avatarUrl,
     },
     thisWeek,
     milestoneProgress: {
