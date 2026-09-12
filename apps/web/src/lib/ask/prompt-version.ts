@@ -1,4 +1,4 @@
-import { createServiceRoleClient } from '@/lib/supabase';
+import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { pickActivePromptVersion, type PromptVersionRow } from './pick-active-prompt-version';
 
 /**

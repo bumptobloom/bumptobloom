@@ -1,6 +1,6 @@
 begin;
 
--- 0002_prompt_version_active_constraint.sql seeds exactly one active row.
+-- 0003_prompt_version_active_constraint.sql seeds exactly one active row.
 -- Confirm that's still true before testing anything else.
 select 'active rows before test' as stage, count(*) as active_count
 from prompt_versions
