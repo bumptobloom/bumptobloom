@@ -116,7 +116,7 @@ anything, so put it in the message when you ask someone to look at a screen.
 
 ### Local setup
 
-Copy `.env.example` to `.env.local` and fill in the two Supabase values. They are
+Copy `.env.example` to `apps/web/.env.local` and fill in the two Supabase values. They are
 pinned in the dev channel.
 
 ```
