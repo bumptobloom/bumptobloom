@@ -32,22 +32,32 @@ export const MOCK_LEARN_ITEMS: LearnItem[] = [
   },
   {
     id: 'l3333333-3333-4333-a333-333333333333',
-    category: 'developmental',
-    title: 'Language explosions around 18 months',
+    category: 'crying_soothing',
+    title: 'Coach Through Frustration',
     excerpt:
-      'Vocabulary expands rapidly. Reading daily and naming objects during play reinforces new words.',
-    sourceLabel: 'CDC Learn the Signs. Act Early.',
-    sourceUrl: 'https://www.cdc.gov/ncbddd/actearly/milestones/milestones-18mo.html',
+      'Use short phrases like "You’re upset." Stay calm, keep limits simple and offer comfort while the feeling passes.',
+    sourceLabel: 'AAP / HealthyChildren',
+    sourceUrl: 'https://www.healthychildren.org',
     saved: false,
   },
   {
     id: 'l4444444-4444-4444-a444-444444444444',
-    category: 'diaper',
+    category: 'diaper_digestion',
     title: 'Signs of readiness for potty introduction',
     excerpt:
       'Recognising cues and showing interest in bathroom routines typically begins between 18 and 24 months.',
     sourceLabel: 'AAP Child Health Guidelines',
     sourceUrl: 'https://www.healthychildren.org',
+    saved: false,
+  },
+  {
+    id: 'l5555555-5555-4555-a555-555555555555',
+    category: 'mom_wellbeing',
+    title: 'Recharge Without Guilt',
+    excerpt:
+      'Regular meals, movement, connection and realistic expectations can support well-being. Ask for help before you are depleted.',
+    sourceLabel: 'CDC Reproductive Health',
+    sourceUrl: 'https://www.cdc.gov/reproductive-health/depression/index.html',
     saved: false,
   },
 ];
