@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:web": "npm --prefix apps/web run build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test 'src/lib/**/*.test.ts'"
   },
   "dependencies": {
+    "@btb/shared": "*",
     "@serwist/turbopack": "^9.5.12",
     "@supabase/ssr": "^0.12.7",
     "class-variance-authority": "^0.7.1",
