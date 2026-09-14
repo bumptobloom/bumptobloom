@@ -54,15 +54,21 @@ export interface HomeData {
 // ============================================================
 
 /**
- * The 4 canonical Learn categories agreed in the Master Sheet (ADR-002 / DECISIONS.md).
+ * The 5 canonical Learn categories agreed across Learn & Ask.
  */
-export type LearnCategory = 'developmental' | 'feeding' | 'sleep' | 'diaper';
+export type LearnCategory =
+  | 'feeding'
+  | 'sleep'
+  | 'diaper_digestion'
+  | 'crying_soothing'
+  | 'mom_wellbeing';
 
 export const LEARN_CATEGORIES: LearnCategory[] = [
-  'developmental',
   'feeding',
   'sleep',
-  'diaper',
+  'diaper_digestion',
+  'crying_soothing',
+  'mom_wellbeing',
 ];
 
 export interface LearnItem {
