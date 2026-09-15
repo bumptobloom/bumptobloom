@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "./serwist-provider";
 import { PostHogProvider } from "@/components/PostHogProvider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "BumpToBloom",
@@ -17,14 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${jetbrains.variable} h-full antialiased`}
-    >
+    <html lang="en">
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
+        <Providers>
+          <PostHogProvider>{children}</PostHogProvider>
+        </Providers>
       </body>
     </html>
   );
