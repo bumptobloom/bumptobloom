@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { Sprout, Flower2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Journey = 'expecting' | 'baby-here';
@@ -23,13 +24,15 @@ export function JourneySelect() {
         aria-disabled
         className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-terra)]/30 px-5 py-4 opacity-55"
       >
-        <p className="text-[1.05rem] text-[var(--text-primary)]">I&apos;m expecting</p>
-        <p className="mt-0.5 text-[0.8rem] leading-[1.45] text-[var(--text-secondary)]">
-          Track your pregnancy week by week
-        </p>
-        <p className="mt-1.5 text-[0.72rem] text-[var(--text-accent-terracotta)]">
-          Coming soon
-        </p>
+        <div className="flex items-start gap-3">
+          <Sprout className="mt-0.5 size-4 shrink-0 text-[var(--text-brand)]" aria-hidden />
+          <div>
+            <p className="text-[1.05rem] text-[var(--text-primary)]">I&apos;m expecting</p>
+            <p className="mt-0.5 text-[0.8rem] leading-[1.45] text-[var(--text-secondary)]">
+              Track your pregnancy week by week
+            </p>
+          </div>
+        </div>
       </div>
 
       <button
@@ -43,10 +46,15 @@ export function JourneySelect() {
             : 'border-[var(--border-card)] bg-[var(--card-primary)]',
         )}
       >
-        <p className="text-[1.05rem] text-[var(--text-primary)]">My baby is here</p>
-        <p className="mt-0.5 text-[0.8rem] leading-[1.45] text-[var(--text-secondary)]">
-          Follow milestones from birth to 24 months
-        </p>
+        <div className="flex items-start gap-3">
+          <Flower2 className="mt-0.5 size-4 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
+          <div>
+            <p className="text-[1.05rem] text-[var(--text-primary)]">My baby is here</p>
+            <p className="mt-0.5 text-[0.8rem] leading-[1.45] text-[var(--text-secondary)]">
+              Follow milestones from birth to 24 months
+            </p>
+          </div>
+        </div>
       </button>
 
       <Button
