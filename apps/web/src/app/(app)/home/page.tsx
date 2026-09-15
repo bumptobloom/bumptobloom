@@ -20,7 +20,7 @@ export default async function HomePage() {
           Add your baby to see their milestones and what to expect this month.
         </p>
         <Link
-          href="/onboarding"
+          href="/onboarding/profile"
           className="mt-2 inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
           style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
         >

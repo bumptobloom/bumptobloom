@@ -19,7 +19,7 @@ export default async function TrackPage() {
           Add your baby first so we know which milestones to show.
         </p>
         <Link
-          href="/onboarding"
+          href="/onboarding/profile"
           className="mt-2 inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
           style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
         >
