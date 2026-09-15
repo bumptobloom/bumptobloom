@@ -1,5 +1,10 @@
 import type { AskBabyContext } from './ask-context.ts';
 
+// SUPERSEDED: the active prompt now lives in the prompt_versions table
+// (see supabase/migrations/0003_prompt_version_active_constraint.sql),
+// not here. Nothing in the app reads this constant. Kept for now because
+// its test (from #189) still asserts on it; see the follow-up issue
+// tracking removal of this file and that test together.
 export const ASK_SYSTEM_PROMPT_VERSION = '2026.09.2';
 
 export const ASK_SYSTEM_PROMPT = `
