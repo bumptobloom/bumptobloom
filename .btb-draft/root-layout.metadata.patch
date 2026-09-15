@@ -1,0 +1,7 @@
+Replace the metadata block in apps/web/src/app/layout.tsx with:
+
+export const metadata: Metadata = {
+  title: "BumpToBloom",
+  description:
+    "Milestones, guidance and answers for the first two years. An educational tool, not a medical device.",
+};

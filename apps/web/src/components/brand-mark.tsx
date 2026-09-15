@@ -1,27 +1,27 @@
+import { cn } from '@/lib/utils';
+
 /**
- * The BumpToBloom lockup used on every signed-out screen: the B mark, the
- * wordmark, and the product tagline, per Figma 00a / 00b.
- *
- * The mark is drawn here rather than imported, because design has not yet
- * exported the SVG from the Figma. When that asset lands, replace BloomB
- * and nothing else needs to change.
+ * The BumpToBloom B. Drawn here rather than imported, because design has not
+ * yet exported the SVG from Figma 00a. When that asset lands, replace this
+ * component and both the auth lockup and the app header follow.
  */
-function BloomB() {
+export function BloomB({ className }: { className?: string }) {
   return (
-    <div className="relative inline-block leading-none" aria-hidden>
-      <span className="block text-[4.25rem] leading-none text-[var(--text-brand)]">
-        B
-      </span>
-      <span className="absolute right-[0.15em] top-[0.18em] h-[0.42rem] w-[0.42rem] rounded-full bg-[var(--brand-primary)]" />
-      <span className="absolute right-[0.32em] top-[0.36em] h-[0.3rem] w-[0.3rem] rounded-full bg-[var(--text-accent-terracotta)]/70" />
-    </div>
+    <span className={cn('relative inline-block leading-none', className)} aria-hidden>
+      <span className="block leading-none text-[var(--text-brand)]">B</span>
+      <span className="absolute right-[0.15em] top-[0.18em] h-[0.1em] w-[0.1em] rounded-full bg-[var(--brand-primary)]" />
+      <span className="absolute right-[0.32em] top-[0.36em] h-[0.07em] w-[0.07em] rounded-full bg-[var(--text-accent-terracotta)]/70" />
+    </span>
   );
 }
 
+/**
+ * The centred lockup used on every signed-out screen, per Figma 00a / 00b.
+ */
 export function BrandMark({ tagline = true }: { tagline?: boolean }) {
   return (
     <div className="flex flex-col items-center gap-2 text-center">
-      <BloomB />
+      <BloomB className="text-[4.25rem]" />
       <p className="text-[1.55rem] leading-none text-[var(--text-primary)]">
         BumpToBloom
       </p>
