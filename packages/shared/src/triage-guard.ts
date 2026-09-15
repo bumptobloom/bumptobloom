@@ -29,7 +29,11 @@ export function shouldRedirectToHealth(question: string): boolean {
   return SYMPTOM_TERMS.some((term) => q.includes(term));
 }
 
+// ADR-007 turned Health into a plain temperature log with no tiers, no
+// judgement, and no checker of any kind -- sending someone here for a
+// symptom question no longer helps, so the refusal points to a real
+// doctor and 911 directly instead of the Health tab.
 export const REDIRECT_ANSWER =
-  "That sounds like a question about how your baby is feeling. I'm not the " +
-  'right tool for that one — the Health tab has a step-by-step checker, and ' +
-  'for anything urgent please call your pediatrician or 911.';
+  "That sounds like a question about how your baby is feeling. I'm not " +
+  'able to help with symptoms — please contact your pediatrician, and ' +
+  'call 911 right away if it feels urgent.';
