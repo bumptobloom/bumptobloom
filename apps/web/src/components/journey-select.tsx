@@ -11,8 +11,10 @@ type Journey = 'expecting' | 'baby-here';
 /**
  * PRD US-03. "I'm expecting" is displayed but disabled: pregnancy is out of
  * scope for the MVP (ADR-002), and the PRD asks for it to be visible and
- * greyed rather than removed, with "Coming soon" so the state reads as
- * deliberate instead of broken.
+ * greyed rather than removed.
+ *
+ * No "Coming soon" label. It was suggested in the 2 Sep PRD review, but the
+ * final Figma does not show it and Vishnu removed it from the PRD on 15 Sep.
  */
 export function JourneySelect() {
   const [selected, setSelected] = useState<Journey | null>(null);

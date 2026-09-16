@@ -79,7 +79,10 @@ export default function SignupPage() {
         return;
       }
 
-      router.push('/');
+      // PRD US-02: account creation proceeds to the journey selection screen,
+      // not to Home. Sending her to '/' lands on Home with no baby, which has
+      // no screen in the Figma.
+      router.push('/onboarding');
     }
   };
 

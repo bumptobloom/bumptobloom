@@ -1,15 +1,27 @@
 import { deriveAgeMonths } from '@btb/shared';
 import { createServerClient } from '@/lib/supabase';
 import type { MilestonesResponse } from './types';
-import { STANDING_DISCLAIMER } from './types';
 import {
   CHECKPOINTS,
+  TRACK_DISCLAIMER,
   buildMilestoneDomains,
+  clampMonth,
   getCheckpoint,
 } from './milestone-utils';
 
+/**
+ * `selectedMonth` is the month the parent is looking at, not necessarily her
+ * baby's age — Track lets her browse 0-24 (US-02, US-06). Omit it and she gets
+ * her baby's current month.
+ *
+ * Content is still keyed to the five seeded checkpoints, so a month between
+ * them resolves to the nearest younger one. That is CDC's own rule for a child
+ * whose age falls between checklists, and it is how Vishnu's month-by-month
+ * sheet is built, so this stays correct when that dataset replaces the seed.
+ */
 export async function getMilestones(
-  babyId: string
+  babyId: string,
+  selectedMonth?: number
 ): Promise<MilestonesResponse> {
   const supabase = await createServerClient();
 
@@ -33,7 +45,11 @@ export async function getMilestones(
   }
 
   const ageMonths = deriveAgeMonths(baby.birth_date);
-  const checkpointMonth = getCheckpoint(ageMonths);
+  const month =
+    selectedMonth === undefined
+      ? clampMonth(ageMonths)
+      : clampMonth(selectedMonth);
+  const checkpointMonth = getCheckpoint(month);
 
   const [milestonesResult, noticedResult] = await Promise.all([
     supabase
@@ -76,10 +92,12 @@ export async function getMilestones(
   );
 
   return {
+    month,
+    babyMonth: clampMonth(ageMonths),
     checkpointMonth,
     checkpoints: [...CHECKPOINTS],
     domains: buildMilestoneDomains(milestonesResult.data ?? [], noticedIds),
-    disclaimer: STANDING_DISCLAIMER,
+    disclaimer: TRACK_DISCLAIMER,
   };
 }
 
