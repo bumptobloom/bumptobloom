@@ -1,8 +1,10 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+
 import { createBabyAction, updateBabyAction } from '@/app/actions/baby';
 import { type BabyProfile } from '@/lib/api/baby';
+import { uploadBabyAvatar } from '@/lib/api/baby-avatar';
 import { validateBabyInput } from '@/lib/validation/baby';
 
 interface BabyProfileFormProps {
@@ -25,11 +27,18 @@ export default function BabyProfileForm({
   const [name, setName] = useState(baby?.name ?? '');
   const [birthDate, setBirthDate] = useState(baby?.birthDate ?? '');
   const [dueDate, setDueDate] = useState(baby?.dueDate ?? '');
+  const [photo, setPhoto] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedBaby, setSavedBaby] = useState<BabyProfile | null>(baby);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    setPhoto(file);
+    setError('');
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
 
@@ -46,30 +55,32 @@ export default function BabyProfileForm({
 
     setSaving(true);
 
-    const input = {
-      name,
-      birthDate,
-      dueDate: dueDate || null,
-    };
+    try {
+      const input = {
+        name,
+        birthDate,
+        dueDate: dueDate || null,
+      };
 
-    const save = savedBaby
-      ? updateBabyAction(savedBaby.id, input)
-      : createBabyAction(input);
+      const result = savedBaby
+        ? await updateBabyAction(savedBaby.id, input)
+        : await createBabyAction(input);
 
-    save
-      .then((result) => {
-        setSavedBaby(result);
-        setName(result.name);
-        setBirthDate(result.birthDate);
-        setDueDate(result.dueDate ?? '');
-        onSaved?.(result);
-      })
-      .catch((saveError) => {
-        setError(getErrorMessage(saveError));
-      })
-      .finally(() => {
-        setSaving(false);
-      });
+      setSavedBaby(result);
+      setName(result.name);
+      setBirthDate(result.birthDate);
+      setDueDate(result.dueDate ?? '');
+
+      if (photo) {
+        await uploadBabyAvatar(result.id, photo);
+      }
+
+      onSaved?.(result);
+    } catch (saveError) {
+      setError(getErrorMessage(saveError));
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -90,6 +101,28 @@ export default function BabyProfileForm({
           required
           className="w-full rounded-lg border px-3 py-2"
         />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="baby-photo" className="block text-sm font-medium">
+          Baby&apos;s photo
+        </label>
+        <p className="text-sm text-zinc-500">
+          Optional. JPEG, PNG, or WebP, up to 5 MB.
+        </p>
+        <input
+          id="baby-photo"
+          name="photo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handlePhotoChange}
+          className="w-full rounded-lg border px-3 py-2"
+        />
+        {photo && (
+          <p className="text-sm text-zinc-500">
+            Selected: {photo.name}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
