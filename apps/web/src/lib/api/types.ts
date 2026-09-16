@@ -152,3 +152,41 @@ export interface ConversationSummary {
 export interface ConversationHistory extends ConversationSummary {
   messages: ConversationMessage[];
 }
+
+// ============================================================
+// RECOMMENDED (Issue #182 - Melvin Bryant)
+// ============================================================
+
+export interface RetailerLink {
+  slug: string;
+  name: string;
+  url: string; // Plain search URL - no affiliate programme, no tracking
+}
+
+export interface RecommendedProduct {
+  id: string;
+  name: string;
+  rationale: string; // Required - a recommendation without a reason is just an advert
+  indicativePriceCents: number;
+  imageUrl: string;
+  retailers: RetailerLink[];
+}
+
+/**
+ * Product detail shape. NOTE: not in the frozen API-CONTRACTS.md yet -
+ * getProduct(id)'s return shape is undocumented there. This extension
+ * (description, whyHelpful) is inferred from the Figma product detail
+ * screen and should be confirmed with Sahasra/Sonakshi before this is
+ * treated as frozen.
+ */
+export interface RecommendedProductDetail extends RecommendedProduct {
+  description: string;
+  whyHelpful: string[];
+}
+
+export interface RecommendationsResponse {
+  ageMonths: number;
+  bucketLabel: string; // e.g. "15-24 months"
+  products: RecommendedProduct[];
+  disclaimer: string;
+}
