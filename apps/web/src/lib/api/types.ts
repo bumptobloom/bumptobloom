@@ -151,6 +151,7 @@ export interface ConversationSummary {
 
 export interface ConversationHistory extends ConversationSummary {
   messages: ConversationMessage[];
+}
 
 // ============================================================
 // RECOMMENDED (Issue #182 - Melvin Bryant)
