@@ -127,3 +127,28 @@ export interface MilestonesResponse {
   domains: MilestoneDomain[];
   disclaimer: string;
 }
+
+// ============================================================
+// ASK / CONVERSATION HISTORY (#97)
+// ============================================================
+
+export type ConversationMessageRole = 'user' | 'assistant' | 'system';
+
+export interface ConversationMessage {
+  id: string;
+  conversationId: string;
+  role: ConversationMessageRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface ConversationSummary {
+  id: string;
+  babyId: string | null;
+  title: string | null;
+  createdAt: string;
+}
+
+export interface ConversationHistory extends ConversationSummary {
+  messages: ConversationMessage[];
+}

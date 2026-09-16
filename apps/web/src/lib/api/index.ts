@@ -3,3 +3,5 @@ export * from './home';
 export * from './learn';
 export * from './milestones';
 export * from './activities';
+
+export * from './conversations';
