@@ -39,7 +39,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         style={{ background: 'var(--card-secondary)', borderColor: 'var(--border-card)' }}
       >
         <h2 className="text-[13px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-secondary)' }}>
-          Why it's helpful
+          Why it&apos;s helpful
         </h2>
         <ul className="mt-3 flex flex-col gap-2">
           {product.whyHelpful.map((reason, index) => (
