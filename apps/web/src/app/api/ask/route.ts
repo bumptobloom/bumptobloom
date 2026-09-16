@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase"
-import { answerQuestion, BabyNotFoundError, AskUpstreamError } from "@/lib/ask/answer-question"
+import {
+  answerQuestion,
+  BabyNotFoundError,
+  ConversationAccessError,
+  AskUpstreamError,
+} from "@/lib/ask/answer-question"
+
+// A parent's question, not a document. Bounds cost -- an unbounded body
+// goes straight to OpenAI at our expense -- and is generous enough that no
+// real question should ever hit it.
+const MAX_QUESTION_LENGTH = 2000
 
 // The user id comes only from the verified session via getUser(), which
 // revalidates the JWT against Supabase's auth server — never from the
@@ -34,6 +44,13 @@ export async function POST(request: Request) {
     )
   }
 
+  if (body.question.length > MAX_QUESTION_LENGTH) {
+    return NextResponse.json(
+      { error: `question must be ${MAX_QUESTION_LENGTH} characters or fewer` },
+      { status: 400 }
+    )
+  }
+
   const conversationId = typeof body.conversationId === "string" ? body.conversationId : null
 
   try {
@@ -48,6 +65,10 @@ export async function POST(request: Request) {
   } catch (err) {
     if (err instanceof BabyNotFoundError) {
       return NextResponse.json({ error: err.message }, { status: 404 })
+    }
+
+    if (err instanceof ConversationAccessError) {
+      return NextResponse.json({ error: err.message }, { status: 403 })
     }
 
     if (err instanceof AskUpstreamError) {

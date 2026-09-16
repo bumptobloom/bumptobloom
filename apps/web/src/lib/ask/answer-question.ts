@@ -41,6 +41,17 @@ export class AskUpstreamError extends Error {
   }
 }
 
+export class ConversationAccessError extends Error {
+  constructor() {
+    super('This conversation does not belong to the authenticated parent');
+    this.name = 'ConversationAccessError';
+  }
+}
+
+// Postgres's SQLSTATE for a row-level security policy rejecting a write.
+// Branch on this, not on error message text -- see PostgrestError.ts.
+const RLS_VIOLATION_CODE = '42501';
+
 export async function answerQuestion(
   input: AnswerQuestionInput,
 ): Promise<AnswerQuestionResult> {
@@ -98,6 +109,15 @@ export async function answerQuestion(
     .insert({ conversation_id: conversationId, role: 'user', content: input.question });
 
   if (userMessageError) {
+    // A client-supplied conversationId that fails RLS is a permission
+    // problem (403), not an upstream/network one (502) -- worth
+    // distinguishing so nobody debugs a network issue that isn't one.
+    // A conversation we just created ourselves failing this same check
+    // would be a genuine anomaly, so this is scoped to the client-supplied
+    // case only.
+    if (input.conversationId && userMessageError.code === RLS_VIOLATION_CODE) {
+      throw new ConversationAccessError();
+    }
     throw new AskUpstreamError(`Failed to log question: ${userMessageError.message}`);
   }
 
@@ -179,10 +199,11 @@ export async function answerQuestion(
       input_tokens: completion.usage?.prompt_tokens ?? null,
       output_tokens: completion.usage?.completion_tokens ?? null,
       latency_ms: latencyMs,
-      // Real validation is #46's scope (Rehaan's Zod schema). This route
-      // returns a well-shaped response; it does not yet verify the
-      // response body beyond the OpenAI call itself succeeding.
-      validation_ok: true,
+      // Real validation is a separate ticket's scope. false, not a
+      // placeholder true -- a run this table has never actually checked
+      // must not read back later as "passed validation". The API
+      // response's validationOk can stay true; this is the stored row.
+      validation_ok: false,
       redirected_to_health: false,
     });
 
