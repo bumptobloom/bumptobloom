@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Mail, Lock } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { TextField } from '@/components/ui/text-field';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,39 +37,80 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Log In</h1>
-      {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Email</label>
-          <input
+    <div className="space-y-5">
+      <div className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-6">
+        <p className="mb-5 text-center text-[0.82rem] leading-[1.5] text-[var(--text-secondary)]">
+          Welcome back &mdash; let&apos;s pick up where you left off.
+        </p>
+
+        {error ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-[var(--radius-input)] bg-[var(--surface-terra)] px-3 py-2.5 text-[0.8rem] text-[var(--text-accent-terracotta)]"
+          >
+            {error}
+          </div>
+        ) : null}
+
+        <form onSubmit={handleLogin} className="space-y-3">
+          <TextField
             type="email"
             required
+            autoComplete="email"
+            placeholder="Email"
+            icon={<Mail className="size-4" />}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2 rounded mt-1"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Password</label>
-          <input
-            type="password"
+
+          <TextField
+            revealable
             required
+            autoComplete="current-password"
+            placeholder="Password"
+            icon={<Lock className="size-4" />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded mt-1"
           />
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-[0.78rem] text-[var(--text-secondary)] underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="h-12 w-full rounded-[var(--radius-button-primary)] text-[0.95rem]"
+          >
+            {loading ? 'Logging in…' : 'Log In'}
+          </Button>
+        </form>
+
+        <div className="mt-5 flex items-center gap-3" aria-hidden>
+          <span className="h-px flex-1 bg-[var(--border-subtle)]" />
+          <span className="text-[0.7rem] text-[var(--brand-primary)]">&#10022;</span>
+          <span className="h-px flex-1 bg-[var(--border-subtle)]" />
         </div>
-        
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? 'Logging in...' : 'Log In'}
-        </Button>
-      </form>
-      <div className="flex justify-between text-sm">
-        <Link href="/forgot-password" className="text-blue-600 hover:underline">Forgot password?</Link>
-        <Link href="/signup" className="text-blue-600 hover:underline">Create account</Link>
+
+        <p className="mt-3 text-center text-[0.72rem] text-[var(--text-secondary)]">
+          Your information stays private and secure.
+        </p>
       </div>
+
+      <p className="text-center text-[0.82rem] text-[var(--text-secondary)]">
+        Don&apos;t have an account?{' '}
+        <Link
+          href="/signup"
+          className="text-[var(--text-primary)] underline-offset-4 hover:underline"
+        >
+          Create account
+        </Link>
+      </p>
     </div>
   );
 }

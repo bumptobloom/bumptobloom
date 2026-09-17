@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { Footprints, Lightbulb, MessageSquare } from 'lucide-react';
 import type { MilestoneDomain } from '@/lib/api/types';
 import {
   markMilestoneAction,
   unmarkMilestoneAction,
 } from '@/app/actions/milestones';
+
+const DOMAIN_ICON = {
+  physical: Footprints,
+  cognitive: Lightbulb,
+  language: MessageSquare,
+  social_emotional: Lightbulb,
+} as const;
 
 /**
  * Track is a checklist, not an assessment. Nothing here ranks, scores or
@@ -63,8 +71,8 @@ export function MilestoneChecklist({
 
   if (populated.length === 0) {
     return (
-      <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-        No milestones are loaded for this checkpoint yet.
+      <p className="text-[0.85rem] leading-relaxed text-[var(--text-secondary)]">
+        No milestones are loaded for this month yet.
       </p>
     );
   }
@@ -77,18 +85,15 @@ export function MilestoneChecklist({
         </p>
       )}
 
-      {populated.map((domain) => (
+      {populated.map((domain) => {
+        const Icon = DOMAIN_ICON[domain.domain];
+        return (
         <section key={domain.domain}>
-          <h2
-            className="mb-2 text-[13px] font-semibold tracking-wide uppercase"
-            style={{ color: 'var(--text-secondary)' }}
-          >
+          <h2 className="mb-2 flex items-center gap-2 px-1 text-[1.05rem] text-[var(--text-primary)]">
+            <Icon className="size-4 text-[var(--text-brand)]" aria-hidden />
             {domain.label}
           </h2>
-          <ul
-            className="overflow-hidden rounded-[18px] border"
-            style={{ background: 'var(--card-primary)', borderColor: 'var(--border-card)' }}
-          >
+          <ul className="overflow-hidden rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)]">
             {domain.items.map((item, index) => {
               const checked = noticed.has(item.id);
               return (
@@ -104,10 +109,7 @@ export function MilestoneChecklist({
                       onChange={() => toggle(item.id)}
                       className="mt-0.5 size-5 shrink-0 accent-[var(--brand-secondary)]"
                     />
-                    <span
-                      className="text-[15px] leading-snug"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
+                    <span className="text-[0.9rem] leading-snug text-[var(--text-primary)]">
                       {item.title}
                     </span>
                   </label>
@@ -116,7 +118,8 @@ export function MilestoneChecklist({
             })}
           </ul>
         </section>
-      ))}
+        );
+      })}
     </div>
   );
 }

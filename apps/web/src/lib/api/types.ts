@@ -122,6 +122,11 @@ export interface MilestoneDomain {
 }
 
 export interface MilestonesResponse {
+  /** The month being viewed (0-24). May differ from the baby's age. */
+  month: number;
+  /** The baby's actual current month, so the UI can offer "back to today". */
+  babyMonth: number;
+  /** Which seeded checkpoint the shown content came from. */
   checkpointMonth: number;
   checkpoints: number[];
   domains: MilestoneDomain[];

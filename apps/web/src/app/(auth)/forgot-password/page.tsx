@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Mail, ArrowLeft } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { TextField } from '@/components/ui/text-field';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -32,36 +34,64 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Reset Password</h1>
+    <div className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-6">
+      <div className="mb-4 flex items-center gap-3">
+        <Link
+          href="/login"
+          aria-label="Back to log in"
+          className="flex size-8 items-center justify-center rounded-full border border-[var(--border-subtle)] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+        >
+          <ArrowLeft className="size-4" />
+        </Link>
+        <h1 className="text-[1.15rem] text-[var(--text-primary)]">Reset password</h1>
+      </div>
+
       {submitted ? (
         <div className="space-y-4">
-          <div className="p-3 text-sm text-green-700 bg-green-50 rounded-md">
-            If an account exists for {email}, a password reset link has been sent.
-          </div>
-          <Link href="/login" className="block text-center text-sm text-blue-600 hover:underline">
-            Back to Log In
+          <p className="rounded-[var(--radius-input)] bg-[var(--surface-moss)] px-3 py-3 text-[0.82rem] leading-[1.5] text-[var(--text-brand)]">
+            If an account exists for {email}, a password reset link is on its way.
+            The link can be used once and expires after 15 minutes.
+          </p>
+          <Link
+            href="/login"
+            className="block text-center text-[0.82rem] text-[var(--text-primary)] underline-offset-4 hover:underline"
+          >
+            Back to log in
           </Link>
         </div>
       ) : (
-        <form onSubmit={handleReset} className="space-y-4">
-          {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border p-2 rounded mt-1"
-            />
-          </div>
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
+        <form onSubmit={handleReset} className="space-y-3">
+          <p className="text-[0.82rem] leading-[1.5] text-[var(--text-secondary)]">
+            Enter the email you signed up with and we&apos;ll send you a link to
+            choose a new password.
+          </p>
+
+          {error ? (
+            <div
+              role="alert"
+              className="rounded-[var(--radius-input)] bg-[var(--surface-terra)] px-3 py-2.5 text-[0.8rem] text-[var(--text-accent-terracotta)]"
+            >
+              {error}
+            </div>
+          ) : null}
+
+          <TextField
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="Email"
+            icon={<Mail className="size-4" />}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="h-12 w-full rounded-[var(--radius-button-primary)] text-[0.95rem]"
+          >
+            {loading ? 'Sending…' : 'Send reset link'}
           </Button>
-          <div className="text-center text-sm">
-            <Link href="/login" className="text-blue-600 hover:underline">Back to Log In</Link>
-          </div>
         </form>
       )}
     </div>

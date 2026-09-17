@@ -2,6 +2,29 @@ import type { MilestoneDomain, MilestoneItem } from './types';
 
 export const CHECKPOINTS = [2, 6, 12, 18, 24] as const;
 
+/**
+ * Track shows three domains (PRD 2.6 US-04, confirmed by Katrina and Vishnu on
+ * 15 Sep). Social & emotional rows stay in the database and stay unqueried —
+ * Vishnu: "keep the rows in the db, we will turn them on after we have a
+ * working product". Adding it back is one entry in this array.
+ */
+export const TRACK_DOMAINS = ['physical', 'cognitive', 'language'] as const;
+
+/** Track's own disclaimer, PRD 2.6 US-07. Not the standing one. */
+export const TRACK_DISCLAIMER =
+  'Every child is unique and milestones may vary. This feature does not ' +
+  'replace guidance from your child\u2019s pediatrician. When in doubt, ' +
+  'please reach out to a healthcare professional.';
+
+export const MIN_TRACK_MONTH = 0;
+export const MAX_TRACK_MONTH = 24;
+
+/** Clamp any incoming month to the supported range (US-02). */
+export function clampMonth(month: number): number {
+  if (!Number.isFinite(month)) return MIN_TRACK_MONTH;
+  return Math.min(MAX_TRACK_MONTH, Math.max(MIN_TRACK_MONTH, Math.floor(month)));
+}
+
 export const DOMAIN_LABELS = {
   physical: 'Physical',
   cognitive: 'Cognitive',
@@ -32,7 +55,7 @@ export function buildMilestoneDomains(
   milestones: MilestoneRow[],
   noticedIds: Set<string>
 ): MilestoneDomain[] {
-  return (Object.keys(DOMAIN_LABELS) as Array<keyof typeof DOMAIN_LABELS>).map(
+  return TRACK_DOMAINS.map(
     (domain) => ({
       domain,
       label: DOMAIN_LABELS[domain],
