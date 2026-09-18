@@ -19,8 +19,11 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     const supabase = createBrowserClient();
+    // Must point at /reset-password, not /login. It used to send her to the
+    // log-in form, where there was nothing to do with the recovery link and no
+    // way to choose a new password (PRD US-01, item 4).
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
     if (resetError) {
