@@ -17,7 +17,8 @@ DETAIL: dict[str, dict] = {
 
 "DECISION: Legal review - COPPA / HIPAA / state health-privacy exposure": {
  "do": ["Ask the programme whether they have counsel we can use. University legal clinics also do this for student projects.",
-        "The three questions: may we store infant health data under a parent account, does COPPA apply when the account holder is the adult, and does a fever triage tool risk being classed as a medical device.",
+        "The three questions: may we store infant health data under a parent account, does COPPA apply when the account holder is the adult, and does attaching a 'Fever range' label to a reading risk being classed as a medical device.",
+        "UPDATED 18 Sep: the third question used to say 'a fever triage tool'. ADR-007 removed triage entirely - Vitals is a log, there are no tiers and no result screens. What survives is the US-6 label, which is a smaller claim but still a clinical-sounding one attached to data the parent gives us.",
         "Get the answer in writing, even informally."],
  "done": ["A written answer to all three questions",
           "If anything is a no, we know what changes",
@@ -58,6 +59,7 @@ DETAIL: dict[str, dict] = {
 
 "Send design the five change requests": {
  "do": ["One sitting with Syeda, five items, in this order of importance.",
+        "SUPERSEDED BY ADR-007, do not action item 5 - ADR-007 removed triage from the product, so there are no monitor/call/go-now result screens to design and no fever article to reorder. Kept below as the record of what we asked for on 1 Sep.",
         "5) FEVER ARTICLE, do this one first. A 2-month-old at 101.4F is an emergency room visit and our current screen opens with 'usually manageable at home, try a sponge bath'. Ask for three result screens - monitor, call your doctor, go now - with severity descending on each. The emergency one is the priority.",
         "1) ONBOARDING becomes a date picker, not a month slider. Send her ADR-004: we store the birthday and calculate age from it, which answers her open question about days vs weeks vs months. Ask for the new onboarding screen and the Change-age modal.",
         "2) PREGNANCY is out of MVP. Every 'Week 24' screen has no v1 implementation and she should know before she polishes any of them. Ask for one coming-soon screen behind 'I am expecting', with an email capture.",
@@ -74,7 +76,7 @@ DETAIL: dict[str, dict] = {
 "Ratify naming + nav order": {
  "do": ["Pick one name for the commerce tab. It currently has five across our documents.",
         "Proposal: Cart in the UI, `act` in code and routes.",
-        "Confirm nav order: Home, Track, Learn, Ask, Health, Cart."],
+        "SETTLED 1 Sep by Katrina, recorded here 18 Sep: Home, Learn, Ask, Track, Vitals. Five tabs. Cart is not one of them."],
  "done": ["One name chosen and announced",
           "Nav order confirmed",
           "Design and engineering both told"]},
@@ -131,12 +133,11 @@ DETAIL: dict[str, dict] = {
  "note": "Can start immediately — it only needs Figma."},
 
 "Build the bottom tab navigation for all five tabs": {
- "do": ["Six tabs: Home, Track, Learn, Ask, Health, Cart. Route folder for Cart is `act`.",
+ "do": ["Five tabs: Home, Learn, Ask, Track, Vitals. Product confirmed this order as final on 1 Sep.",
+        "CORRECTED 18 Sep - this used to open with 'Six tabs: Home, Track, Learn, Ask, Health, Cart', which contradicted the three lines under it. Cart stopped being a tab on 1 Sep and Health was renamed Vitals; /health permanently redirects to /vitals.",
         "Use a route group with a shared layout so the tab bar persists across navigations.",
-        "Each tab gets a placeholder page with its name.",
-        "Order is Home, Learn, Ask, Track, Health. Product confirmed this as final on 1 Sep.",
-        "Five tabs, not six. Cart is gone as a tab - shopping is a Recommended for You card on Home now.",
-        "The Figma still shows the old six-tab order. Build to this list, not to the mock, and tell design the mock needs updating."],
+        "Shopping is a Recommended for You card on Home, not a tab.",
+        "The final Figma shows these five in this order - build to the mock, which is current again since the redesign."],
  "done": ["All five tabs render and navigate on a phone and on a laptop",
           "Labels are readable at 390px wide",
           "The active tab is visually obvious",
@@ -216,7 +217,7 @@ DETAIL: dict[str, dict] = {
 
 "Everyone: read DECISIONS + ONBOARDING + SAFETY, get dev env running": {
  "do": ["Read docs/ONBOARDING.md, then docs/DECISIONS.md. Fifteen minutes.",
-        "If you will touch anything in Health, read docs/SAFETY.md too. Not optional.",
+        "If you will touch anything in Vitals or the triage guard, read docs/SAFETY.md too. Not optional.",
         "Clone, `npm install`, `npm run dev`, get the app running locally."],
  "done": ["You have read all three",
           "The app runs on your machine",
@@ -274,7 +275,7 @@ DETAIL: dict[str, dict] = {
 
 "Home screen: profile card, this-week card, quick actions": {
  "do": ["Follow the design-change log: Bloom bar removed, nav at the bottom, edit icon on the profile card.",
-        "One guidance card, then quick actions to Health, Ask and Cart.",
+        "One guidance card, then the Vitals card, Ask Bloom and Recommended for You. CORRECTED 18 Sep from 'Health, Ask and Cart' - Health is Vitals and Cart is Recommended for You.",
         "The standing disclaimer sits at the bottom."],
  "done": ["Matches the updated Figma",
           "Every quick action navigates correctly",
@@ -525,14 +526,14 @@ DETAIL: dict[str, dict] = {
         "Keyboard handling on a phone is the fiddly part — test with the keyboard open on a small screen."],
  "done": ["Disclaimer shows before any message",
           "The input is not hidden behind the keyboard on a small phone",
-          "A redirect shows the Health hand-off, not answer text",
+          "A caught symptom question shows REDIRECT_ANSWER - pediatrician plus 911 - and not answer text. CORRECTED 18 Sep: there is no Health hand-off any more, the guard refuses in place.",
           "Failure shows a plain message and never a generated fallback"]},
 
 "Wire PostHog events per tech-stack doc section 15": {
  "do": ["The events listed in the tech-stack doc.",
-        "Health events must be excluded from any ad-targeting integration."],
+        "Vitals events - temperature readings and anything derived from them, including the fever-range label - must be excluded from any ad-targeting integration."],
  "done": ["Events fire and appear in PostHog",
-          "No health data in any ad integration",
+          "No Vitals data in any ad integration",
           "No personal data in event properties"]},
 
 # ============================================================ WEEK 5
@@ -616,7 +617,7 @@ DETAIL: dict[str, dict] = {
           "Feedback collected somewhere the team can read"]},
 
 "Bug triage and fixes from beta": {
- "do": ["Triage daily. Anything in Health jumps the queue."],
+ "do": ["Triage daily. Anything in Vitals or the Ask triage guard jumps the queue."],
  "done": ["Every report has a decision: fixing, not fixing, or after launch",
           "Health issues fixed first",
           "Nothing safety-related left open"]},
@@ -768,15 +769,16 @@ DETAIL: dict[str, dict] = {
           "Re-runnable as a script, because the counts change every week"]},
 
 "DATA: Define the analytics question set and event schema": {
- "do": ["Write the questions FIRST, before any event is designed. Where do moms drop out of onboarding? Which tab do they open second? How many fever checks end in EMERGENCY? How many Ask questions get redirected to Health?",
+ "do": ["Write the questions FIRST, before any event is designed. Where do moms drop out of onboarding? Which tab do they open second? How often does a logged reading land in the fever range? How many Ask questions hit the triage guard's refusal?",
+        "CORRECTED 18 Sep: this used to ask how many fever checks end in EMERGENCY and how many questions get redirected to Health. Neither exists - ADR-007 made Vitals a log with no tiers, and the guard now refuses in place instead of handing off to a tab.",
         "For each question, name the events and properties that answer it.",
         "Name events consistently — pick a convention like `noun_verb` and stick to it.",
         "Hand the finished schema to Melvin before he wires PostHog in Week 4."],
  "done": ["A written list of questions we need answered",
           "An event schema that answers each one, reviewed by whoever will implement it",
           "Naming convention written down",
-          "NO health or symptom content in any event property — the tier is fine, the free text is not",
-          "Health events flagged as excluded from any ad-targeting integration"],
+          "NO health or symptom content in any event property — a fever-range boolean is fine, the temperature value and the free text are not",
+          "Vitals events flagged as excluded from any ad-targeting integration"],
  "note": "Events designed without questions produce dashboards nobody can read. This is the cheap step that prevents that."},
 
 "DATA: Ask golden set and a written scoring rubric": {
@@ -831,13 +833,13 @@ DETAIL: dict[str, dict] = {
 "DATA: Beta analysis - funnel, drop-off, and what parents actually asked": {
  "do": ["Not 'read the Discord messages'. Build the funnel: opened, signed up, created a baby profile, opened a second tab, came back a second day.",
         "Where did people stop? Which tabs went unopened entirely?",
-        "What did they type into Ask, and how many got redirected to Health?",
-        "Which fever tiers fired, and did anyone hit EMERGENCY?",
+        "What did they type into Ask, and how many hit the triage guard's refusal? CORRECTED 18 Sep - the guard no longer redirects to Health, it refuses in place and points at a pediatrician and 911.",
+        "How many temperature readings got logged, how many carried a note, and how many landed in the fever range? CORRECTED 18 Sep - this used to ask which fever tiers fired and whether anyone hit EMERGENCY. There are no tiers: ADR-007 made Vitals a log, and the only status a reading carries is the US-6 fever-range label.",
         "Pair the numbers with two or three verbatim quotes. The number says what happened, the quote says why."],
  "done": ["Funnel built with real counts at every step",
           "Drop-off points identified and ranked",
-          "Ask questions themed, with the redirect rate reported",
-          "Fever tier distribution reported",
+          "Ask questions themed, with the guard refusal rate reported",
+          "Reading volume reported, with how many fell in the fever range",
           "Findings written up somewhere the whole team can read before the demo",
           "No participant names or contact details in the write-up"],
  "note": "This is the only real usage data the project will have before 6 October. It is also the strongest slide in the demo."},
