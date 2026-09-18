@@ -626,10 +626,10 @@ DETAIL: dict[str, dict] = {
  "do": ["Merge to `main`. It is live in about 40 seconds — no review queue, no store account.",
         "Point it at production Supabase with RLS on, and confirm the env vars are set for the production scope specifically, not only preview.",
         "Smoke test the install on a phone that has never opened the app: iPhone via Share -> Add to Home Screen, Android via the install prompt.",
-        "Walk all six tabs on the installed app, not in a browser tab."],
+        "Walk all five tabs on the installed app, not in a browser tab: Home, Learn, Ask, Track, Vitals. CORRECTED 18 Sep - this said six, which counted Cart. Cart stopped being a tab on 1 Sep."],
  "done": ["The production URL loads for someone outside the team",
           "Installs cleanly on an iPhone and on an Android",
-          "All six tabs work in the installed app",
+          "All five tabs work in the installed app",
           "Points at production Supabase with RLS on",
           "A second person has done the install from scratch"]},
 
