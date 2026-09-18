@@ -243,14 +243,18 @@ DETAIL: dict[str, dict] = {
           "Another account's marks are never visible",
           "Loading and error states exist"]},
 
-"Track screen: checkpoint navigator, 4 domains, progress counter": {
- "do": ["Replace the unlabelled 1–6 pagination in the Figma with real checkpoint months.",
-        "Group by domain. Show progress as 'x of y noticed'.",
-        "Let people browse other checkpoints, not only their baby's."],
- "done": ["Checkpoints show real months, not 1–6",
-          "The counter matches the number of checkboxes on screen",
-          "Tapping a checkbox feels instant",
-          "Works on the smallest phone we support"]},
+"Track screen: month bar 0-24, 3 domains, per-milestone checkboxes": {
+ "do": ["REWRITTEN 18 Sep against PRD 2.6. The old description asked for four domains and a progress counter; the PRD asks for neither.",
+        "Month bar across the full 0–24 range with the selected month highlighted and arrows to step outside the visible window. Not five checkpoints, not an unlabelled 1–6 pagination.",
+        "Three domains only, per US-04: Physical, Cognitive, Language. Social/Emotional is out of MVP.",
+        "No progress counter. '0 of 9' appears nowhere in the final Figma.",
+        "Every milestone gets its own checkbox (US-05), and the whole month fits on one screen (US-08).",
+        "A month the parent browses is not her baby's age — browsing must never change the profile."],
+ "done": ["Shipped in #201, rebuilt to the final Figma in #207",
+          "Three domains render, and a month with no seeded milestone says so rather than rendering an empty group",
+          "The disclaimer from US-07 is on screen",
+          "Works on the smallest phone we support"],
+ "note": "STILL OPEN: the 'What is Typical' block shows an honest empty state because Vishnu's milestone sheet is not imported yet. Importing it is the last piece. Re-seeding is not safe as-is — milestone ids are uuid5(checkpoint_month, domain, sort_order) and milestone_progress cascades on delete, so a naive re-seed silently wipes every ticked box. That needs a migration, not a seed re-run."},
 
 "Render the Track disclaimer on every checklist view": {
  "do": ["Use the approved copy from the Master sheet, unchanged.",
@@ -316,7 +320,7 @@ DETAIL: dict[str, dict] = {
           "We have agreed what is knowingly shipping broken"],
  "note": "Requested by Katrina on 1 Sep. Schedule it early enough in week 6 that there is time to act on what it finds."},
 
-"Migration 0002: temperature_readings table": {
+"Migration 0004: temperature_readings table - BLOCKS VITALS": {
  "do": ["fever_checks cannot store a plain reading. age_months_at_check, rectal_equivalent_f, red_flags, tier, rule_id and rules_version are all NOT NULL and a log fills none of them.",
         "It also has no notes column, and the Figma has a notes field on the add-reading form.",
         "And the method values disagree: the design offers Ear, Armpit, Forehead, Rectal; the table allows rectal, oral, axillary, temporal, tympanic. Use the design's four, and store them as the clinical names (tympanic, axillary, temporal, rectal) with the friendly labels in the UI.",
@@ -327,7 +331,7 @@ DETAIL: dict[str, dict] = {
           "Keya's isolation suite covers it and still passes, including the identity assertion",
           "fever_checks is untouched",
           "The migration is in supabase/migrations/ and has been applied to bumptobloom-dev"],
- "note": "Blocks Rasheed's data layer and Joanna's screen. Do it early in the week."},
+ "note": "NOT WRITTEN as of 18 Sep and it is the one thing blocking Vitals. Renumbered 18 Sep: 0002 is the private avatars bucket and 0003 is the prompt-version constraint, both on main, so this is 0004. Blocks Rasheed's data layer and Joanna's screen."},
 
 "Temperature readings: data layer and today's summary": {
  "do": ["Save a reading: temperature, method, optional note, timestamp.",
@@ -337,10 +341,12 @@ DETAIL: dict[str, dict] = {
  "done": ["A reading saves and appears in today's list",
           "The summary matches the list",
           "Another account cannot read or write these rows"],
- "note": "Replaces the old fever_checks logging task. Depends on migration 0002."},
+ "note": "Replaces the old fever_checks logging task. BLOCKED on migration 0004 (temperature_readings), which is not written yet."},
 
-"Health: temperature log screen": {
- "do": ["Build exactly what the Figma shows and nothing more.",
+"Vitals: temperature log screen": {
+ "do": ["RENAMED Health -> Vitals, 18 Sep. The tab, the route and PRD 2.7 all read Vitals; /health permanently redirects to /vitals.",
+        "BLOCKED until migration 0004 creates temperature_readings. Do not start against fever_checks.",
+        "Build exactly what the Figma shows and nothing more.",
         "Today's Summary: highest reading and total count. No red styling on Highest.",
         "Add Temperature: value with a degF unit, a Mode of Measurement dropdown, optional notes, Save Reading, and the timestamp underneath.",
         "Today's Readings: time, temperature, a note indicator where one exists, and the method. NO colour coding, no dots, no severity, no ordering by seriousness.",
@@ -426,28 +432,39 @@ DETAIL: dict[str, dict] = {
 
 # ============================================================ WEEK 3
 
-"Build Learn content dataset: Developmental, Feeding, Sleep, Diaper": {
- "do": ["Four categories, per the Master sheet. Not the six in the tech-stack doc.",
-        "Age-bucketed. Every item needs a source.",
+"Build Learn content dataset: Feeding, Sleeping, Crying & Soothing, Diaper & Digestion, Mom's Well-Being": {
+ "do": ["RETITLED 18 Sep to the five categories PRD 2.5 names. Developmental is gone; Mom's Well-Being is new.",
+        "Source of truth is Vishnu's sheet, Bump_to_Bloom_Learn_0_to_24_Months.xlsx: Month, Age Band, Category, Card Title, Card Copy, Safety/Escalation Note, Primary Guidance, Source URL.",
+        "Age-bucketed. Every item needs a source label and a live URL.",
         "Write for someone reading at 3am on four hours' sleep."],
- "done": ["All four categories covered across 0–24 months",
+ "done": ["All five categories covered across 0–24 months",
           "Every item has a source label and URL",
-          "No item gives medical instruction — that belongs in Health",
-          "Read back by someone who is not the author"]},
+          "No item gives medical instruction — that belongs with a clinician",
+          "Read back by someone who is not the author"],
+ "note": "IN REVIEW as PR #204. Two things to fix before it merges. (1) The migration is numbered 0003 and 0003 is taken on main by the prompt-version constraint — renumber to 0005 or later depending on what lands first. (2) The seed opens with 'delete from content', and saved_content.content_id cascades on delete, so re-running it silently deletes every parent's saved card. The seed ids are stable, so 'insert ... on conflict (id) do update' does the same job with no blast radius."},
 
 "Learn data layer: fetch by age and category, save, unsave": {
- "do": ["Fetch by baby age and optional category. Save and unsave per parent."],
+ "do": ["Fetch by baby age and optional category. Save and unsave per parent.",
+        "GAP FOUND 18 Sep: getContent(babyId, category?) has no month parameter, but PRD 2.5 US-2 lets a mother browse any month 0–24 independently of her baby's real age. The Learn screen reads the content table by month itself, in lib/api/learn-feed.ts, until this takes a month.",
+        "Fold learn-feed.ts back in when #204 merges. One Learn reader, not two."],
  "done": ["Age filtering returns only appropriate content",
           "Category filter works, and 'All' returns everything",
           "Saved state persists across restart",
           "Another parent's saves are invisible"]},
 
-"Learn screen with category filters and save": {
- "do": ["Filter chips across the top, cards below, source label on every card."],
- "done": ["Every card shows its source",
-          "Filters work and the active one is obvious",
-          "Save toggles and persists",
-          "Empty state is a real message, not a blank screen"]},
+"Learn screen: guidance feed with month bar": {
+ "do": ["REWRITTEN 18 Sep. The old description asked for category filter chips and a save/bookmark control. Neither is in PRD 2.5 or in the final Figma frame 04, so neither gets built.",
+        "'Guidance Feeds' label at the top, then a title reading 'Month 18, tailored to you' for the selected month (US-1).",
+        "Month bar over 0–24: a window of months around the selected one, the selected month visually distinguished, left and right arrows to reach months outside the window (US-2).",
+        "Selecting a month updates the indicator, the heading and the feed — and must not touch the child's profile or age (US-2).",
+        "Guidance cards, each with a category pill from the five MVP categories (US-1) and a source visually separated from the guidance itself (US-4).",
+        "The US-5 disclaimer, verbatim."],
+ "done": ["The month bar covers 0–24 and cannot be pushed outside it",
+          "Every card shows a category and a source, and the source is visually separate from the copy",
+          "Browsing another month leaves the baby's profile untouched",
+          "The disclaimer wording matches the PRD exactly",
+          "A month with nothing published says so plainly rather than rendering a blank screen"],
+ "note": "Drafted by Sonakshi on 18 Sep while Melvin was on #211 and #205. Melvin still owns the ticket and reviews the PR. The feed renders its empty state until #204 seeds the content table."},
 
 "E2E test: onboarding -> home -> track, with Playwright": {
  "do": ["Playwright, running in a mobile viewport (390x844), not desktop.",
@@ -741,7 +758,7 @@ DETAIL: dict[str, dict] = {
  "note": "Week 1 on purpose. If this changes a priority, we want to know before the thing is built."},
 
 "DATA: Content coverage matrix - which age x category cells are empty": {
- "do": ["Five age checkpoints across four Learn categories is 20 cells.",
+ "do": ["Eight age bands across five Learn categories is 40 cells (corrected 18 Sep from 5 x 4).",
         "Count what exists in each. Produce the grid, with counts, as a committed file.",
         "Flag the zeros and the ones — a 4-month-old whose Sleep category is empty gets an empty tab, and that is what a demo reviewer will click on.",
         "Hand the gaps to whoever is writing content, ranked by how likely that age is to be demoed."],
