@@ -326,13 +326,16 @@ DETAIL: dict[str, dict] = {
         "It also has no notes column, and the Figma has a notes field on the add-reading form.",
         "And the method values disagree: the design offers Ear, Armpit, Forehead, Rectal; the table allows rectal, oral, axillary, temporal, tympanic. Use the design's four, and store them as the clinical names (tympanic, axillary, temporal, rectal) with the friendly labels in the UI.",
         "New table: temperature_readings with baby_id, temp_f, method, notes, created_at.",
-        "RLS on, owner-scoped, same policy shape as the other private tables. Add it to Keya's isolation suite in the same PR.",
+        "RLS on, owner-scoped. Use the existing helper rather than writing a new predicate: `create policy \"own temperature readings\" on temperature_readings for all using (owns_baby(baby_id)) with check (owns_baby(baby_id));` - identical to the baby_milestones, baby_activities and fever_checks policies.",
+        "Both halves matter. `using` alone lets another account INSERT a row against someone else's baby; `with check` is what stops it.",
+        "Add it to the isolation suite in the same PR - verify_account_a.sql and verify_account_b.sql. Assert identity, not just counts: a zero-row result proves nothing if the fixture never inserted anything. Same trap as the check_anonymous follow-up.",
+        "Add a fixture row to seed_rls_test_dataset.sql so account B has something real to fail to see.",
         "Leave fever_checks in place and unused. Do not alter six NOT NULL constraints on a table nothing writes to."],
  "done": ["temperature_readings exists with RLS enabled",
           "Keya's isolation suite covers it and still passes, including the identity assertion",
           "fever_checks is untouched",
           "The migration is in supabase/migrations/ and has been applied to bumptobloom-dev"],
- "note": "NOT WRITTEN as of 18 Sep and it is the one thing blocking Vitals. Renumbered 18 Sep: 0002 is the private avatars bucket and 0003 is the prompt-version constraint, both on main, so this is 0004. Blocks Rasheed's data layer and Joanna's screen."},
+ "note": "REASSIGNED to Keya 18 Sep. NOT WRITTEN as of 18 Sep and it is the one thing blocking Vitals. Renumbered 18 Sep: 0002 is the private avatars bucket and 0003 is the prompt-version constraint, both on main, so this is 0004. Blocks Rasheed's data layer and Joanna's screen."},
 
 "Temperature readings: data layer and today's summary": {
  "do": ["Save a reading: temperature, method, optional note, timestamp.",
