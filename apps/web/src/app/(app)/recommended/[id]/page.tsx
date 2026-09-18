@@ -52,6 +52,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </li>
           ))}
         </ul>
+        {/* US-010, verbatim from Product. "medical device" is flagged as a
+            likely typo for "medical advice", but left as approved pending
+            Product confirmation - do not silently correct. */}
+        <p className="mt-3 text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          Product recommendation are general suggestions and do not replace professional medical device
+        </p>
       </article>
 
       <p className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -79,7 +85,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         Back to Recommended
       </Link>
 
-      <StandingDisclaimer text="Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product's age and safety information before purchasing." />
+      <StandingDisclaimer text="Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product's age and safety information before purchasing. We may earn a small commission at no extra cost to you." />
     </section>
   );
 }
