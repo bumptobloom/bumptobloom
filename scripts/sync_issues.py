@@ -169,14 +169,34 @@ def main():
     want = {r["Name"]: r for r in rows}
     print(f"CSV has {len(want)} tasks\n")
 
-    out = gh(["issue", "list", "--repo", REPO, "--limit", "400",
-              "--state", "open", "--json", "number,title,body"])
-    have = {i["title"]: i for i in json.loads(out or "[]")}
-    print(f"GitHub has {len(have)} open issues\n")
+    # Fetch OPEN AND CLOSED. Fetching only open ones was a duplicate factory:
+    # every issue somebody had already finished and closed looked "missing
+    # from GitHub", so the create step re-opened it as a brand new ticket.
+    # Found 18 of them in a dry run on 18 Sep, all completed week 1-2 work.
+    out = gh(["issue", "list", "--repo", REPO, "--limit", "600",
+              "--state", "all", "--json", "number,title,body,state"])
+    every = {i["title"]: i for i in json.loads(out or "[]")}
+    have = {t: i for t, i in every.items() if i.get("state", "").upper() == "OPEN"}
+    closed = len(every) - len(have)
+    print(f"GitHub has {len(have)} open issues and {closed} closed\n")
 
+    # Only an OPEN issue can go stale — closing a closed one is a no-op that
+    # posts a second comment on it.
     stale = [t for t in have if t not in want]
-    fresh = [t for t in want if t not in have]
+    # "Missing" means missing entirely, not merely closed. A closed issue whose
+    # task is still in the CSV stays closed; reopening it is a human decision.
+    fresh = [t for t in want if t not in every]
+    # Refresh bodies on open issues only. Rewriting the body of finished work
+    # spams the timeline of issues nobody is going to read again.
     both = [t for t in want if t in have]
+
+    revived = [t for t in want if t in every and t not in have]
+    if revived:
+        print(f"note: {len(revived)} CSV tasks match a CLOSED issue — left closed, "
+              f"reopen by hand if the work is genuinely back:")
+        for t in revived[:10]:
+            print(f"   #{every[t]['number']}  {t[:62]}")
+        print()
 
     # ---------- 1. close what no longer exists ----------
     print(f"[1/3] Closing {len(stale)} obsolete issues")
