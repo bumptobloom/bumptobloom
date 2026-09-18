@@ -7,6 +7,7 @@ import { Mail, Lock } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { createParentProfile } from '@/lib/actions/parent-profile';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -31,6 +32,12 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
+
+    // Self-heal: if signup succeeded creating the auth account but the
+    // parent_profiles insert failed (see #205), this recovers the account
+    // transparently on next login instead of leaving the user stuck.
+    // No-op if the profile already exists.
+    await createParentProfile();
 
     router.push('/');
     router.refresh();
