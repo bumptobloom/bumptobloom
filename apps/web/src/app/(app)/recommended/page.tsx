@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
 import { getRecommendations } from '@/lib/api/recommendations';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
@@ -9,23 +10,7 @@ export default async function RecommendedPage() {
   const home = await getHome();
 
   if (!home.baby) {
-    return (
-      <section className="flex flex-col gap-4">
-        <h1 className="text-[26px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Recommended for You
-        </h1>
-        <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          Add your baby to see age-appropriate recommendations.
-        </p>
-        <Link
-          href="/onboarding"
-          className="mt-2 inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
-          style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
-        >
-          Add your baby
-        </Link>
-      </section>
-    );
+    redirect('/onboarding');
   }
 
   const recommendations = await getRecommendations(home.baby.id);
