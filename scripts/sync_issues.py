@@ -175,27 +175,64 @@ def main():
     # Found 18 of them in a dry run on 18 Sep, all completed week 1-2 work.
     out = gh(["issue", "list", "--repo", REPO, "--limit", "600",
               "--state", "all", "--json", "number,title,body,state"])
-    every = {i["title"]: i for i in json.loads(out or "[]")}
-    have = {t: i for t, i in every.items() if i.get("state", "").upper() == "OPEN"}
-    closed = len(every) - len(have)
-    print(f"GitHub has {len(have)} open issues and {closed} closed\n")
+    issues = json.loads(out or "[]")
+
+    # Build the open map straight from the OPEN issues, and keep closed ones
+    # separate. Keying one combined dict by title first would let a closed
+    # issue overwrite an open one that shares its title, depending purely on
+    # the order the API returned them -- and that open issue would then look
+    # closed, so the sync would skip refreshing it. Caught by Keya in review
+    # of #215.
+    have: dict[str, dict] = {}
+    duplicate_open: list[dict] = []
+    for issue in issues:
+        if issue.get("state", "").upper() != "OPEN":
+            continue
+        if issue["title"] in have:
+            duplicate_open.append(issue)
+            continue
+        have[issue["title"]] = issue
+
+    closed_by_title: dict[str, dict] = {}
+    for issue in issues:
+        if issue.get("state", "").upper() == "OPEN":
+            continue
+        closed_by_title.setdefault(issue["title"], issue)
+
+    # A title is "known" if ANY issue carries it, open or closed.
+    known_titles = set(have) | set(closed_by_title)
+
+    print(f"GitHub has {len(have)} open issues and "
+          f"{len(closed_by_title)} closed\n")
+
+    # The board assumes one issue per task name. Two open issues sharing a
+    # title means one of them is silently ignored here, so say so rather than
+    # picking one and moving on.
+    if duplicate_open:
+        print(f"warning: {len(duplicate_open)} OPEN issues share a title with "
+              f"another open issue. Only the first is synced -- close the "
+              f"duplicate by hand:")
+        for issue in duplicate_open[:10]:
+            print(f"   #{issue['number']}  {issue['title'][:62]}")
+        print()
 
     # Only an OPEN issue can go stale — closing a closed one is a no-op that
     # posts a second comment on it.
     stale = [t for t in have if t not in want]
     # "Missing" means missing entirely, not merely closed. A closed issue whose
-    # task is still in the CSV stays closed; reopening it is a human decision.
-    fresh = [t for t in want if t not in every]
+    # task is still in the CSV stays closed; reopening is a human decision.
+    fresh = [t for t in want if t not in known_titles]
     # Refresh bodies on open issues only. Rewriting the body of finished work
     # spams the timeline of issues nobody is going to read again.
     both = [t for t in want if t in have]
 
-    revived = [t for t in want if t in every and t not in have]
+    # Only genuinely closed: a title that also has an open issue is not revived.
+    revived = [t for t in want if t in closed_by_title and t not in have]
     if revived:
         print(f"note: {len(revived)} CSV tasks match a CLOSED issue — left closed, "
               f"reopen by hand if the work is genuinely back:")
         for t in revived[:10]:
-            print(f"   #{every[t]['number']}  {t[:62]}")
+            print(f"   #{closed_by_title[t]['number']}  {t[:62]}")
         print()
 
     # ---------- 1. close what no longer exists ----------
