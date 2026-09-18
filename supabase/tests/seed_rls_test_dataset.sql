@@ -10,7 +10,7 @@
 -- the right account. Delete them and CI fails on every PR, including ones that
 -- touch nothing but CSS. That happened on 11 Sep 2026.
 --
--- The ten per-account rows are safe to leave
+-- The ten per-account rows are safe to leave: RLS scopes them, so nobody but
 -- the two test accounts can see them.
 --
 -- The four shared reference rows are the ones that needed care, because they
