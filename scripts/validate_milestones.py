@@ -5,8 +5,20 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-ALLOWED_CHECKPOINTS = {2, 6, 12, 18, 24}
+# Every month 0-24, not the five CDC checkpoints. Updated 19 Sep when
+# Vishnu's month-by-month sheet replaced the checkpoint dataset. The sheet's
+# own note: CDC publishes checklists at 2, 4, 6, 9, 12, 15, 18 and 24 months,
+# and an in-between month is mapped to the younger checklist rather than
+# presented as an official CDC milestone for that month. The `description`
+# column carries that provenance per row.
+ALLOWED_CHECKPOINTS = set(range(0, 25))
+
 ALLOWED_DOMAINS = {"physical", "cognitive", "language", "social_emotional"}
+
+# Coverage is only required for the three domains Track renders (PRD 2.6
+# US-04). social_emotional is out of MVP and its rows stay dormant in the
+# database, so a dataset without them is correct, not incomplete.
+REQUIRED_DOMAINS = {"physical", "cognitive", "language"}
 ALLOWED_SOURCE_HOSTS = {"cdc.gov", "aap.org", "who.int"}
 
 REQUIRED_COLUMNS = {
@@ -151,7 +163,7 @@ def validate(path, check_urls=False):
         expected_cells = {
             (checkpoint, domain)
             for checkpoint in ALLOWED_CHECKPOINTS
-            for domain in ALLOWED_DOMAINS
+            for domain in REQUIRED_DOMAINS
         }
 
         missing_cells = expected_cells - seen_cells

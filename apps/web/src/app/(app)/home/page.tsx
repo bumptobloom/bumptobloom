@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Pencil, Thermometer, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { getMonthTypical } from '@/lib/api/month-guidance';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +47,15 @@ function addMonthsClamped(from: Date, months: number): Date {
  * wait for. So: take the optimistic month count, build the clamped
  * anniversary, and step back one month only if that date is still ahead.
  */
+function completedMonths(birthDate: string, now: Date): number {
+  const birth = new Date(`${birthDate}T00:00:00`);
+  let months =
+    (now.getFullYear() - birth.getFullYear()) * 12 +
+    (now.getMonth() - birth.getMonth());
+  if (addMonthsClamped(birth, months).getTime() > now.getTime()) months -= 1;
+  return Math.min(24, Math.max(0, months));
+}
+
 function monthAndDay(birthDate: string, now: Date): string {
   const birth = new Date(`${birthDate}T00:00:00`);
 
@@ -92,7 +102,11 @@ export default async function HomePage() {
     redirect('/onboarding');
   }
 
-  const { baby, thisWeek } = home;
+  const { baby } = home;
+
+  // US-004. Same month_guidance row Track and Learn read, so the three
+  // screens cannot disagree about what is typical this month.
+  const typical = await getMonthTypical(completedMonths(baby.birthDate, now));
   const firstName = baby.name.trim().split(' ')[0];
 
   return (
@@ -141,20 +155,9 @@ export default async function HomePage() {
         <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
           THIS WEEK, FOR YOU
         </h2>
-        {thisWeek ? (
-          <>
-            <h3 className="mt-2 text-[1.05rem] leading-snug text-[var(--text-primary)]">
-              {thisWeek.title}
-            </h3>
-            <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-              {thisWeek.excerpt}
-            </p>
-          </>
-        ) : (
-          <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-            Nothing published for this age yet.
-          </p>
-        )}
+        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+          {typical ?? 'Nothing published for this age yet.'}
+        </p>
         {/*
           Settled by Product on 15 Sep: "what is typical" cannot map onto Learn's
           five specific categories, so this card's content comes from the
