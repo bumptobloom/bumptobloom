@@ -35,7 +35,7 @@ to 6 run in separate sessions and need the rows to still be there. The fixtures
 are meant to live permanently in the shared database.
 
 **Do not tear them down on the shared database as tidy-up.** CI runs
-`btb_rls_check.py` on every pull request and that script asserts the nine
+`btb_rls_check.py` on every pull request and that script asserts the ten
 per-account rows exist. Delete them and the RLS isolation suite fails on every
 PR, including ones that touch nothing but CSS. That happened on 11 September
 2026 and blocked an unrelated PR.

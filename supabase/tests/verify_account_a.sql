@@ -31,10 +31,42 @@ select 'saved_content', count(*) from saved_content
 union all
 select 'fever_checks', count(*) from fever_checks
 union all
+select 'temperature_readings', count(*) from temperature_readings
+union all
 select 'ai_conversations', count(*) from ai_conversations
 union all
 select 'ai_messages', count(*) from ai_messages
 union all
 select 'ai_runs', count(*) from ai_runs;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from temperature_readings
+    where id = '61000000-0000-4000-8000-000000000001'
+  ) or exists (
+    select 1
+    from temperature_readings
+    where id = '61000000-0000-4000-8000-000000000002'
+  ) then
+    raise exception 'Account A temperature_readings identity check failed';
+  end if;
+
+  begin
+    insert into temperature_readings (
+      id, baby_id, temp_f, method
+    ) values (
+      '61000000-0000-4000-8000-000000000011',
+      '20000000-0000-4000-8000-000000000002',
+      98.6,
+      'temporal'
+    );
+
+    raise exception 'Account A inserted a reading for Account B baby';
+  exception
+    when insufficient_privilege then null;
+  end;
+end $$;
 
 rollback;
