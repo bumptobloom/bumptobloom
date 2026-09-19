@@ -126,19 +126,22 @@ export async function getHome(babyId?: string): Promise<HomeData> {
   const checkpointMonth =
     checkpoints.filter((cp) => cp <= currentMonthFloor).pop() ?? checkpoints[0];
 
-  // 4. Batch guidance and milestone queries in parallel
-  const [guidanceResult, milestonesResult, noticedResult] = await Promise.all([
-    // Guidance: this-week developmental card
-    supabase
-      .from('content')
-      .select('id, title, body, source_label, source_url')
-      .eq('published', true)
-      .lte('min_age_month', currentMonthFloor)
-      .gte('max_age_month', currentMonthFloor)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-
+  // 4. Batch milestone queries in parallel
+  //
+  // "This week, for you" used to read the newest `content` row in the age
+  // band. That table is Learn's five categories -- Feeding, Sleeping, Crying
+  // & Soothing, Diaper & Digestion, Mom's Well-Being -- and Product settled on
+  // 15 Sep that what-is-typical comes from Vishnu's milestone sheet instead,
+  // precisely because it does not map onto those categories.
+  //
+  // Left as it was, the moment the Learn content is seeded Home would start
+  // showing a random Learn card ("Safe Sleep Every Time") captioned as what is
+  // typical for the baby this week. It would look plausible, which is how it
+  // would survive to the demo.
+  //
+  // So Home shows its honest empty state until the milestone sheet is
+  // imported, and this re-reads from that import -- not from `content`.
+  const [milestonesResult, noticedResult] = await Promise.all([
     // Milestones for this checkpoint
     supabase
       .from('milestones')
@@ -152,11 +155,6 @@ export async function getHome(babyId?: string): Promise<HomeData> {
       .eq('baby_id', baby.id),
   ]);
 
-  if (guidanceResult.error) {
-    console.error('[getHome] Database error fetching guidance content:', guidanceResult.error);
-    throw new Error(`Database error fetching guidance: ${guidanceResult.error.message}`);
-  }
-
   if (milestonesResult.error) {
     console.error('[getHome] Database error fetching milestones:', milestonesResult.error);
     throw new Error(`Database error fetching milestones: ${milestonesResult.error.message}`);
@@ -167,20 +165,9 @@ export async function getHome(babyId?: string): Promise<HomeData> {
     throw new Error(`Database error fetching noticed milestones: ${noticedResult.error.message}`);
   }
 
-  // 5. Map guidance content
-  const guidanceData = guidanceResult.data;
-  const thisWeek: ThisWeekGuidance | null = guidanceData
-    ? {
-        contentId: guidanceData.id,
-        title: guidanceData.title,
-        excerpt: guidanceData.body
-          ? guidanceData.body.slice(0, 140).trim() +
-            (guidanceData.body.length > 140 ? '…' : '')
-          : '',
-        sourceLabel: guidanceData.source_label,
-        sourceUrl: guidanceData.source_url ?? null,
-      }
-    : null;
+  // 5. What-is-typical copy. Null until Vishnu's milestone sheet is imported;
+  // Home renders its empty state rather than borrowing a Learn card.
+  const thisWeek: ThisWeekGuidance | null = null;
 
   // 6. Map milestone progress (honest total from query data)
   const checkpointMilestoneIds = new Set(

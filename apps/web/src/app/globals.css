@@ -76,7 +76,11 @@
   --surface-terra: #f7e3d6;
   --surface-moss: #e9efdf;
   --text-primary: #2c3a2c;
-  --text-secondary: #6e7a68;
+  /* Darkened 19 Sep. #6e7a68 scored 4.10 against --page-surface where WCAG
+     AA needs 4.5, and this token carries almost all the small copy in the
+     app: card descriptions, empty states, disclaimers, source lines.
+     #5f6b59 scores 5.10 on the worst surface and keeps the muted tone. */
+  --text-secondary: #5f6b59;
   --text-brand: #4c6b4a;
   --text-accent-warm: #4a3418;
   --text-accent-terracotta: #9a5638;
