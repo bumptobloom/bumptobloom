@@ -12,6 +12,7 @@ import {
   validatePassword,
   validatePasswordConfirmation,
 } from '@/lib/validation/password';
+import { resolveRecoveryState } from '@/lib/auth/recovery-state';
 
 /**
  * PRD US-01, item 4: the second half of the reset flow.
@@ -23,68 +24,82 @@ import {
  * The link carries a recovery grant. Supabase's browser client picks it up on
  * load, which is what lets `updateUser` set a password without the old one.
  */
-function ResetPasswordForm() {
+interface ResetPasswordAttemptProps {
+  code: string | null;
+  urlError: string | null;
+}
+
+function ResetPasswordAttempt({ code, urlError }: ResetPasswordAttemptProps) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  /** null while we work out whether the link is still good. */
-  const [sessionReady, setSessionReady] = useState<boolean | null>(null);
+  const [exchange, setExchange] = useState<'ok' | 'failed' | null>(null);
+  const [sawRecoveryEvent, setSawRecoveryEvent] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // An expired or already-used link comes back with an error on the URL rather
-  // than a session (US-01: single use, 15 minutes). That is readable straight
-  // from the URL, so derive it during render instead of setting state.
-  const urlError =
-    searchParams.get('error_description') ?? searchParams.get('error');
-  const linkValid = urlError ? false : sessionReady;
+  const recoveryState = resolveRecoveryState({
+    urlError,
+    code,
+    exchange,
+    sawRecoveryEvent,
+    timedOut,
+  });
 
   useEffect(() => {
-    if (urlError) return;
+    if (urlError || !code) return;
 
     let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const supabase = createBrowserClient();
 
     // PASSWORD_RECOVERY fires once the client has consumed the link. Subscribe
-    // before checking, so a grant that lands a moment later is not missed.
+    // before exchanging, so a grant that lands a moment later is not missed.
+    // A normal SIGNED_IN event or a cached session is not recovery proof.
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (cancelled) return;
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-        setSessionReady(true);
+      if (event === 'PASSWORD_RECOVERY') {
+        if (timeoutId) clearTimeout(timeoutId);
+        setSawRecoveryEvent(true);
       }
     });
 
     (async () => {
-      const code = searchParams.get('code');
-      if (code) {
-        const { error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(code);
-        // An already-consumed code errors here; the client may also have
-        // exchanged it automatically, so fall through to the session check
-        // rather than failing outright.
-        if (exchangeError && !cancelled) {
-          const { data } = await supabase.auth.getSession();
-          if (!cancelled) setSessionReady(Boolean(data.session));
-          return;
-        }
+      const { error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
+      if (cancelled) return;
+
+      if (!exchangeError) {
+        setExchange('ok');
+        return;
       }
 
-      const { data } = await supabase.auth.getSession();
-      if (!cancelled) setSessionReady(Boolean(data.session));
+      // detectSessionInUrl can win the race and consume the code first. In
+      // that case our exchange fails, but PASSWORD_RECOVERY is still queued.
+      // Give that event a short window before treating the link as invalid.
+      setExchange('failed');
+      timeoutId = setTimeout(() => {
+        if (!cancelled) setTimedOut(true);
+      }, 2_000);
     })();
 
     return () => {
       cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
       sub.subscription.unsubscribe();
     };
-  }, [searchParams, urlError]);
+  }, [code, urlError]);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (recoveryState !== 'verified') {
+      setError('This reset link has expired or has already been used.');
+      return;
+    }
 
     const matchError = validatePasswordConfirmation(password, confirmPassword);
     if (matchError) {
@@ -144,7 +159,7 @@ function ResetPasswordForm() {
             Back to log in
           </Link>
         </div>
-      ) : linkValid === false ? (
+      ) : recoveryState === 'invalid' ? (
         <div className="space-y-4">
           <p
             role="alert"
@@ -201,18 +216,38 @@ function ResetPasswordForm() {
 
           <Button
             type="submit"
-            disabled={loading || linkValid === null}
+            disabled={loading || recoveryState === 'pending'}
             className="h-12 w-full rounded-[var(--radius-button-primary)] text-[0.95rem]"
           >
             {loading
               ? 'Updating…'
-              : linkValid === null
+              : recoveryState === 'pending'
                 ? 'Checking your link…'
                 : 'Update password'}
           </Button>
         </form>
       )}
     </div>
+  );
+}
+
+function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+
+  // An expired or already-used link comes back with an error on the URL rather
+  // than a recovery code (US-01: single use, 15 minutes). Keying the attempt
+  // also clears its state if a different link opens without remounting the page.
+  const urlError =
+    searchParams.get('error_description') ?? searchParams.get('error');
+  const code = searchParams.get('code');
+  const attemptKey = `${urlError ?? ''}:${code ?? ''}`;
+
+  return (
+    <ResetPasswordAttempt
+      key={attemptKey}
+      code={code}
+      urlError={urlError}
+    />
   );
 }
 
