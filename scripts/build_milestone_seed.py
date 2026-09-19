@@ -1,4 +1,4 @@
-"""Generate supabase/seed/milestones.sql from data/milestones/milestones.csv.
+"""Generate milestone seed SQL from the approved month-by-month CSV files.
 
 The CSV is the source of truth. This script only translates it. If a milestone
 is wrong, fix the CSV and re-run:
@@ -103,7 +103,7 @@ def main() -> None:
     header = f"""-- ============================================================
 -- MILESTONE SEED DATA
 -- GENERATED FILE — do not edit by hand.
--- Source: data/milestones/milestones.csv
+-- Source: data/milestones/milestones_0_24.csv
 -- Regenerate: python3 scripts/build_milestone_seed.py
 --
 -- {len(rows)} milestones across {len(checkpoints)} CDC checkpoints
