@@ -36,6 +36,11 @@ delete from ai_conversations where id in (
 );
 
 -- Vitals
+delete from temperature_readings where id in (
+  '61000000-0000-4000-8000-000000000001',
+  '61000000-0000-4000-8000-000000000002'
+);
+
 delete from fever_checks where id in (
   '60000000-0000-4000-8000-000000000001',
   '60000000-0000-4000-8000-000000000002'
@@ -90,7 +95,11 @@ begin
   + (select count(*) from content         where id = '50000000-0000-4000-8000-000000000001')
   + (select count(*) from prompt_versions where id = '80000000-0000-4000-8000-000000000001')
   + (select count(*) from audit_events    where id = '90000000-0000-4000-8000-000000000001')
-  + (select count(*) from babies          where id in (
+
+  + (select count(*) from temperature_readings where id in (
+      '61000000-0000-4000-8000-000000000001',
+      '61000000-0000-4000-8000-000000000002'))
+  + (select count(*) from babies where id in (
       '20000000-0000-4000-8000-000000000001',
       '20000000-0000-4000-8000-000000000002'))
   + (select count(*) from parent_profiles where id in (
