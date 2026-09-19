@@ -6,12 +6,24 @@ import { cn } from '@/lib/utils';
 const WINDOW = 6;
 
 /**
- * Figma 06. Six months at a time with the selected one ringed, arrows to step
- * outside the window. Navigation is plain links with a `month` query param, so
- * it works without JavaScript and every month is a real URL a parent can land
- * on or share (US-02, US-06).
+ * Figma 06 (Track) and Figma 04 (Learn). Six months at a time with the selected
+ * one ringed, arrows to step outside the window. Navigation is plain links with
+ * a `month` query param, so it works without JavaScript and every month is a
+ * real URL a parent can land on or share.
+ *
+ * Track US-02/US-06 and Learn US-2 describe the same control, so it is one
+ * component with a `basePath`. Both screens bound it to 0-24, and neither
+ * writes anything: changing the viewed month never touches the child's profile.
  */
-export function MonthStrip({ month }: { month: number }) {
+export function MonthStrip({
+  month,
+  basePath = '/track',
+  label = 'Milestone month',
+}: {
+  month: number;
+  basePath?: string;
+  label?: string;
+}) {
   const start = Math.min(
     Math.max(MIN_TRACK_MONTH, month - 2),
     MAX_TRACK_MONTH - WINDOW + 1,
@@ -22,8 +34,9 @@ export function MonthStrip({ month }: { month: number }) {
   const next = Math.min(MAX_TRACK_MONTH, month + 1);
 
   return (
-    <nav aria-label="Milestone month" className="flex items-center gap-1">
+    <nav aria-label={label} className="flex items-center gap-1">
       <StepLink
+        basePath={basePath}
         to={prev}
         disabled={month === MIN_TRACK_MONTH}
         label="Previous month"
@@ -37,7 +50,7 @@ export function MonthStrip({ month }: { month: number }) {
           return (
             <li key={m}>
               <Link
-                href={`/track?month=${m}`}
+                href={`${basePath}?month=${m}`}
                 aria-current={selected ? 'true' : undefined}
                 className={cn(
                   'flex size-11 flex-col items-center justify-center rounded-full leading-none transition',
@@ -55,6 +68,7 @@ export function MonthStrip({ month }: { month: number }) {
       </ul>
 
       <StepLink
+        basePath={basePath}
         to={next}
         disabled={month === MAX_TRACK_MONTH}
         label="Next month"
@@ -66,11 +80,13 @@ export function MonthStrip({ month }: { month: number }) {
 }
 
 function StepLink({
+  basePath,
   to,
   disabled,
   label,
   children,
 }: {
+  basePath: string;
   to: number;
   disabled: boolean;
   label: string;
@@ -89,7 +105,7 @@ function StepLink({
 
   return (
     <Link
-      href={`/track?month=${to}`}
+      href={`${basePath}?month=${to}`}
       aria-label={label}
       className="flex size-8 shrink-0 items-center justify-center text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
     >
