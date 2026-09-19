@@ -6,7 +6,6 @@ import {
   TRACK_DISCLAIMER,
   buildMilestoneDomains,
   clampMonth,
-  getCheckpoint,
 } from './milestone-utils';
 
 /**
@@ -49,13 +48,24 @@ export async function getMilestones(
     selectedMonth === undefined
       ? clampMonth(ageMonths)
       : clampMonth(selectedMonth);
-  const checkpointMonth = getCheckpoint(month);
+
+  // Query the month itself. Until 19 Sep the dataset was five CDC checkpoints
+  // and this resolved a month to the nearest younger one, so month 3 showed
+  // month 2's list. Vishnu's sheet covers every month 0-24, so the mapping is
+  // no longer a fallback -- it would just throw away the data we imported.
+  const checkpointMonth = month;
 
   const [milestonesResult, noticedResult] = await Promise.all([
+    // retired_at is null is not optional. Rows superseded by a later import are
+    // marked rather than deleted, because baby_milestones cascades on delete
+    // and that is a mother's own record. Without this filter nothing is ever
+    // actually retired -- including the RLS test fixture, which sits at month 0
+    // and would otherwise render "Test milestone" on a real Track screen.
     supabase
       .from('milestones')
       .select('id, domain, title, sort_order')
       .eq('checkpoint_month', checkpointMonth)
+      .is('retired_at', null)
       .order('domain')
       .order('sort_order'),
 
