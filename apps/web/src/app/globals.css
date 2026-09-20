@@ -13,11 +13,13 @@
   --color-card-secondary: var(--card-secondary);
   --color-surface-terra: var(--surface-terra);
   --color-surface-moss: var(--surface-moss);
+  --color-surface-alert: var(--surface-alert);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-brand: var(--text-brand);
   --color-text-accent-warm: var(--text-accent-warm);
   --color-text-accent-terracotta: var(--text-accent-terracotta);
+  --color-text-alert: var(--text-alert);
   --color-border-subtle: var(--border-subtle);
   --color-border-card: var(--border-card);
   --radius-input: var(--radius-input);
@@ -25,7 +27,8 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-brand-serif), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-family), Georgia, "Times New Roman", serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -75,15 +78,52 @@
   --card-secondary: #fcfaf0;
   --surface-terra: #f7e3d6;
   --surface-moss: #e9efdf;
+  /* Added 20 Sep with the callout spec. The Safety variant is the only
+     place these two are used. */
+  --surface-alert: #fae2de;
   --text-primary: #2c3a2c;
   --text-secondary: #6e7a68;
   --text-brand: #4c6b4a;
   --text-accent-warm: #4a3418;
-  --text-accent-terracotta: #9a5638;
+  /* Design gave #9a5638. It scores 4.4995 on --surface-terra, which rounds
+     to 4.50 and fails AA by a hair. One step darker clears it at 4.52 and
+     is indistinguishable by eye. */
+  --text-accent-terracotta: #995638;
+  /* Design gave #c0503f, which scores 3.81 on --surface-alert -- well under
+     the 4.5 AA needs. This is the variant that carries medical and
+     emergency copy, so it is the one that has to be readable. Same hue,
+     10% darker, scores 4.52. Flagged to design 20 Sep. */
+  --text-alert: #ad4839;
   --border-subtle: #e6dcc8;
   --border-card: #e5dbc7;
   --radius-input: 14px;
   --radius-button-primary: 24px;
+
+  /* ---- Scales, from design 20 Sep ----------------------------------------
+     Before this, every size in the app was a number somebody read off a mock
+     by eye. Use these; do not invent a value between two of them. */
+
+  /* Spacing: base-2/4. 16 and 20 do most of the work as card padding. */
+  --space-2: 2px;   --space-4: 4px;   --space-6: 6px;   --space-8: 8px;
+  --space-10: 10px; --space-12: 12px; --space-14: 14px; --space-16: 16px;
+  --space-18: 18px; --space-20: 20px; --space-24: 24px; --space-28: 28px;
+  --space-32: 32px; --space-40: 40px; --space-64: 64px;
+
+  /* Radius: 16 for cards, 24 for buttons and CTAs, 999 for pills. */
+  --radius-5: 5px;   --radius-8: 8px;   --radius-12: 12px; --radius-14: 14px;
+  --radius-16: 16px; --radius-20: 20px; --radius-24: 24px; --radius-pill: 999px;
+
+  /* Type. Each role is size + line-height + weight + family, because a size
+     on its own is not a decision. */
+  --type-eyebrow: 700 12px/16px var(--font-sans);
+  --type-body: 400 16px/26px var(--font-sans);
+  --type-body-date: 400 20px/26px var(--font-sans);
+  --type-label: 600 16px/22px var(--font-sans);
+  --type-small-title: 400 16px/22px var(--font-display);
+  --type-card-title: 400 22px/28px var(--font-display);
+  --type-track-number: 700 15px/18px var(--font-sans);
+  --type-track-unit: 400 10px/12px var(--font-sans);
+  --type-nav-chevron: 700 20px/24px var(--font-sans);
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
