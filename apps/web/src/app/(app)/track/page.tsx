@@ -4,6 +4,7 @@ import { getHome } from '@/lib/api/home';
 import { getMilestones } from '@/lib/api/milestones';
 import { MilestoneChecklist } from '@/components/track/milestone-checklist';
 import { MonthStrip } from '@/components/track/month-strip';
+import { getMonthTypical } from '@/lib/api/month-guidance';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,8 @@ export default async function TrackPage({
     parsed === undefined || Number.isNaN(parsed) ? undefined : parsed,
   );
 
+  const typical = await getMonthTypical(milestones.month);
+
   const viewingOtherMonth = milestones.month !== milestones.babyMonth;
 
   return (
@@ -47,18 +50,13 @@ export default async function TrackPage({
         </Link>
       ) : null}
 
-      {/*
-        US-03. The copy per month lives in the milestone dataset Vishnu sent on
-        15 Sep, which is not imported yet, so the block renders its heading and
-        says plainly that there is nothing published rather than inventing a
-        paragraph about a baby's development.
-      */}
+      {/* US-03. One sentence per month, from month_guidance. */}
       <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
         <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
           {milestones.month} MONTHS &mdash; WHAT IS TYPICAL
         </h2>
         <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-          Nothing published for this month yet.
+          {typical ?? 'Nothing published for this month yet.'}
         </p>
       </article>
 

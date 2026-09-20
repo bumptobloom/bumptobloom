@@ -1,4 +1,4 @@
-"""Generate supabase/seed/milestones.sql from data/milestones/milestones.csv.
+"""Generate milestone seed SQL from the approved month-by-month CSV files.
 
 The CSV is the source of truth. This script only translates it. If a milestone
 is wrong, fix the CSV and re-run:
@@ -21,8 +21,40 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CSV_PATH = ROOT / "data" / "milestones" / "milestones.csv"
+CSV_PATH = ROOT / "data" / "milestones" / "milestones_0_24.csv"
 SQL_PATH = ROOT / "supabase" / "seed" / "milestones.sql"
+TYPICAL_CSV = ROOT / "data" / "milestones" / "month_typical.csv"
+TYPICAL_SQL = ROOT / "supabase" / "seed" / "month_guidance.sql"
+
+# The production snapshot. Releases apply supabase/migrations in order; nothing
+# runs supabase/seed, so the data has to travel as a migration too. It is
+# generated from the two seed files above rather than assembled by hand, so the
+# snapshot and the seed cannot drift apart.
+MIGRATION_SQL = (
+    ROOT / "supabase" / "migrations" / "0006_milestones_month_by_month_data.sql"
+)
+
+MIGRATION_HEADER = """\
+-- One-time production data migration for the month-by-month Track release.
+--
+-- GENERATED FILE — do not edit by hand.
+-- Regenerate: python3 scripts/build_milestone_seed.py
+--
+-- Production releases must apply supabase/migrations in order; neither CI nor
+-- Vercel executes supabase/seed. This migration deliberately carries
+-- a snapshot of the generated seed statements so schema and required
+-- reference data are deployed together. Keep the seed files as the
+-- re-runnable source for local/dev environments.
+
+begin;
+
+-- milestone rows --
+"""
+
+# Track reads these three (PRD 2.6 US-04). social_emotional rows stay in the
+# database, unqueried and unretired -- Vishnu, 15 Sep: "keep the rows in the
+# db, we will turn them on after we have a working product."
+ACTIVE_DOMAINS = ["physical", "cognitive", "language"]
 
 # Fixed namespace. Changing this changes every id, which orphans every row in
 # baby_milestones. Do not change it.
@@ -96,7 +128,7 @@ def main() -> None:
     header = f"""-- ============================================================
 -- MILESTONE SEED DATA
 -- GENERATED FILE — do not edit by hand.
--- Source: data/milestones/milestones.csv
+-- Source: data/milestones/milestones_0_24.csv
 -- Regenerate: python3 scripts/build_milestone_seed.py
 --
 -- {len(rows)} milestones across {len(checkpoints)} CDC checkpoints
@@ -127,11 +159,72 @@ on conflict (id) do update set
   description = excluded.description,
   source = excluded.source,
   source_url = excluded.source_url,
-  sort_order = excluded.sort_order;
+  sort_order = excluded.sort_order,
+  -- An id in this snapshot is by definition active. Without this line a row
+  -- retired by an earlier run would be updated but stay hidden, because the
+  -- retire step below only ever sets retired_at, never clears it.
+  retired_at = null;
 """
 
-    SQL_PATH.write_text(header + "\n".join(lines) + footer, encoding="utf-8")
+    # Retire, never delete. baby_milestones cascades on delete, so removing a
+    # row the new import no longer reaches would take a mother's ticked box
+    # with it. Retired rows stop being shown and her record survives.
+    keep_ids = ",\n  ".join(
+        f"'{milestone_id(int(r['checkpoint_month']), r['domain'], int(r['sort_order']))}'::uuid"
+        for r in rows
+    )
+    retire = f"""
+
+-- Retire anything this import supersedes. No deletes: see 0005.
+update milestones
+set retired_at = now()
+where retired_at is null
+  and domain in ({", ".join(f"'{d}'" for d in ACTIVE_DOMAINS)})
+  and id <> all (array[
+  {keep_ids}
+  ]);
+"""
+
+    SQL_PATH.write_text(header + "\n".join(lines) + footer + retire, encoding="utf-8")
     print(f"Wrote {SQL_PATH.relative_to(ROOT)} — {len(rows)} milestones")
+
+    # --- per-month what-is-typical ---
+    with TYPICAL_CSV.open(newline="", encoding="utf-8") as handle:
+        typical = list(csv.DictReader(handle))
+
+    tvals = ",\n".join(
+        f"  ({int(t['month'])}, {sql_str(t['typical'])})" for t in
+        sorted(typical, key=lambda t: int(t["month"]))
+    )
+    TYPICAL_SQL.write_text(
+        "-- ============================================================\n"
+        "-- WHAT IS TYPICAL, PER MONTH\n"
+        "-- GENERATED FILE — do not edit by hand.\n"
+        "-- Source: data/milestones/month_typical.csv\n"
+        "-- Regenerate: python3 scripts/build_milestone_seed.py\n"
+        "--\n"
+        "-- Shown on Home (US-004), Track (US-03) and as Learn's first card\n"
+        "-- (US-1, \"the same as the Home page displayed\"). One source, three\n"
+        "-- screens.\n"
+        "-- ============================================================\n\n"
+        "insert into month_guidance (month, typical) values\n"
+        + tvals
+        + "\non conflict (month) do update set\n"
+          "  typical = excluded.typical,\n"
+          "  updated_at = now();\n",
+        encoding="utf-8",
+    )
+    print(f"Wrote {TYPICAL_SQL.relative_to(ROOT)} — {len(typical)} months")
+
+    MIGRATION_SQL.write_text(
+        MIGRATION_HEADER
+        + SQL_PATH.read_text(encoding="utf-8")
+        + "\n-- month guidance rows --\n"
+        + TYPICAL_SQL.read_text(encoding="utf-8")
+        + "\ncommit;\n",
+        encoding="utf-8",
+    )
+    print(f"Wrote {MIGRATION_SQL.relative_to(ROOT)} — snapshot of both seeds")
 
     for checkpoint in checkpoints:
         per_domain = {

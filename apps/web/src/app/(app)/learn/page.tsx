@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
 import { getLearnFeed } from '@/lib/api/learn-feed';
 import { MonthStrip } from '@/components/track/month-strip';
+import { getMonthTypical } from '@/lib/api/month-guidance';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,8 @@ export default async function LearnPage({
     home.baby.id,
     parsed === undefined || Number.isNaN(parsed) ? undefined : parsed,
   );
+
+  const typical = await getMonthTypical(feed.month);
 
   const viewingOtherMonth = feed.month !== feed.babyMonth;
 
@@ -65,17 +68,16 @@ export default async function LearnPage({
         same as the Home page displayed."
 
         Product settled on 15 Sep that what-is-typical comes from Vishnu's
-        milestone sheet, not from the five Learn categories, and that sheet is
-        not imported yet. So this renders the same honest empty state Home and
-        Track render, rather than a paragraph about a baby's development that
-        nobody wrote.
+        milestone sheet, not from the five Learn categories. It reads the same
+        month_guidance row Home and Track read, so the three screens cannot
+        drift apart.
       */}
       <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
         <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
           MONTH {feed.month} &mdash; WHAT IS TYPICAL
         </h2>
         <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-          Nothing published for this month yet.
+          {typical ?? 'Nothing published for this month yet.'}
         </p>
       </article>
 
