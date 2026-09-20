@@ -62,3 +62,16 @@ All four are now inert by construction rather than by clean-up:
 
 The teardown is for scratch and branch databases, or for a deliberate clean
 slate you intend to re-seed straight away.
+
+## Non-vacuous admin-table check
+
+`btb_rls_check.py` first signs in as account A and calls
+`rls_fixtures_present()`. The function returns one boolean confirming that the
+hardcoded synthetic rows exist in `prompt_versions` and `audit_events`; it does
+not return either row or accept arbitrary IDs. CI then repeats the anonymous
+queries and requires both tables to return zero rows.
+
+This distinguishes "zero because the table is empty" from "zero while the
+known sentinel exists" without placing a service-role key in GitHub Actions.
+Migration `0007_rls_fixture_presence_check.sql` defines the function with an
+empty search path and fully qualified table names.
