@@ -34,7 +34,7 @@ export default async function TrackPage({
   const viewingOtherMonth = milestones.month !== milestones.babyMonth;
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-[var(--space-20)]">
       <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
         MILESTONE TRACKER
       </h1>
@@ -51,7 +51,7 @@ export default async function TrackPage({
       ) : null}
 
       {/* US-03. One sentence per month, from month_guidance. */}
-      <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
         <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
           {milestones.month} MONTHS &mdash; WHAT IS TYPICAL
         </h2>

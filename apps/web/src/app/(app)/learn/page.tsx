@@ -40,7 +40,7 @@ export default async function LearnPage({
   const viewingOtherMonth = feed.month !== feed.babyMonth;
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-[var(--space-20)]">
       {/* US-1: "The user sees 'Guidance Feeds' on top." */}
       <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
         GUIDANCE FEEDS
@@ -72,7 +72,7 @@ export default async function LearnPage({
         month_guidance row Home and Track read, so the three screens cannot
         drift apart.
       */}
-      <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
         <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
           MONTH {feed.month} &mdash; WHAT IS TYPICAL
         </h2>
@@ -86,10 +86,10 @@ export default async function LearnPage({
           No guidance published for this month yet.
         </p>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-[var(--space-20)]">
           {feed.cards.map((card) => (
             <li key={card.id}>
-              <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
+              <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
                 {/* US-1: every card carries its guidance category. */}
                 <p className="inline-block rounded-full bg-[var(--surface-moss)] px-3 py-1 text-[0.65rem] tracking-[0.06em] text-[var(--text-brand)]">
                   {card.categoryLabel.toUpperCase()}

@@ -5,6 +5,7 @@ import { Pencil, Thermometer, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { getMonthTypical } from '@/lib/api/month-guidance';
+import { Callout } from '@/components/ui/callout';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,79 +111,74 @@ export default async function HomePage() {
   const firstName = baby.name.trim().split(' ')[0];
 
   return (
-    <section className="flex flex-col gap-4">
-      <p className="text-[0.85rem] text-[var(--text-secondary)]">{formatToday(now)}</p>
+    <section className="flex flex-col gap-[var(--space-20)]">
+      <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body-date)' }}>
+        {formatToday(now)}
+      </p>
 
       {/* Baby card, Figma 03. The pencil opens the profile, per US-003. */}
-      <article className="flex items-center gap-3.5 rounded-3xl bg-[var(--brand-secondary)] px-4 py-3.5">
+      <article className="flex min-h-[110px] items-center gap-[var(--space-14)] rounded-[var(--radius-16)] bg-[var(--brand-secondary)] p-[var(--space-16)]">
         {baby.avatarUrl ? (
           <Image
             src={baby.avatarUrl}
-            alt=""
-            width={48}
-            height={48}
-            className="size-12 shrink-0 rounded-full object-cover"
+            alt={`${baby.name}'s profile photo`}
+            width={64}
+            height={64}
+            className="size-16 shrink-0 rounded-[var(--radius-16)] object-cover"
             unoptimized
           />
         ) : (
           <div
             aria-hidden
-            className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[1.4rem]"
+            className="flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-16)] border border-[var(--card-primary)] bg-[var(--surface-terra)] text-[1.75rem]"
           >
             👶
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-[1.15rem] leading-tight text-[var(--card-primary)]">
+          <h1 className="truncate text-[var(--card-primary)]" style={{ font: 'var(--type-card-title)' }}>
             {baby.name}
           </h1>
-          <p className="mt-0.5 text-[0.68rem] tracking-[0.08em] text-[var(--card-primary)]/75">
+          <p className="mt-[var(--space-4)] tracking-[0.08em] text-[var(--card-primary)]" style={{ font: 'var(--type-eyebrow)' }}>
             BLOOM · {monthAndDay(baby.birthDate, now)}
           </p>
         </div>
         <Link
           href="/onboarding/profile"
           aria-label="Edit baby profile"
-          className="shrink-0 text-[var(--card-primary)]/80 transition hover:text-[var(--card-primary)]"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--card-primary)] transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--card-primary)]"
         >
-          <Pencil className="size-4" />
+          <Pencil className="size-[18px]" />
         </Link>
       </article>
 
-      {/* This week, for you. The content table is empty until the Learn dataset
-          lands, so the empty state is the state we expect to see. */}
-      <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
-        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-          THIS WEEK, FOR YOU
-        </h2>
-        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+      {/* US-004. This uses the same month_guidance row as Learn and Track. */}
+      <Callout variant="neutral" eyebrow="This week, for you">
+        <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
           {typical ?? 'Nothing published for this age yet.'}
         </p>
         {/*
           Settled by Product on 15 Sep: "what is typical" cannot map onto Learn's
           five specific categories, so this card's content comes from the
-          milestone dataset and More guidance sends her to Track, not Learn
+          month guidance dataset and More guidance sends her to Track, not Learn
           (Vishnu and Shailee, PRD US-004 updated). The nav bar is unchanged.
-
-          The copy itself still comes from `content` until Vishnu's milestone
-          sheet is imported, which is why the empty state shows today.
         */}
         <Link
           href="/track"
-          className="mt-3 inline-block text-[0.85rem] text-[var(--text-brand)]"
+          className="mt-[var(--space-12)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
         >
           More guidance &rarr;
         </Link>
-      </article>
+      </Callout>
 
       <Link
         href="/vitals"
-        className="flex items-start gap-3 rounded-3xl border border-[var(--border-card)] bg-[var(--surface-terra)]/55 px-5 py-4 transition hover:brightness-[0.98]"
+        className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--surface-terra)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <Thermometer className="mt-0.5 size-4 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
+        <Thermometer className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
         <div>
-          <h2 className="text-[0.95rem] text-[var(--text-primary)]">Vitals</h2>
-          <p className="mt-0.5 text-[0.82rem] leading-[1.5] text-[var(--text-secondary)]">
+          <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
+          <p className="mt-[var(--space-4)] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
             Record your child&apos;s temperature, notes, and readings in one place.
           </p>
         </div>
@@ -190,30 +186,30 @@ export default async function HomePage() {
 
       <Link
         href="/ask"
-        className="flex items-start gap-3 rounded-3xl border border-[var(--brand-primary)] bg-[var(--brand-primary)]/85 px-5 py-4 transition hover:brightness-[0.98]"
+        className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--brand-primary)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <MessageCircle className="mt-0.5 size-4 shrink-0 text-[var(--text-accent-warm)]" aria-hidden />
+        <MessageCircle className="size-6 shrink-0 text-[var(--text-accent-warm)]" aria-hidden />
         <div>
-          <h2 className="text-[0.95rem] text-[var(--text-accent-warm)]">Ask Bloom</h2>
-          <p className="mt-0.5 text-[0.82rem] leading-[1.5] text-[var(--text-accent-warm)]/85">
+          <h2 className="text-[var(--text-accent-warm)]" style={{ font: 'var(--type-label)' }}>Ask Bloom</h2>
+          <p className="mt-[var(--space-4)] text-[var(--text-accent-warm)]" style={{ font: 'var(--type-body)' }}>
             Answers tailored to exactly where you are.
           </p>
         </div>
       </Link>
 
-      <article className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-4">
-        <div className="flex items-start gap-3">
-          <ShoppingBag className="mt-0.5 size-4 shrink-0 text-[var(--text-brand)]" aria-hidden />
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+        <div className="flex items-start gap-[var(--space-12)]">
+          <ShoppingBag className="mt-0.5 size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
           <div>
-            <h2 className="text-[0.95rem] text-[var(--text-primary)]">Recommended for You</h2>
-            <p className="mt-0.5 text-[0.82rem] leading-[1.5] text-[var(--text-secondary)]">
+            <h2 className="text-[var(--text-primary)]" style={{ font: 'var(--type-label)' }}>Recommended for You</h2>
+            <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
               Age-appropriate essentials for {firstName} {ageForCopy(baby.birthDate, now)}.
             </p>
           </div>
         </div>
         <Link
           href="/recommended"
-          className="mt-3 inline-block text-[0.85rem] text-[var(--text-brand)]"
+          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
         >
           View recommendations →
         </Link>
