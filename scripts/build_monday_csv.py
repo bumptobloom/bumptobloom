@@ -105,6 +105,9 @@ T = [
     (2, "check_anonymous can pass vacuously if the sentinel rows are missing", "Keya Chaudhari", "Pod W", "High",
      "Follow-up from PR #164. check_anonymous asserts the anonymous role sees zero rows from prompt_versions and audit_events. If those tables were empty it would pass having proved nothing - the same count-vs-identity trap the account checks already avoid."),
 
+    (3, "CI does not check the generated milestone and content SQL against its source", "Sonakshi Panda", "Pod W", "High",
+     "Found 20 Sep while fixing PR #219. Nobody runs scripts/validate_milestones.py in CI, and nothing checks that supabase/seed/milestones.sql and supabase/migrations/0006 were regenerated after data/milestones/milestones_0_24.csv changed. Edit the CSV, forget the generator, push: CI is green and the database quietly gets the old 185 rows. The same hole covers Learn - supabase/seed/content.sql and migration 0007 carry the same 40 cards twice, by hand-free copy but still two files. A job that re-runs the generator and fails on a dirty tree is about fifteen lines and closes both."),
+
     (2, "Supabase Storage: private avatars bucket, policies and signed URLs", "Keya Chaudhari", "Pod W", "High",
      "Blocks the photo half of the baby profile. RLS protects table rows, not files - a storage bucket needs its own policies. These are photographs of infants, so the bucket is private and the app serves signed URLs. A public bucket would put them outside every protection we have."),
 

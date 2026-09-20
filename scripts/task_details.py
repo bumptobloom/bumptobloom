@@ -456,6 +456,15 @@ DETAIL: dict[str, dict] = {
           "Saved state persists across restart",
           "Another parent's saves are invisible"]},
 
+"CI does not check the generated milestone and content SQL against its source": {
+ "do": ["Add a job to .github/workflows/ci.yml that runs python3 scripts/validate_milestones.py data/milestones/milestones_0_24.csv.",
+        "In the same job, re-run python3 scripts/build_milestone_seed.py and fail if git status is not clean. That is the part that matters: the validator checks the CSV, the dirty-tree check catches someone editing the CSV and forgetting to regenerate.",
+        "Do the same for Learn: supabase/seed/content.sql and the card block inside supabase/migrations/0007 are the same 40 rows in two files. Either generate both from one source the way 0006 now does, or add a check that they match.",
+        "Do not make the job apply anything to a database. It is a file-level check and needs no credentials."],
+ "done": ["Editing data/milestones/milestones_0_24.csv without re-running the generator turns CI red",
+          "The validator runs on every pull request",
+          "The Learn seed and migration cannot drift apart silently"]},
+
 "Learn screen: guidance feed with month bar": {
  "do": ["REWRITTEN 18 Sep. The old description asked for category filter chips and a save/bookmark control. Neither is in PRD 2.5 or in the final Figma frame 04, so neither gets built.",
         "'Guidance Feeds' label at the top, then a title reading 'Month 18, tailored to you' for the selected month (US-1).",
