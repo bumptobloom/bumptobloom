@@ -8,6 +8,11 @@ import { createBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { createParentProfile } from '@/lib/actions/parent-profile';
+import {
+  PASSWORD_RULE_TEXT,
+  validatePassword,
+  validatePasswordConfirmation,
+} from '@/lib/validation/password';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -27,14 +32,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const validatePassword = (pass: string) => {
-    if (pass.length < 8) return 'Password must be at least 8 characters long.';
-    if (!/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass)) {
-      return 'Password must contain at least one letter and one number.';
-    }
-    return null;
-  };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -44,8 +41,9 @@ export default function SignupPage() {
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    const matchError = validatePasswordConfirmation(password, confirmPassword);
+    if (matchError) {
+      setError(matchError);
       return;
     }
 
@@ -153,7 +151,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
             <span className="mt-1.5 block text-[0.72rem] text-[var(--text-secondary)]">
-              At least 8 characters with a letter and a number.
+              {PASSWORD_RULE_TEXT}
             </span>
           </label>
 
