@@ -8,7 +8,7 @@ export function StandingDisclaimer({ text = STANDING_DISCLAIMER }: { text?: stri
   return (
     <p
       role="note"
-      className="mt-8 rounded-[14px] border border-[var(--border-subtle)] bg-[var(--card-secondary)] px-4 py-3 text-[12px] leading-relaxed"
+      className="px-[var(--space-8)] text-center text-[12px] leading-relaxed"
       style={{ color: 'var(--text-secondary)' }}
     >
       {text}

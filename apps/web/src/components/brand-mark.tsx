@@ -1,17 +1,21 @@
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 /**
- * The BumpToBloom B. Drawn here rather than imported, because design has not
- * yet exported the SVG from Figma 00a. When that asset lands, replace this
- * component and both the auth lockup and the app header follow.
+ * Jennifer's approved brand mark. The supplied SVG contains an embedded
+ * 2400px artwork export, so it has ample resolution at every in-app size even
+ * though the source is not made from editable vector paths.
  */
 export function BloomB({ className }: { className?: string }) {
   return (
-    <span className={cn('relative inline-block leading-none', className)} aria-hidden>
-      <span className="block leading-none text-[var(--text-brand)]">B</span>
-      <span className="absolute right-[0.15em] top-[0.18em] h-[0.1em] w-[0.1em] rounded-full bg-[var(--brand-primary)]" />
-      <span className="absolute right-[0.32em] top-[0.36em] h-[0.07em] w-[0.07em] rounded-full bg-[var(--text-accent-terracotta)]/70" />
-    </span>
+    <Image
+      src="/brand/b2blogo.svg"
+      alt=""
+      width={576}
+      height={576}
+      className={cn('shrink-0 object-contain', className)}
+      unoptimized
+    />
   );
 }
 
@@ -21,8 +25,8 @@ export function BloomB({ className }: { className?: string }) {
 export function BrandMark({ tagline = true }: { tagline?: boolean }) {
   return (
     <div className="flex flex-col items-center gap-2 text-center">
-      <BloomB className="text-[4.25rem]" />
-      <p className="text-[1.55rem] leading-none text-[var(--text-primary)]">
+      <BloomB className="size-28" />
+      <p className="font-display text-[1.55rem] leading-none text-[var(--text-primary)]">
         BumpToBloom
       </p>
       {tagline && (

@@ -93,7 +93,7 @@ export function MilestoneChecklist({
             <Icon className="size-4 text-[var(--text-brand)]" aria-hidden />
             {domain.label}
           </h2>
-          <ul className="overflow-hidden rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)]">
+          <ul className="overflow-hidden rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)]">
             {domain.items.map((item, index) => {
               const checked = noticed.has(item.id);
               return (

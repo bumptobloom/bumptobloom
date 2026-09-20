@@ -62,9 +62,11 @@ function SettingsMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Settings"
-        className="flex size-9 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+        className="flex size-11 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <Settings className="size-[18px]" />
+        <span className="flex size-9 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)]">
+          <Settings className="size-[18px]" />
+        </span>
       </button>
 
       {open ? (
@@ -117,10 +119,10 @@ function SettingsMenu() {
 
 export function AppHeader() {
   return (
-    <header className="flex items-center justify-between px-5 pt-4 pb-1">
-      <div className="flex items-baseline gap-1.5">
-        <BloomB className="text-[1.3rem]" />
-        <span className="text-[1.05rem] leading-none text-[var(--text-primary)]">
+    <header className="flex h-[66px] items-center justify-between border-b border-[var(--border-subtle)] px-[var(--space-20)]">
+      <div className="flex items-center gap-[var(--space-8)]">
+        <BloomB className="size-[30px]" />
+        <span className="font-display text-[1.05rem] leading-none text-[var(--text-primary)]">
           BumpToBloom
         </span>
       </div>
