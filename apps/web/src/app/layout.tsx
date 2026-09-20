@@ -1,16 +1,32 @@
 import type { Metadata } from "next";
-import { Lora, Geist_Mono } from "next/font/google";
+import { Karla, Petrona, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./serwist-provider";
 
 /**
- * The product's type is a serif, per the Figma. It is bound to a single
- * token (--font-brand-serif) so swapping the family is a one-line change
- * once design confirms the exact face.
+ * Two families, confirmed by design on 20 Sep. Until then the whole app was
+ * set in Lora, which was a guess.
+ *
+ * Karla carries the interface: body copy, field labels, list titles, the
+ * month tracker and the nav chevrons. Weights 400/600/700 are the three the
+ * type scale actually names -- do not add more without a role that needs one,
+ * every weight is a font file the phone has to fetch.
  */
-const brandSerif = Lora({
-  variable: "--font-brand-serif",
+const karla = Karla({
+  variable: "--font-ui",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
+
+/**
+ * Petrona carries display type only: card titles, CTA button labels and the
+ * smaller sub-copy titles. Regular is the only weight the scale uses.
+ */
+const petrona = Petrona({
+  variable: "--font-display-family",
+  subsets: ["latin"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -32,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${brandSerif.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${karla.variable} ${petrona.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
