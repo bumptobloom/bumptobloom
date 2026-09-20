@@ -54,20 +54,22 @@ export interface HomeData {
 // ============================================================
 
 /**
- * The 5 canonical Learn categories agreed across Learn & Ask.
+ * The five canonical Learn categories, in the order PRD 2.5 US-1 lists
+ * them. The `content` check constraint in migration 0007 allows exactly
+ * these values, and LEARN_CATEGORY_LABELS in learn-utils.ts renders them.
  */
 export type LearnCategory =
   | 'feeding'
   | 'sleep'
-  | 'diaper_digestion'
   | 'crying_soothing'
+  | 'diaper_digestion'
   | 'mom_wellbeing';
 
 export const LEARN_CATEGORIES: LearnCategory[] = [
   'feeding',
   'sleep',
-  'diaper_digestion',
   'crying_soothing',
+  'diaper_digestion',
   'mom_wellbeing',
 ];
 
@@ -128,76 +130,8 @@ export interface MilestoneDomain {
 }
 
 export interface MilestonesResponse {
-  /** The month being viewed (0-24). May differ from the baby's age. */
-  month: number;
-  /** The baby's actual current month, so the UI can offer "back to today". */
-  babyMonth: number;
-  /** Which seeded checkpoint the shown content came from. */
   checkpointMonth: number;
   checkpoints: number[];
   domains: MilestoneDomain[];
-  disclaimer: string;
-}
-
-// ============================================================
-// ASK / CONVERSATION HISTORY (#97)
-// ============================================================
-
-export type ConversationMessageRole = 'user' | 'assistant' | 'system';
-
-export interface ConversationMessage {
-  id: string;
-  conversationId: string;
-  role: ConversationMessageRole;
-  content: string;
-  createdAt: string;
-}
-
-export interface ConversationSummary {
-  id: string;
-  babyId: string | null;
-  title: string | null;
-  createdAt: string;
-}
-
-export interface ConversationHistory extends ConversationSummary {
-  messages: ConversationMessage[];
-}
-
-// ============================================================
-// RECOMMENDED (Issue #182 - Melvin Bryant)
-// ============================================================
-
-export interface RetailerLink {
-  slug: string;
-  name: string;
-  url: string; // Plain search URL - no affiliate programme, no tracking
-}
-
-export interface RecommendedProduct {
-  id: string;
-  name: string;
-  rationale: string; // Required - a recommendation without a reason is just an advert
-  indicativePriceCents: number;
-  imageUrl: string;
-  retailers: RetailerLink[];
-}
-
-/**
- * Product detail shape. NOTE: not in the frozen API-CONTRACTS.md yet -
- * getProduct(id)'s return shape is undocumented there. This extension
- * (description, whyHelpful) is inferred from the Figma product detail
- * screen and should be confirmed with Sahasra/Sonakshi before this is
- * treated as frozen.
- */
-export interface RecommendedProductDetail extends RecommendedProduct {
-  description: string;
-  whyHelpful: string[];
-}
-
-export interface RecommendationsResponse {
-  ageMonths: number;
-  bucketLabel: string; // e.g. "15-24 months"
-  products: RecommendedProduct[];
   disclaimer: string;
 }

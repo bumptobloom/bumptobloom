@@ -1,21 +1,41 @@
--- ============================================================
--- BUMPTOBLOOM — LEARN CONTENT SEED DATASET
--- 40 deduplicated educational cards across the 5 MVP categories
--- (PRD 2.5 US-1), 8 non-overlapping age bands from 0 to 24 months.
--- Sourced to AAP (HealthyChildren.org) and CDC.
+-- Learn's five MVP categories and the 40-card content snapshot (PR #204).
 --
--- There is no DELETE in this file, on purpose. saved_content.content_id
--- references content(id) ON DELETE CASCADE, so `delete from content` would
--- take every mother's saved card with it -- and the RLS fixture rows
--- 51000000-...0001 and ...0002 too, which btb_rls_check.py asserts exist on
--- every pull request. That is the failure of 11 Sep 2026.
+-- GENERATED-ADJACENT: the card statements below are a copy of
+-- supabase/seed/content.sql. Production releases apply supabase/migrations in
+-- order; neither CI nor Vercel executes supabase/seed, so the cards have to
+-- travel as a migration or Learn is empty in production. Keep the seed file as
+-- the re-runnable source for local and dev environments, and keep the two in
+-- step -- same pattern as 0006.
 --
--- Cards are upserted by their fixed id, and anything this snapshot no longer
--- carries is unpublished rather than removed. The read policy on content
--- requires published, so an unpublished row is invisible to every reader while
--- the rows that point at it stay intact.
--- ============================================================
+-- Nothing here deletes. saved_content.content_id cascades on delete, so
+-- removing a content row takes every mother's save of it with it, including
+-- the RLS fixture rows btb_rls_check.py asserts on every pull request.
 
+begin;
+
+-- The RLS fixture row is the only row carrying the retired 'developmental'
+-- category. Moved by id, not by category, so this cannot quietly relabel real
+-- cards if any ever carried it. The row is unpublished, so no reader sees it.
+update content
+set category = 'feeding'
+where id = '50000000-0000-4000-8000-000000000001';
+
+-- Any other stragglers would fail the new constraint. Unpublish and park them
+-- under a surviving category rather than dropping rows that saved_content may
+-- point at.
+update content
+set category = 'feeding', published = false
+where category not in (
+  'feeding', 'sleep', 'diaper_digestion', 'crying_soothing', 'mom_wellbeing'
+);
+
+alter table content drop constraint if exists content_category_check;
+alter table content add constraint content_category_check
+check (category in (
+  'feeding', 'sleep', 'diaper_digestion', 'crying_soothing', 'mom_wellbeing'
+));
+
+-- card rows --
 insert into content (
   id,
   category,
@@ -719,3 +739,5 @@ where published
   'c0000001-0000-4000-8000-000000000039'::uuid,
   'c0000001-0000-4000-8000-000000000040'::uuid
   ]);
+
+commit;

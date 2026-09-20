@@ -150,8 +150,8 @@ getSavedContent(babyId?: string): Promise<LearnItem[]>
 export type LearnCategory =
   | 'feeding'
   | 'sleep'
-  | 'diaper_digestion'
   | 'crying_soothing'
+  | 'diaper_digestion'
   | 'mom_wellbeing';
 export interface LearnItem {
   id: string;
