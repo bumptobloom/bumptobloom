@@ -26,6 +26,31 @@ SQL_PATH = ROOT / "supabase" / "seed" / "milestones.sql"
 TYPICAL_CSV = ROOT / "data" / "milestones" / "month_typical.csv"
 TYPICAL_SQL = ROOT / "supabase" / "seed" / "month_guidance.sql"
 
+# The production snapshot. Releases apply supabase/migrations in order; nothing
+# runs supabase/seed, so the data has to travel as a migration too. It is
+# generated from the two seed files above rather than assembled by hand, so the
+# snapshot and the seed cannot drift apart.
+MIGRATION_SQL = (
+    ROOT / "supabase" / "migrations" / "0006_milestones_month_by_month_data.sql"
+)
+
+MIGRATION_HEADER = """\
+-- One-time production data migration for the month-by-month Track release.
+--
+-- GENERATED FILE — do not edit by hand.
+-- Regenerate: python3 scripts/build_milestone_seed.py
+--
+-- Production releases must apply supabase/migrations in order; neither CI nor
+-- Vercel executes supabase/seed. This migration deliberately carries
+-- a snapshot of the generated seed statements so schema and required
+-- reference data are deployed together. Keep the seed files as the
+-- re-runnable source for local/dev environments.
+
+begin;
+
+-- milestone rows --
+"""
+
 # Track reads these three (PRD 2.6 US-04). social_emotional rows stay in the
 # database, unqueried and unretired -- Vishnu, 15 Sep: "keep the rows in the
 # db, we will turn them on after we have a working product."
@@ -134,7 +159,11 @@ on conflict (id) do update set
   description = excluded.description,
   source = excluded.source,
   source_url = excluded.source_url,
-  sort_order = excluded.sort_order;
+  sort_order = excluded.sort_order,
+  -- An id in this snapshot is by definition active. Without this line a row
+  -- retired by an earlier run would be updated but stay hidden, because the
+  -- retire step below only ever sets retired_at, never clears it.
+  retired_at = null;
 """
 
     # Retire, never delete. baby_milestones cascades on delete, so removing a
@@ -186,6 +215,16 @@ where retired_at is null
         encoding="utf-8",
     )
     print(f"Wrote {TYPICAL_SQL.relative_to(ROOT)} — {len(typical)} months")
+
+    MIGRATION_SQL.write_text(
+        MIGRATION_HEADER
+        + SQL_PATH.read_text(encoding="utf-8")
+        + "\n-- month guidance rows --\n"
+        + TYPICAL_SQL.read_text(encoding="utf-8")
+        + "\ncommit;\n",
+        encoding="utf-8",
+    )
+    print(f"Wrote {MIGRATION_SQL.relative_to(ROOT)} — snapshot of both seeds")
 
     for checkpoint in checkpoints:
         per_domain = {

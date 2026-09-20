@@ -1904,7 +1904,11 @@ on conflict (id) do update set
   description = excluded.description,
   source = excluded.source,
   source_url = excluded.source_url,
-  sort_order = excluded.sort_order;
+  sort_order = excluded.sort_order,
+  -- An id in this snapshot is by definition active. Without this line a row
+  -- retired by an earlier run would be updated but stay hidden, because the
+  -- retire step below only ever sets retired_at, never clears it.
+  retired_at = null;
 
 
 -- Retire anything this import supersedes. No deletes: see 0005.

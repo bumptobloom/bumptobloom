@@ -1,5 +1,8 @@
 -- One-time production data migration for the month-by-month Track release.
 --
+-- GENERATED FILE — do not edit by hand.
+-- Regenerate: python3 scripts/build_milestone_seed.py
+--
 -- Production releases must apply supabase/migrations in order; neither CI nor
 -- Vercel executes supabase/seed. This migration deliberately carries
 -- a snapshot of the generated seed statements so schema and required
@@ -1915,7 +1918,11 @@ on conflict (id) do update set
   description = excluded.description,
   source = excluded.source,
   source_url = excluded.source_url,
-  sort_order = excluded.sort_order;
+  sort_order = excluded.sort_order,
+  -- An id in this snapshot is by definition active. Without this line a row
+  -- retired by an earlier run would be updated but stay hidden, because the
+  -- retire step below only ever sets retired_at, never clears it.
+  retired_at = null;
 
 
 -- Retire anything this import supersedes. No deletes: see 0005.
