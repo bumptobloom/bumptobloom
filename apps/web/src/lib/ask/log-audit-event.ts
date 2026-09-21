@@ -1,5 +1,6 @@
 import 'server-only';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import type { AskAuditPayload } from './classify-openai-error';
 
 export type AskAuditEventType = 'ask_timeout' | 'ask_upstream_error' | 'ask_rate_limited';
 
@@ -10,12 +11,15 @@ export type AskAuditEventType = 'ask_timeout' | 'ask_upstream_error' | 'ask_rate
  * This is itself a failure-reporting path: if the write fails, there is
  * nothing more useful to do than log it and move on. It must never throw
  * back into the caller, which is usually already in its own failure path.
+ *
+ * The payload type has no free-text field on purpose: nothing a parent typed,
+ * or that a provider echoed back, can be written here.
  */
 export async function logAskAuditEvent(
   eventType: AskAuditEventType,
   actorUserId: string,
   conversationId: string | null,
-  detail: string,
+  payload: AskAuditPayload,
 ): Promise<void> {
   try {
     const serviceRole = createServiceRoleClient();
@@ -24,7 +28,7 @@ export async function logAskAuditEvent(
       event_type: eventType,
       entity: 'ai_conversations',
       entity_id: conversationId,
-      payload: { detail },
+      payload,
     });
 
     if (error) {

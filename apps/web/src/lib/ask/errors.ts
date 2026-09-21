@@ -20,8 +20,9 @@ export class AskUpstreamError extends Error {
 }
 
 export class RateLimitedError extends Error {
-  constructor(maxPerHour: number) {
-    super(`You've reached the limit of ${maxPerHour} questions per hour. Please try again later.`);
+  constructor() {
+    // Plain on purpose: no limit and no window in the response.
+    super("You've asked a lot of questions recently. Please try again later.");
     this.name = 'RateLimitedError';
   }
 }

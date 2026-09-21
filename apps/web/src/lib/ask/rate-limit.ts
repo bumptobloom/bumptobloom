@@ -12,6 +12,9 @@ const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
  * triage-guard redirect or a rejected request never reaches OpenAI, so it
  * never costs anything and should not count against the budget.
  *
+ * Count-then-insert is not atomic: simultaneous requests at 19 can all pass.
+ * That is accepted -- this is a cost ceiling, not an exact limit.
+ *
  * ai_runs has no policy granting authenticated users read access either
  * (only service_role can see it), so this always runs as service role,
  * same as the prompt_versions lookup.
@@ -46,6 +49,6 @@ export async function assertUnderRateLimit(parentId: string): Promise<void> {
   }
 
   if ((count ?? 0) >= RATE_LIMIT_MAX_RUNS_PER_HOUR) {
-    throw new RateLimitedError(RATE_LIMIT_MAX_RUNS_PER_HOUR);
+    throw new RateLimitedError();
   }
 }

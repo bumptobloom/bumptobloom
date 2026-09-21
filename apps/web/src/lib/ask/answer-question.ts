@@ -1,5 +1,4 @@
 import 'server-only';
-import OpenAI from 'openai';
 import { createServerClient } from '@/lib/supabase';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
@@ -13,6 +12,7 @@ import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
 import { assertUnderRateLimit } from './rate-limit';
 import { logAskAuditEvent } from './log-audit-event';
+import { classifyOpenAIError } from './classify-openai-error';
 import {
   BabyNotFoundError,
   ConversationAccessError,
@@ -88,7 +88,7 @@ export async function answerQuestion(
       await assertUnderRateLimit(parentProfile.id);
     } catch (err) {
       if (err instanceof RateLimitedError) {
-        await logAskAuditEvent('ask_rate_limited', input.userId, null, err.message);
+        await logAskAuditEvent('ask_rate_limited', input.userId, null, {});
       }
       throw err;
     }
@@ -177,10 +177,11 @@ export async function answerQuestion(
   } catch (err) {
     // Per docs/API-CONTRACTS.md: any error here means a plain "couldn't
     // reach the assistant" state -- never a cached or generated fallback.
-    const message = err instanceof Error ? err.message : 'OpenAI request failed';
-    const eventType = err instanceof OpenAI.APIConnectionTimeoutError ? 'ask_timeout' : 'ask_upstream_error';
-    await logAskAuditEvent(eventType, input.userId, conversationId, message);
-    throw new AskUpstreamError(message);
+    // Never pass err.message on: OpenAI can echo the parent's own question
+    // back in it, and this reaches both audit_events and the server logs.
+    const { eventType, payload, summary } = classifyOpenAIError(err);
+    await logAskAuditEvent(eventType, input.userId, conversationId, payload);
+    throw new AskUpstreamError(`OpenAI request failed: ${summary}`);
   }
 
   const latencyMs = Date.now() - startedAt;
