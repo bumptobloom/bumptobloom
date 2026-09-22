@@ -5,16 +5,20 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 /**
- * Nav order settled by Product (Katrina) on 1 Sep: Home, Learn, Ask, Track, Health.
- * Five tabs, not six. Cart is not a tab - shopping is a card on Home.
- * The Figma still shows the old six-tab order. This list is the source of truth.
+ * Five tabs: Home, Learn, Ask, Track, Vitals. Cart is not a tab — the
+ * Recommended for You surface is reached from a card on Home (PRD 2.2).
+ *
+ * The fifth tab is Vitals, not Health. PRD 2.2 and 2.7 both name it Vitals and
+ * so does the Figma's Final Screens page. An earlier note here said the Figma
+ * still showed six tabs in the old order; that was the pre-redesign file, and
+ * it is no longer true of the file the PRD links as final.
  */
 const TABS = [
   { href: '/home', label: 'Home' },
   { href: '/learn', label: 'Learn' },
   { href: '/ask', label: 'Ask' },
   { href: '/track', label: 'Track' },
-  { href: '/health', label: 'Health' },
+  { href: '/vitals', label: 'Vitals' },
 ] as const;
 
 function TabIcon({ href, active }: { href: string; active: boolean }) {
@@ -63,7 +67,7 @@ function TabIcon({ href, active }: { href: string; active: boolean }) {
           <path d="m8.5 13 2 2 4-4.5" />
         </svg>
       );
-    case '/health':
+    case '/vitals':
       return (
         <svg {...common}>
           <path d="M12 21c-1 0-7-4.5-7-9.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 7 3.5C19 16.5 13 21 12 21Z" />

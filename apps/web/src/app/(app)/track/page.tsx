@@ -1,50 +1,73 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
 import { getMilestones } from '@/lib/api/milestones';
 import { MilestoneChecklist } from '@/components/track/milestone-checklist';
-import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { MonthStrip } from '@/components/track/month-strip';
+import { getMonthTypical } from '@/lib/api/month-guidance';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TrackPage() {
+export default async function TrackPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const home = await getHome();
 
+  // Same as Home: no designed screen for a parent with no baby, so send her to
+  // onboarding rather than inventing one.
   if (!home.baby) {
-    return (
-      <section className="flex flex-col gap-4">
-        <h1 className="text-[26px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Track
-        </h1>
-        <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          Add your baby first so we know which milestones to show.
-        </p>
-        <Link
-          href="/onboarding"
-          className="mt-2 inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
-          style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
-        >
-          Add your baby
-        </Link>
-      </section>
-    );
+    redirect('/onboarding');
   }
 
-  const milestones = await getMilestones(home.baby.id);
+  const { month: monthParam } = await searchParams;
+  const parsed = monthParam === undefined ? undefined : Number(monthParam);
+
+  const milestones = await getMilestones(
+    home.baby.id,
+    parsed === undefined || Number.isNaN(parsed) ? undefined : parsed,
+  );
+
+  const typical = await getMonthTypical(milestones.month);
+
+  const viewingOtherMonth = milestones.month !== milestones.babyMonth;
 
   return (
-    <section className="flex flex-col gap-5">
-      <header>
-        <h1 className="text-[26px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Track
-        </h1>
-        <p className="mt-1 text-[14px]" style={{ color: 'var(--text-secondary)' }}>
-          {milestones.checkpointMonth}-month checkpoint &middot; tick what you have noticed
+    <section className="flex flex-col gap-[var(--space-20)]">
+      <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
+        MILESTONE TRACKER
+      </h1>
+
+      <MonthStrip month={milestones.month} />
+
+      {viewingOtherMonth ? (
+        <Link
+          href="/track"
+          className="-mt-1 self-center text-[0.75rem] text-[var(--text-brand)]"
+        >
+          Back to {milestones.babyMonth} months
+        </Link>
+      ) : null}
+
+      {/* US-03. One sentence per month, from month_guidance. */}
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
+          {milestones.month} MONTHS &mdash; WHAT IS TYPICAL
+        </h2>
+        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+          {typical ?? 'Nothing published for this month yet.'}
         </p>
-      </header>
+      </article>
 
       <MilestoneChecklist babyId={home.baby.id} domains={milestones.domains} />
 
-      <StandingDisclaimer text={milestones.disclaimer} />
+      <p
+        role="note"
+        className="mt-2 px-1 text-center text-[0.72rem] leading-[1.6] text-[var(--text-secondary)]"
+      >
+        {milestones.disclaimer}
+      </p>
     </section>
   );
 }

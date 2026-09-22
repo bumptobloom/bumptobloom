@@ -15,6 +15,7 @@ EXPECTED_ROW_IDS = {
         "baby_activities": "41000000-0000-4000-8000-000000000001",
         "saved_content": "51000000-0000-4000-8000-000000000001",
         "fever_checks": "60000000-0000-4000-8000-000000000001",
+        "temperature_readings": "61000000-0000-4000-8000-000000000001",
         "ai_conversations": "70000000-0000-4000-8000-000000000001",
         "ai_messages": "71000000-0000-4000-8000-000000000001",
         "ai_runs": "72000000-0000-4000-8000-000000000001",
@@ -26,6 +27,7 @@ EXPECTED_ROW_IDS = {
         "baby_activities": "41000000-0000-4000-8000-000000000002",
         "saved_content": "51000000-0000-4000-8000-000000000002",
         "fever_checks": "60000000-0000-4000-8000-000000000002",
+        "temperature_readings": "61000000-0000-4000-8000-000000000002",
         "ai_conversations": "70000000-0000-4000-8000-000000000002",
         "ai_messages": "71000000-0000-4000-8000-000000000002",
         "ai_runs": "72000000-0000-4000-8000-000000000002",
@@ -118,13 +120,15 @@ def check_account(
     email,
     password,
     expected_ids,
+    token=None,
 ):
-    token = sign_in(
-        project_url,
-        publishable_key,
-        email,
-        password,
-    )
+    if token is None:
+        token = sign_in(
+            project_url,
+            publishable_key,
+            email,
+            password,
+        )
 
     headers = {
         "apikey": publishable_key,
@@ -179,6 +183,29 @@ def check_anonymous(project_url, publishable_key):
     return passed
 
 
+def check_admin_fixtures_present(project_url, publishable_key, token):
+    """Confirm admin-table sentinels exist without exposing their row data."""
+    headers = {
+        "apikey": publishable_key,
+        "Authorization": f"Bearer {token}",
+    }
+
+    present = request_json(
+        f"{project_url}/rest/v1/rpc/rls_fixtures_present",
+        headers,
+        {},
+    )
+    ok = present is True
+
+    print("\nAdmin-only sentinel fixtures")
+    print(
+        f"{'PASS' if ok else 'FAIL'} "
+        "prompt_versions and audit_events sentinels are present"
+    )
+
+    return ok
+
+
 def main():
     load_local_env()
 
@@ -197,6 +224,19 @@ def main():
     password_a = secret_or_prompt("RLS_TEST_A_PASSWORD", "Account A password: ")
     password_b = secret_or_prompt("RLS_TEST_B_PASSWORD", "Account B password: ")
 
+    token_a = sign_in(
+        project_url,
+        publishable_key,
+        email_a,
+        password_a,
+    )
+
+    fixtures_ok = check_admin_fixtures_present(
+        project_url,
+        publishable_key,
+        token_a,
+    )
+
     account_a_ok = check_account(
         "Account A",
         project_url,
@@ -204,6 +244,7 @@ def main():
         email_a,
         password_a,
         EXPECTED_ROW_IDS["Account A"],
+        token_a,
     )
 
     account_b_ok = check_account(
@@ -220,7 +261,7 @@ def main():
         publishable_key,
     )
 
-    all_passed = account_a_ok and account_b_ok and anonymous_ok
+    all_passed = fixtures_ok and account_a_ok and account_b_ok and anonymous_ok
 
     print(
         "\nRESULT:",

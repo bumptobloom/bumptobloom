@@ -11,7 +11,7 @@ WEEKS = {
     2: "Week 2 (Sep 1-7) - Home & Track",
     3: "Week 3 (Sep 8-14) - Learn & Fever Rules",
     4: "Week 4 (Sep 15-21) - Cart & Ask",
-    5: "Week 5 (Sep 22-28) - Health UI & Polish",
+    5: "Week 5 (Sep 22-28) - Vitals UI & Polish",
     6: "Week 6 (Sep 29-Oct 5) - Hardening & Launch",
 }
 
@@ -28,7 +28,7 @@ def span(week: int) -> tuple[str, str]:
 T = [
     # ---------------- WEEK 1 ----------------
     (1, "DECISION: Legal review - COPPA / HIPAA / state health-privacy exposure", "Katrina Ma", "Product", "Critical",
-     "We are storing infant health data under real accounts and nobody has checked whether we are allowed to. Also covers whether the Fever Checker risks being classified as a medical device."),
+     "We are storing infant health data under real accounts and nobody has checked whether we are allowed to. UPDATED 18 Sep: the Fever Checker is out (ADR-007), so the medical-device question is no longer about triage output. It is now about the US-6 'Fever range' label - we attach a clinical-sounding label to a reading the parent gives us, and whether that alone is a device claim is exactly the thing to put to counsel. The PRD already forbids severity words, red styling and the word normal, which helps, but it is not an answer."),
     (1, "Finish repo setup: keep CODEOWNERS handles current", "Sonakshi Panda", "Pod W", "High",
      "Org, repo and the branch ruleset are done. CODEOWNERS carries real handles. DECISION 3 Sep: we deleted the develop branch rather than syncing it. It predated the monorepo restructure, had no apps/web on it, and cost two people time in 24 hours - Shaff Had lost a morning and Sivathmika's first PR failed its preview build because she branched from it. We run trunk-based on main. What is left is re-checking each CODEOWNERS handle as people accept their invites, since a handle that is not a collaborator is silently ignored by GitHub."),
     (1, "Create Supabase project, apply migration 0001, verify RLS", "Keya Chaudhari", "Pod W", "High",
@@ -36,9 +36,9 @@ T = [
     (1, "Freeze API contracts with all pod leads", "Sonakshi Panda", "Pod W", "High",
      "docs/API-CONTRACTS.md. After this, changing a shape needs a PR. This is what lets 5 timezones work without blocking."),
     (1, "Send design the five change requests", "Sonakshi Panda", "Pod W", "Critical",
-     "One sitting with Syeda, five items. (1) ADR-004: onboarding becomes a date picker, not a month slider - we store birth_date and derive age, which answers her open question about days vs weeks vs months. Ask for the new onboarding screen and the Change-age modal. (2) ADR-002: pregnancy is out of MVP - every Week 24 screen has no v1 implementation, and we need one coming-soon screen behind 'I am expecting' with an email capture. (3) Track is missing the Social/Emotional domain - the counter reads '0 of 9' but only six checkboxes render. Should-have, not a blocker. (4) Track has no disclaimer and the approved copy is already in the Master sheet, so she does not need to write it. Non-dismissible, on every checklist view. (5) CRITICAL: the fever article must run severity high-to-low. It currently opens with a green 'usually manageable at home' block, and a 2-month-old at 101.4F is an emergency room visit. Ask for three result screens: monitor, call, go now. If Syeda only does one of these five, it is this one."),
+     "SENT 1 Sep and actioned - the redesign that followed is the Final Screens file the PRD now links, so this task is closed as history rather than an open ask. ITEM 5 IS SUPERSEDED BY ADR-007: there is no fever article and no monitor/call/go-now result screens to design, because triage was removed from the product entirely. Do not action it, and if it is still sitting in Syeda's queue, withdraw it. The other four all landed. Original text kept below as the record. (1) ADR-004: onboarding becomes a date picker, not a month slider - we store birth_date and derive age, which answers her open question about days vs weeks vs months. Ask for the new onboarding screen and the Change-age modal. (2) ADR-002: pregnancy is out of MVP - every Week 24 screen has no v1 implementation, and we need one coming-soon screen behind 'I am expecting' with an email capture. (3) Track is missing the Social/Emotional domain - the counter reads '0 of 9' but only six checkboxes render. Should-have, not a blocker. (4) Track has no disclaimer and the approved copy is already in the Master sheet, so she does not need to write it. Non-dismissible, on every checklist view. (5) CRITICAL: the fever article must run severity high-to-low. It currently opens with a green 'usually manageable at home' block, and a 2-month-old at 101.4F is an emergency room visit. Ask for three result screens: monitor, call, go now. If Syeda only does one of these five, it is this one."),
     (1, "Ratify naming + nav order", "Katrina Ma", "Product", "Medium",
-     "SETTLED 1 Sep by Katrina: nav order is Home-Learn-Ask-Track-Health. Five tabs, Cart is not one of them - shopping becomes a Recommended for You card on Home. Still open: what we call that surface in the UI and in code, since it has had five names across our docs (Cart, Act, Sprout Cart, Bloom Cart, Essentials)."),
+     "SETTLED 1 Sep by Katrina: nav order is Home-Learn-Ask-Track-Vitals. Five tabs, Cart is not one of them - shopping becomes a Recommended for You card on Home. Still open: what we call that surface in the UI and in code, since it has had five names across our docs (Cart, Act, Sprout Cart, Bloom Cart, Essentials)."),
     (1, "Supabase client + Auth: log in, create account, forgot password", "Melvin James Bryant III", "Pod E", "Critical",
      "BLOCKS FOUR PEOPLE IN WEEK 2. Your scaffold merged in PR #113, but it never wired Supabase - there is no @supabase/ssr in apps/web today. So this task is two things: the shared client that Sivathmika, Sahasra, Rasheed and Shaff Had all import next week, and the three auth screens from Figma 1-2. Land the client early and say so in the channel, even if the screens are still in progress."),
     (1, "Service worker with Serwist: cache the app shell, make the app installable", "Rasheed Adebayo OYEWOLE", "Pod I", "High",
@@ -48,7 +48,7 @@ T = [
     (1, "Extract design tokens from Figma into the Tailwind theme", "Joanna Zhang", "Pod E", "High",
      "Design-change log item 1 was 'fonts are not consistent throughout'. Tokens are how that stops recurring."),
     (1, "Build the bottom tab navigation for all five tabs", "Joanna Zhang", "Pod E", "Medium",
-     "Order: Home-Learn-Ask-Track-Health. Confirmed final by Product on 1 Sep. Five tabs, not six - Cart is no longer a tab, shopping is a Recommended for You card on Home. Note the Figma still shows the old order and the old tab, so build to this line, not to the mock."),
+     "Order: Home-Learn-Ask-Track-Vitals. Confirmed final by Product on 1 Sep. Five tabs, not six - Cart is no longer a tab, shopping is a Recommended for You card on Home. Note the Figma still shows the old order and the old tab, so build to this line, not to the mock."),
     (1, "Responsive shell: phone-width column on desktop, full-bleed on mobile", "Joanna Zhang", "Pod E", "High",
      "NEW with ADR-006. Product wants it to look like a phone even on a laptop. One layout component every page sits inside - max-w-[430px], centred, with the tab bar pinned to the bottom of that column rather than the browser window. Build it once here so no page has to think about it again."),
     (1, "Baby profile: create + edit, date picker, derived age", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
@@ -76,8 +76,8 @@ T = [
      "Taken over from Sivathmika on 11 Sep: the empty milestones table blocks every screen in the demo, so this moved onto the critical path."),
     (2, "Milestones data layer: fetch, mark noticed, unmark", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Direct Supabase calls. RLS is the access control - there is no API server to hide behind."),
-    (2, "Track screen: checkpoint navigator, 4 domains, progress counter", "Joanna Zhang", "Pod E", "High",
-     "Replace the unlabeled 1-6 pagination in the Figma with real checkpoint months."),
+    (2, "Track screen: month bar 0-24, 3 domains, per-milestone checkboxes", "Joanna Zhang", "Pod E", "High",
+     "REWRITTEN 18 Sep - the old title described a screen the PRD no longer asks for. PRD 2.6 US-04 names three domains, Physical, Cognitive and Language, not four: Social/Emotional is out. US-01 and US-02 ask for a month bar across the full 0-24 range, not five or nine checkpoints, and there is no progress counter anywhere in the final Figma, so the '0 of 9' we were building to does not exist. Shipped in #201 and rebuilt to the final Figma in #207. What is still open is the content: the 'What is Typical' block renders an honest empty state until Vishnu's milestone sheet is imported."),
     (2, "Render the Track disclaimer on every checklist view", "Joanna Zhang", "Pod E", "Critical",
      "Non-dismissible. Copy is in the Master sheet and in docs/SAFETY.md."),
     (2, "Home data layer: getHome() with Supabase queries", "Sahasra Miriyala", "Pod I", "High",
@@ -86,13 +86,13 @@ T = [
      "Per design-change log: Bloom bar removed, nav at bottom, edit icon on profile card."),
     (2, "Activities: table, seed, data layer", "Sahasra Miriyala", "Pod I", "Medium", ""),
     (2, "DATA: Content coverage matrix - which age x category cells are empty", "Shaikh Mohd Rehaan", "Pod I", "High",
-     "5 age checkpoints x 4 Learn categories is 20 cells. Some will have ten articles and some will have zero, and nobody currently knows which. The matrix is what tells the writers where to write instead of guessing.", "Data"),
+     "8 age bands x 5 Learn categories is 40 cells (corrected 18 Sep from 5 x 4). Some will have ten articles and some will have zero, and nobody currently knows which. The matrix is what tells the writers where to write instead of guessing.", "Data"),
     (2, "DATA: Define the analytics question set and event schema", "Katrina Ma", "Product", "Medium",
-     "Do this BEFORE Melvin wires PostHog in week 4. Write the questions first - where do moms drop out of onboarding, which tab do they open second, how many fever checks end in EMERGENCY - then design events that answer them. Events designed without questions produce dashboards nobody can read.", "Data"),
+     "Do this BEFORE Melvin wires PostHog in week 4. Write the questions first - where do moms drop out of onboarding, which tab do they open second, how often a logged reading lands in the fever range - then design events that answer them. CORRECTED 18 Sep: 'how many fever checks end in EMERGENCY' described the Fever Checker, which does not ship. There is no EMERGENCY tier to count. Events designed without questions produce dashboards nobody can read.", "Data"),
     (2, "Design Ask prompt architecture and baby-context builder", "Keya Chaudhari", "Pod W", "High",
      "Age in months only. No name, no user id, nothing identifying reaches OpenAI. Runs in the API route on the server, never in the browser."),
-    (2, "Migration 0002: temperature_readings table", "Sonakshi Panda", "Pod W", "Critical",
-     "BLOCKS the Health work. The existing fever_checks table cannot store a plain reading: age_months_at_check, rectal_equivalent_f, red_flags, tier, rule_id and rules_version are all NOT NULL and the log fills none of them. It also has no notes column, and the Figma has a notes field. The method values differ too - the design offers Ear, Armpit, Forehead and Rectal, the table allows rectal, oral, axillary, temporal, tympanic. New temperature_readings table with baby_id, temp_f, method, notes, created_at, RLS on, owner-scoped. Leave fever_checks in place and unused rather than altering six NOT NULL constraints."),
+    (2, "Migration 0004: temperature_readings table - BLOCKS VITALS", "Keya Chaudhari", "Pod W", "Critical",
+     "STILL NOT WRITTEN as of 18 Sep, and it is the single thing standing between Joanna and the Vitals screen. Renumbered: 0002 is the private avatars bucket and 0003 is the prompt-version constraint, both already on main, so this lands as 0004. REASSIGNED 18 Sep from Sonakshi to Keya - she wrote 0001 and every RLS policy in it, and this was sitting unstarted while it blocked two people. BLOCKS the Vitals work. The existing fever_checks table cannot store a plain reading: age_months_at_check, rectal_equivalent_f, red_flags, tier, rule_id and rules_version are all NOT NULL and the log fills none of them. It also has no notes column, and the Figma has a notes field. The method values differ too - the design offers Ear, Armpit, Forehead and Rectal, the table allows rectal, oral, axillary, temporal, tympanic. New temperature_readings table with baby_id, temp_f, method, notes, created_at, RLS on, owner-scoped. Leave fever_checks in place and unused rather than altering six NOT NULL constraints."),
     (2, "Rewrite the triage guard response now that Health is a log", "Sonakshi Panda", "Pod W", "Critical",
      "FORCED BY A PRODUCT DECISION, 1 Sep. Health is no longer a fever checker, it is a temperature log with no guidance. Our guard catches symptom questions before they reach the model and redirects them to Health. That now sends a frightened parent to a blank data-entry form, which is worse than not catching her. Replace the redirect with a plain refusal plus a route to real help: we cannot help with symptoms, contact your doctor or your care team, and here is 911. No triage, no thresholds, no reassurance. The detection logic does not change - Rehaan's labelled set is still valid - only the response does."),
     (6, "Final MVP walkthrough", "Sonakshi Panda", "Pod W", "High",
@@ -109,9 +109,12 @@ T = [
      "Blocks the photo half of the baby profile. RLS protects table rows, not files - a storage bucket needs its own policies. These are photographs of infants, so the bucket is private and the app serves signed URLs. A public bucket would put them outside every protection we have."),
 
     # ---------------- WEEK 3 ----------------
-    (3, "Build Learn content dataset: Developmental, Feeding, Sleep, Diaper", "Sahasra Miriyala", "Pod I", "High", ""),
-    (3, "Learn data layer: fetch by age and category, save, unsave", "Sahasra Miriyala", "Pod I", "High", ""),
-    (3, "Learn screen with category filters and save", "Melvin James Bryant III", "Pod E", "High", ""),
+    (3, "Build Learn content dataset: Feeding, Sleeping, Crying & Soothing, Diaper & Digestion, Mom's Well-Being", "Sahasra Miriyala", "Pod I", "High",
+     "RETITLED 18 Sep to the five categories PRD 2.5 actually names. Developmental is gone and Mom's Well-Being is new. In review as PR #204, which also carries the content seed and the check-constraint migration. Two things to fix before it merges: the migration is numbered 0003 and that number is taken on main, and the seed opens with 'delete from content', which cascades through saved_content.content_id and silently deletes every parent's saved card. The ids in the seed are stable, so an upsert does the same job without the blast radius."),
+    (3, "Learn data layer: fetch by age and category, save, unsave", "Sahasra Miriyala", "Pod I", "High",
+     "GAP FOUND 18 Sep: getContent(babyId, category?) has no month parameter, but PRD 2.5 US-2 lets a mother browse any month 0-24 independently of her baby's real age. Until that lands, the Learn screen reads the content table by month itself through lib/api/learn-feed.ts. Fold that back into this data layer when #204 is merged, so there is one Learn reader and not two."),
+    (3, "Learn screen: guidance feed with month bar", "Melvin James Bryant III", "Pod E", "High",
+     "REWRITTEN 18 Sep - the old title asked for category filter tabs and a save/bookmark control, and neither appears anywhere in PRD 2.5 or in the final Figma frame 04. What the PRD asks for is: 'Guidance Feeds' label, a title reading 'Month 18, tailored to you', a month bar over 0-24 with the selected month highlighted and arrows to step outside the visible range, guidance cards each carrying a category pill and a source visually separated from the guidance (US-4), and the US-5 disclaimer. Changing the viewed month must not touch the child's profile. Drafted by Sonakshi on 18 Sep while Melvin was on #211 and #205 - Melvin still owns the ticket and reviews it."),
     (3, "Temperature readings: data layer and today's summary", "Rasheed Adebayo OYEWOLE", "Pod I", "High",
      "REPLACES fever_checks logging. No rule_id, no rules_version, no tier - none of those exist any more. Save a reading, list today's readings, and compute the summary (highest and count). Depends on the new migration for the temperature_readings table. The summary is a derived value, do not store it."),
     (3, "DATA: Ask golden set and a written scoring rubric", "Keya Chaudhari", "Pod W", "High",
@@ -130,17 +133,17 @@ T = [
     (4, "Ask: OpenAI integration and context builder", "Mohd Shaff Had Khan", "Pod I", "High", ""),
     (4, "Ask: Zod response validation + ai_runs logging", "Shaikh Mohd Rehaan", "Pod I", "High", ""),
     (4, "DATA: Measure triage guard precision and recall, write down the trade-off", "Shaikh Mohd Rehaan", "Pod I", "Critical",
-     "Score the guard against the labelled set from week 1 and publish a confusion matrix. Then write down, in the repo, that we optimise for RECALL and accept the false positives - missing a symptom question is a safety incident, sending someone to the Fever Checker unnecessarily costs one tap. Every false negative gets reviewed individually.", "Data"),
+     "Score the guard against the labelled set from week 1 and publish a confusion matrix. Then write down, in the repo, that we optimise for RECALL and accept the false positives - missing a symptom question is a safety incident, and showing the refusal to someone who did not need it costs her one extra tap. CORRECTED 18 Sep: the guard no longer routes anyone to a Fever Checker - REDIRECT_ANSWER points at her pediatrician and 911. Every false negative gets reviewed individually.", "Data"),
     (4, "Ask: conversation persistence and history queries", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "History reads straight from Supabase with RLS - no API route needed for that half."),
     (4, "Ask chat screen with standing disclaimer", "Tarigopula Sivathmika Chowdary", "Pod I", "High",
      "Keyboard handling on a phone is the fiddly part - test with the keyboard open on a small screen."),
     (4, "Wire PostHog events per tech-stack doc section 15", "Melvin James Bryant III", "Pod E", "Medium",
-     "Health events excluded from any ad-targeting integration."),
+     "Vitals events - temperature readings and anything derived from them - excluded from any ad-targeting integration."),
 
     # ---------------- WEEK 5 ----------------
-    (5, "Health: temperature log screen", "Joanna Zhang", "Pod E", "High",
-     "REPLACES the Fever Checker screen. Health is a log now, not triage - see ADR-007. Build exactly what the Figma shows and nothing more: Today's Summary with highest reading and total count, an Add Temperature form with value, a Mode of Measurement dropdown, optional notes and a Save button, then Today's Readings as a list of time, temperature, method. NO colour coding on readings, no severity, no red styling on Highest. Disclaimer copy comes from Product - the final wording drops the old 'general guidance based on age and temperature' line, which described a product we no longer build. Two things the Figma does not answer, ask before inventing them: each reading row has a chevron, so what is behind it, and whether there is any history beyond today."),
+    (5, "Vitals: temperature log screen", "Joanna Zhang", "Pod E", "High",
+     "RENAMED Health -> Vitals, 18 Sep: the tab, the route and PRD 2.7 all read Vitals now, and /health permanently redirects to /vitals. BLOCKED until migration 0004 creates temperature_readings. REPLACES the Fever Checker screen. Vitals is a log now, not triage - see ADR-007. Build exactly what the Figma shows and nothing more: Today's Summary with highest reading and total count, an Add Temperature form with value, a Mode of Measurement dropdown, optional notes and a Save button, then Today's Readings as a list of time, temperature, method. NO colour coding on readings, no severity, no red styling on Highest. Disclaimer copy comes from Product - the final wording drops the old 'general guidance based on age and temperature' line, which described a product we no longer build. Two things the Figma does not answer, ask before inventing them: each reading row has a chevron, so what is behind it, and whether there is any history beyond today."),
     (5, "Ask conversation history and sidebar", "Tarigopula Sivathmika Chowdary", "Pod I", "Medium",
      "Master sheet asked for this: 'save the history on the left navigation as ChatGPT'."),
     (5, "Wire Sentry for Next.js, with source maps uploaded on deploy", "Melvin James Bryant III", "Pod E", "Medium",
@@ -148,7 +151,7 @@ T = [
     (5, "Browser pass: iOS Safari, Android Chrome, desktop Chrome, one old phone", "Sahasra Miriyala", "Pod I", "High",
      "iOS Safari is the one that breaks - it is the strictest about service workers and the install flow is Share -> Add to Home Screen, not a prompt. Our users are often on whatever phone they already had, so include something cheap and three years old."),
     (5, "Offline pass: cache the app shell so the app opens with no network", "Rasheed Adebayo OYEWOLE", "Pod I", "High",
-     "NEW with ADR-006. This is the claim we make in the demo, so it has to be true: airplane mode on, open the installed app, run a fever check, get an answer. The service worker caches the shell; the rules are pure TypeScript with no I/O. Logging fails silently and the parent never sees an error."),
+     "NEW with ADR-006. CORRECTED 18 Sep - this used to say 'run a fever check, get an answer', which describes the Fever Checker we no longer build. There are no tiers and no triage result to get. The claim we make in the demo is now: airplane mode on, open the installed app, and the shell plus the screens she has already visited still render instead of a browser error page. The fever-range rules stay pure TypeScript with no I/O, so the US-6 label can be computed without a network. What is NOT settled, and must be asked rather than invented: whether a temperature typed offline is queued and saved when she reconnects, or simply refused with a clear message. Saving needs Supabase. Pick one with Product before building either."),
     (5, "Accessibility pass: VoiceOver, TalkBack, keyboard nav, 200% zoom", "Sahasra Miriyala", "Pod I", "Medium",
      "Our users are sleep-deprived and often in low light at 3am. Contrast and text scaling matter more here than on a normal product. Keyboard navigation is new vs the mobile plan and it is not optional on the web."),
     (5, "Run Ask evals, tune prompt, pin the winning version", "Keya Chaudhari", "Pod W", "Medium", "", "Data"),
@@ -167,7 +170,7 @@ T = [
     (6, "Beta with 10-20 real first-time parents", "Katrina Ma", "Product", "High", ""),
     (6, "Bug triage and fixes from beta", "Sonakshi Panda", "All", "High", ""),
     (6, "DATA: Beta analysis - funnel, drop-off, and what parents actually asked", "Shaikh Mohd Rehaan", "Pod I", "High",
-     "Not 'read the Discord messages'. Where did people stop in onboarding, which tabs went unopened, what did they type into Ask, which fever tiers fired. This is the only real usage data the project will ever have before the demo - it is also the strongest slide in it.", "Data"),
+     "Not 'read the Discord messages'. Where did people stop in onboarding, which tabs went unopened, what did they type into Ask, how many temperature readings got logged and how many of those carried a note. CORRECTED 18 Sep - this used to ask which fever tiers fired; tiers do not exist, Vitals is a log. This is the only real usage data the project will ever have before the demo, and it is also the strongest slide in it.", "Data"),
     (6, "Deploy to production on Vercel and smoke test the install flow", "Sonakshi Panda", "Pod W", "Critical",
      "No review queue and no store account - a push to main is live in about 40 seconds. The smoke test is the part that matters: install it on an iPhone and an Android from the real URL and walk all five tabs."),
     (6, "PWA icons, splash screens and install metadata", "Joanna Zhang", "Pod E", "High",
@@ -196,6 +199,55 @@ T = [
      "Hard gate on the beta. We cannot put real parents' infant health data into a product with no privacy policy, and we need a stated retention and deletion policy. Pairs with Katrina's legal review."),
 ]
 
+# Status is keyed off the task name, so the board can be regenerated without
+# hand-editing the CSV. Add a name here when the work lands on main; the name
+# must match the row above character for character.
+DONE = {
+    "Send design the five change requests",
+    "Supabase client + Auth: log in, create account, forgot password",
+    "Build the bottom tab navigation for all five tabs",
+    "Responsive shell: phone-width column on desktop, full-bleed on mobile",
+    "Extract design tokens from Figma into the Tailwind theme",
+    "Home data layer: getHome() with Supabase queries",
+    "Home screen: profile card, this-week card, quick actions",
+    "Track screen: month bar 0-24, 3 domains, per-milestone checkboxes",
+    "Render the Track disclaimer on every checklist view",
+    "Baby profile: create + edit, date picker, derived age",
+    "Milestones data layer: fetch, mark noticed, unmark",
+    "Supabase Storage: private avatars bucket, policies and signed URLs",
+    "Scaffold the Ask API route and deploy a stub",
+    "Ask module structure and OpenAI client setup",
+    "Ask: prompt versioning and rollout mechanism",
+    "Set up the Vercel project, preview deploys and environment variables",
+    "Create Supabase project, apply migration 0001, verify RLS",
+    "Freeze API contracts with all pod leads",
+    "DATA: Content coverage matrix - which age x category cells are empty",
+}
+
+IN_PROGRESS = {
+    "Build Learn content dataset: Feeding, Sleeping, Crying & Soothing, Diaper & Digestion, Mom's Well-Being",
+    "Learn screen: guidance feed with month bar",
+    "Recommended for You: product list and product detail screens",
+    "Service worker with Serwist: cache the app shell, make the app installable",
+    "Finish repo setup: keep CODEOWNERS handles current",
+}
+
+BLOCKED = {
+    "Vitals: temperature log screen",
+    "Temperature readings: data layer and today's summary",
+}
+
+
+def status_for(name: str) -> str:
+    if name in DONE:
+        return "Done"
+    if name in IN_PROGRESS:
+        return "Working on it"
+    if name in BLOCKED:
+        return "Stuck"
+    return "Not Started"
+
+
 HEADERS = ["Group", "Name", "Owner", "Status", "Priority", "Pod", "Discipline",
            "Start Date", "Due Date", "Week", "Notes"]
 
@@ -206,7 +258,10 @@ with open("BumpToBloom-Monday-Import.csv", "w", newline="", encoding="utf-8") as
         week, name, owner, pod, priority, notes = row[:6]
         disc = row[6] if len(row) > 6 else ""
         start, due = span(week)
-        w.writerow([WEEKS[week], name, owner, "Not Started", priority, pod, disc,
+        w.writerow([WEEKS[week], name, owner, status_for(name), priority, pod, disc,
                     start, due, f"W{week}", notes])
 
-print(f"{len(T)} tasks written")
+done = sum(1 for r in T if r[1] in DONE)
+print(f"{len(T)} tasks written - {done} done, "
+      f"{sum(1 for r in T if r[1] in IN_PROGRESS)} in progress, "
+      f"{sum(1 for r in T if r[1] in BLOCKED)} blocked")

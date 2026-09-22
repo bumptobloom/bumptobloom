@@ -12,6 +12,8 @@ from (
   union all
   select 'fever_checks', count(*) from fever_checks
   union all
+  select 'temperature_readings', count(*) from temperature_readings
+  union all
   select 'ai_conversations', count(*) from ai_conversations
   union all
   select 'ai_messages', count(*) from ai_messages

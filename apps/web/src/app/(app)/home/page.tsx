@@ -1,159 +1,218 @@
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Pencil, Thermometer, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { getMonthTypical } from '@/lib/api/month-guidance';
+import { Callout } from '@/components/ui/callout';
 
 export const dynamic = 'force-dynamic';
 
+/** "Tuesday, September 1st" — the format PRD US-001 asks for. */
+function formatToday(now: Date): string {
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const month = now.toLocaleDateString('en-US', { month: 'long' });
+  const d = now.getDate();
+  const suffix =
+    d % 10 === 1 && d !== 11 ? 'st'
+    : d % 10 === 2 && d !== 12 ? 'nd'
+    : d % 10 === 3 && d !== 13 ? 'rd'
+    : 'th';
+  return `${weekday}, ${month} ${d}${suffix}`;
+}
+
+/** Add months to a date, clamping to the last valid day of the target month. */
+function addMonthsClamped(from: Date, months: number): Date {
+  const d = new Date(from);
+  const targetDay = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + months);
+  const daysInTargetMonth = new Date(
+    d.getFullYear(),
+    d.getMonth() + 1,
+    0,
+  ).getDate();
+  d.setDate(Math.min(targetDay, daysInTargetMonth));
+  return d;
+}
+
+/**
+ * "MONTH 18, DAY 7" — US-002 asks for months and days. Derived here rather
+ * than in calculateBabyAge so the shared age label used elsewhere is unchanged.
+ *
+ * Month ends are the whole difficulty. `setMonth` overflows when the target
+ * month is shorter (31 Jan plus one month lands on 3 Mar, not 28 Feb), and a
+ * naive `now.getDate() < birth.getDate()` check under-counts, because a baby
+ * born on the 31st has completed a month by 28 Feb — there is no 31 Feb to
+ * wait for. So: take the optimistic month count, build the clamped
+ * anniversary, and step back one month only if that date is still ahead.
+ */
+function completedMonths(birthDate: string, now: Date): number {
+  const birth = new Date(`${birthDate}T00:00:00`);
+  let months =
+    (now.getFullYear() - birth.getFullYear()) * 12 +
+    (now.getMonth() - birth.getMonth());
+  if (addMonthsClamped(birth, months).getTime() > now.getTime()) months -= 1;
+  return Math.min(24, Math.max(0, months));
+}
+
+function monthAndDay(birthDate: string, now: Date): string {
+  const birth = new Date(`${birthDate}T00:00:00`);
+
+  let months =
+    (now.getFullYear() - birth.getFullYear()) * 12 +
+    (now.getMonth() - birth.getMonth());
+
+  let anniversary = addMonthsClamped(birth, months);
+  if (anniversary.getTime() > now.getTime()) {
+    months -= 1;
+    anniversary = addMonthsClamped(birth, months);
+  }
+  months = Math.max(0, months);
+
+  const days = Math.max(
+    0,
+    Math.floor((now.getTime() - anniversary.getTime()) / 86_400_000),
+  );
+
+  return `MONTH ${months}, DAY ${days}`;
+}
+
+/** Figma 03 reads "essentials for Emma at 18 months". `ageLabel` returns
+ *  "Newborn" under one month, which makes that sentence read "at Newborn". */
+function ageForCopy(birthDate: string, now: Date): string {
+  const birth = new Date(`${birthDate}T00:00:00`);
+  let months =
+    (now.getFullYear() - birth.getFullYear()) * 12 +
+    (now.getMonth() - birth.getMonth());
+  if (now.getDate() < birth.getDate()) months -= 1;
+  months = Math.max(0, months);
+
+  if (months === 0) return 'in the first month';
+  return `at ${months} month${months === 1 ? '' : 's'}`;
+}
+
 export default async function HomePage() {
   const home = await getHome();
+  const now = new Date();
 
-  // Signed in, but no baby registered yet. Home has nothing to derive an age
-  // from, so send her to add one rather than rendering an invented state.
+  // Signed in with no baby. There is no Figma screen for this state, so we do
+  // not invent one -- onboarding is where she belongs and it is designed.
   if (!home.baby) {
-    return (
-      <section className="flex flex-col gap-4">
-        <h1 className="text-[26px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Welcome to BumpToBloom
-        </h1>
-        <p className="text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          Add your baby to see their milestones and what to expect this month.
-        </p>
-        <Link
-          href="/onboarding"
-          className="mt-2 inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
-          style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
-        >
-          Add your baby
-        </Link>
-        <StandingDisclaimer text={home.disclaimer} />
-      </section>
-    );
+    redirect('/onboarding');
   }
 
-  const { baby, thisWeek, milestoneProgress } = home;
+  const { baby } = home;
+
+  // US-004. Same month_guidance row Track and Learn read, so the three
+  // screens cannot disagree about what is typical this month.
+  const typical = await getMonthTypical(completedMonths(baby.birthDate, now));
+  const firstName = baby.name.trim().split(' ')[0];
 
   return (
-    <section className="flex flex-col gap-5">
-      <header className="flex items-center gap-4">
+    <section className="flex flex-col gap-[var(--space-20)]">
+      <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body-date)' }}>
+        {formatToday(now)}
+      </p>
+
+      {/* Baby card, Figma 03. The pencil opens the profile, per US-003. */}
+      <article className="flex min-h-[110px] items-center gap-[var(--space-14)] rounded-[var(--radius-16)] bg-[var(--brand-secondary)] p-[var(--space-16)]">
         {baby.avatarUrl ? (
           <Image
             src={baby.avatarUrl}
-            alt=""
-            width={56}
-            height={56}
-            className="size-14 rounded-full object-cover"
+            alt={`${baby.name}'s profile photo`}
+            width={64}
+            height={64}
+            className="size-16 shrink-0 rounded-[var(--radius-16)] object-cover"
             unoptimized
           />
         ) : (
           <div
             aria-hidden
-            className="flex size-14 items-center justify-center rounded-full text-[20px] font-semibold"
-            style={{ background: 'var(--surface-terra)', color: 'var(--text-accent-terracotta)' }}
+            className="flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-16)] border border-[var(--card-primary)] bg-[var(--surface-terra)] text-[1.75rem]"
           >
-            {baby.name.trim().charAt(0).toUpperCase()}
+            👶
           </div>
         )}
-        <div>
-          <h1 className="text-[24px] leading-tight font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-[var(--card-primary)]" style={{ font: 'var(--type-card-title)' }}>
             {baby.name}
           </h1>
-          <p className="text-[14px]" style={{ color: 'var(--text-secondary)' }}>
-            {baby.ageLabel}
-            {baby.dueDate ? ' (corrected for prematurity)' : ''}
+          <p className="mt-[var(--space-4)] tracking-[0.08em] text-[var(--card-primary)]" style={{ font: 'var(--type-eyebrow)' }}>
+            BLOOM · {monthAndDay(baby.birthDate, now)}
           </p>
         </div>
-      </header>
-
-      {/* Milestone progress.
-          If the checkpoint has no milestones loaded, say so. Do not print a
-          fraction over an invented denominator - that is the bug this team
-          keeps shipping. */}
-      <article
-        className="rounded-[18px] border p-5"
-        style={{ background: 'var(--card-primary)', borderColor: 'var(--border-card)' }}
-      >
-        <h2 className="text-[13px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-secondary)' }}>
-          Milestones
-        </h2>
-        {milestoneProgress && milestoneProgress.total > 0 ? (
-          <>
-            <p className="mt-2 text-[17px]" style={{ color: 'var(--text-primary)' }}>
-              <span className="text-[30px] font-semibold" style={{ color: 'var(--text-brand)' }}>
-                {milestoneProgress.noticed}
-              </span>{' '}
-              of {milestoneProgress.total} noticed at {milestoneProgress.checkpointMonth} months
-            </p>
-            <div
-              className="mt-4 h-2 w-full overflow-hidden rounded-full"
-              role="progressbar"
-              aria-valuenow={milestoneProgress.noticed}
-              aria-valuemin={0}
-              aria-valuemax={milestoneProgress.total}
-              aria-label={`${milestoneProgress.noticed} of ${milestoneProgress.total} milestones noticed`}
-              style={{ background: 'var(--surface-moss)' }}
-            >
-              <div
-                className="h-full rounded-full transition-[width]"
-                style={{
-                  width: `${(milestoneProgress.noticed / milestoneProgress.total) * 100}%`,
-                  background: 'var(--brand-secondary)',
-                }}
-              />
-            </div>
-            <Link
-              href="/track"
-              className="mt-4 inline-block text-[14px] font-semibold underline underline-offset-4"
-              style={{ color: 'var(--text-brand)' }}
-            >
-              Open Track
-            </Link>
-          </>
-        ) : (
-          <p className="mt-2 text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            No milestones are loaded for this checkpoint yet.
-          </p>
-        )}
+        <Link
+          href="/onboarding/profile"
+          aria-label="Edit baby profile"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--card-primary)] transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--card-primary)]"
+        >
+          <Pencil className="size-[18px]" />
+        </Link>
       </article>
 
-      {/* This week. The content table is empty until the AAP reuse question is
-          answered, so the empty state is the state we expect to see. */}
-      <article
-        className="rounded-[18px] border p-5"
-        style={{ background: 'var(--card-secondary)', borderColor: 'var(--border-card)' }}
+      {/* US-004. This uses the same month_guidance row as Learn and Track. */}
+      <Callout variant="neutral" eyebrow="This week, for you">
+        <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
+          {typical ?? 'Nothing published for this age yet.'}
+        </p>
+        {/*
+          Settled by Product on 15 Sep: "what is typical" cannot map onto Learn's
+          five specific categories, so this card's content comes from the
+          month guidance dataset and More guidance sends her to Track, not Learn
+          (Vishnu and Shailee, PRD US-004 updated). The nav bar is unchanged.
+        */}
+        <Link
+          href="/track"
+          className="mt-[var(--space-12)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+        >
+          More guidance &rarr;
+        </Link>
+      </Callout>
+
+      <Link
+        href="/vitals"
+        className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--surface-terra)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <h2 className="text-[13px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-secondary)' }}>
-          This week
-        </h2>
-        {thisWeek ? (
-          <>
-            <h3 className="mt-2 text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-              {thisWeek.title}
-            </h3>
-            <p className="mt-2 text-[15px] leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-              {thisWeek.excerpt}
-            </p>
-            <p className="mt-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-              Source:{' '}
-              {thisWeek.sourceUrl ? (
-                <a
-                  href={thisWeek.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline underline-offset-2"
-                >
-                  {thisWeek.sourceLabel}
-                </a>
-              ) : (
-                thisWeek.sourceLabel
-              )}
-            </p>
-          </>
-        ) : (
-          <p className="mt-2 text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Nothing published for this age yet.
+        <Thermometer className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
+        <div>
+          <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
+          <p className="mt-[var(--space-4)] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
+            Record your child&apos;s temperature, notes, and readings in one place.
           </p>
-        )}
+        </div>
+      </Link>
+
+      <Link
+        href="/ask"
+        className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--brand-primary)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
+      >
+        <MessageCircle className="size-6 shrink-0 text-[var(--text-accent-warm)]" aria-hidden />
+        <div>
+          <h2 className="text-[var(--text-accent-warm)]" style={{ font: 'var(--type-label)' }}>Ask Bloom</h2>
+          <p className="mt-[var(--space-4)] text-[var(--text-accent-warm)]" style={{ font: 'var(--type-body)' }}>
+            Answers tailored to exactly where you are.
+          </p>
+        </div>
+      </Link>
+
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+        <div className="flex items-start gap-[var(--space-12)]">
+          <ShoppingBag className="mt-0.5 size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
+          <div>
+            <h2 className="text-[var(--text-primary)]" style={{ font: 'var(--type-label)' }}>Recommended for You</h2>
+            <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
+              Age-appropriate essentials for {firstName} {ageForCopy(baby.birthDate, now)}.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/recommended"
+          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+        >
+          View recommendations →
+        </Link>
       </article>
 
       <StandingDisclaimer text={home.disclaimer} />

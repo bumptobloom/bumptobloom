@@ -10,7 +10,7 @@
 -- the right account. Delete them and CI fails on every PR, including ones that
 -- touch nothing but CSS. That happened on 11 Sep 2026.
 --
--- The nine per-account rows are safe to leave: RLS scopes them, so nobody but
+-- The ten per-account rows are safe to leave: RLS scopes them, so nobody but
 -- the two test accounts can see them.
 --
 -- The four shared reference rows are the ones that needed care, because they
@@ -185,6 +185,27 @@ insert into fever_checks (
     '20000000-0000-4000-8000-000000000002',
     7.0, 99.0, 'rectal', 99.0, '{}', 'HOME',
     'SYNTHETIC_TEST_RULE', 'test-1'
+  )
+on conflict do nothing;
+
+insert into temperature_readings (
+  id, baby_id, temp_f, method, notes, created_at
+) values
+  (
+    '61000000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000001',
+    98.6,
+    'temporal',
+    'Synthetic temperature reading A',
+    '2026-09-18 12:00:00+00'
+  ),
+  (
+    '61000000-0000-4000-8000-000000000002',
+    '20000000-0000-4000-8000-000000000002',
+    99.1,
+    'tympanic',
+    'Synthetic temperature reading B',
+    '2026-09-18 12:05:00+00'
   )
 on conflict do nothing;
 

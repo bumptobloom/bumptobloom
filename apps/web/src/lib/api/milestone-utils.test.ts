@@ -20,7 +20,7 @@ test('getCheckpoint returns the correct V1 checkpoint', () => {
   assert.equal(getCheckpoint(24), 24);
 });
 
-test('buildMilestoneDomains returns all four domains', () => {
+test('buildMilestoneDomains returns all three domains', () => {
   const domains = buildMilestoneDomains(
     [
       {
@@ -39,7 +39,7 @@ test('buildMilestoneDomains returns all four domains', () => {
 
   assert.deepEqual(
     domains.map((domain) => domain.domain),
-    ['physical', 'cognitive', 'language', 'social_emotional']
+    ['physical', 'cognitive', 'language']
   );
 
   assert.deepEqual(domains[0].items, [
@@ -59,6 +59,4 @@ test('buildMilestoneDomains returns all four domains', () => {
       noticed: false,
     },
   ]);
-
-  assert.deepEqual(domains[3].items, []);
 });

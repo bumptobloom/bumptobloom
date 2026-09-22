@@ -1,9 +1,13 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, User } from 'lucide-react';
 import { createBabyAction, updateBabyAction } from '@/app/actions/baby';
 import { type BabyProfile } from '@/lib/api/baby';
 import { validateBabyInput } from '@/lib/validation/baby';
+import { Button } from '@/components/ui/button';
+import { TextField } from '@/components/ui/text-field';
 
 interface BabyProfileFormProps {
   baby?: BabyProfile | null;
@@ -17,6 +21,21 @@ function getErrorMessage(error: unknown): string {
 
   return 'Something went wrong. Please try again.';
 }
+
+/** PRD US-04: required fields carry an asterisk. */
+function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <span className="mb-1.5 block text-[0.78rem] text-[var(--text-primary)]">
+      {children}
+      {required ? <span className="text-[var(--text-accent-terracotta)]"> *</span> : null}
+    </span>
+  );
+}
+
+const dateFieldClass =
+  'w-full rounded-[var(--radius-input)] border border-[var(--border-subtle)] bg-[var(--surface-terra)]/40 px-4 py-3 ' +
+  'text-[0.9rem] text-[var(--text-primary)] outline-none transition ' +
+  'focus:border-[var(--text-brand)] focus:ring-2 focus:ring-[var(--text-brand)]/20';
 
 export default function BabyProfileForm({
   baby = null,
@@ -75,75 +94,95 @@ export default function BabyProfileForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-md space-y-6 rounded-2xl bg-white p-6 shadow-sm"
+      noValidate
+      className="w-full space-y-4 rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-6"
     >
-      <div className="space-y-2">
-        <label htmlFor="baby-name" className="block text-sm font-medium">
-          Baby&apos;s name
-        </label>
-        <input
+      <Link
+        href="/onboarding"
+        className="inline-flex items-center gap-1.5 text-[0.82rem] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+      >
+        <ArrowLeft className="size-4" />
+        Back
+      </Link>
+
+      {/*
+        Figma 02 shows an uploaded photo with an edit affordance. Product asked
+        for a baby emoji for the MVP rather than infant photo storage, so this
+        is display only — there is no upload control until that is revisited.
+      */}
+      <div className="flex flex-col items-center gap-1.5 pt-1">
+        <div
+          aria-hidden
+          className="flex size-20 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[2rem]"
+        >
+          👶
+        </div>
+        <span className="text-[0.72rem] text-[var(--text-secondary)]">
+          Profile Picture
+        </span>
+      </div>
+
+      <h1 className="pt-1 text-center text-[1.05rem] leading-[1.4] text-[var(--text-primary)]">
+        {savedBaby
+          ? 'Baby profile'
+          : 'What\u2019s your baby\u2019s name and date of birth?'}
+      </h1>
+
+      <label className="block">
+        <FieldLabel required>Name</FieldLabel>
+        <TextField
           id="baby-name"
           name="name"
           type="text"
+          required
+          placeholder="Enter name"
+          icon={<User className="size-4" />}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          required
-          className="w-full rounded-lg border px-3 py-2"
         />
-      </div>
+      </label>
 
-      <div className="space-y-2">
-        <label htmlFor="birth-date" className="block text-sm font-medium">
-          Birthday
-        </label>
+      <label className="block">
+        <FieldLabel required>Date of Birth</FieldLabel>
         <input
           id="birth-date"
           name="birthDate"
           type="date"
+          required
           value={birthDate}
           onChange={(event) => setBirthDate(event.target.value)}
-          required
-          className="w-full rounded-lg border px-3 py-2"
+          className={dateFieldClass}
         />
-      </div>
+      </label>
 
-      {savedBaby && (
-        <div className="rounded-lg bg-zinc-50 p-3">
-          <p className="text-sm text-zinc-500">Age</p>
-          <p className="font-medium">{savedBaby.ageLabel}</p>
-        </div>
-      )}
+      {/*
+        Figma 02 and PRD US-04 collect name and date of birth only. Due date was
+        ruled out of MVP scope on 2 Sep, so the input is gone — but an existing
+        value stays in state and is sent back unchanged, so editing a preterm
+        baby's profile does not silently erase the due date ADR-004 stores.
+      */}
 
-      <div className="space-y-2">
-        <label htmlFor="due-date" className="block text-sm font-medium">
-          Due date
-        </label>
-        <p className="text-sm text-zinc-500">
-          Optional, for babies born early.
-        </p>
-        <input
-          id="due-date"
-          name="dueDate"
-          type="date"
-          value={dueDate}
-          onChange={(event) => setDueDate(event.target.value)}
-          className="w-full rounded-lg border px-3 py-2"
-        />
-      </div>
 
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-[var(--radius-input)] bg-[var(--surface-terra)] px-3 py-2.5 text-[0.8rem] text-[var(--text-accent-terracotta)]"
+        >
           {error}
         </p>
-      )}
+      ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={saving}
-        className="w-full rounded-lg bg-black px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="h-12 w-full rounded-[var(--radius-button-primary)] text-[0.95rem]"
       >
-        {saving ? 'Saving...' : savedBaby ? 'Save changes' : 'Add baby'}
-      </button>
+        {saving ? 'Saving…' : savedBaby ? 'Save changes' : 'Continue'}
+      </Button>
+
+      <p className="text-center text-[0.75rem] text-[var(--text-secondary)]">
+        You can update this anytime in your profile settings.
+      </p>
     </form>
   );
 }

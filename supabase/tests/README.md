@@ -35,7 +35,7 @@ to 6 run in separate sessions and need the rows to still be there. The fixtures
 are meant to live permanently in the shared database.
 
 **Do not tear them down on the shared database as tidy-up.** CI runs
-`btb_rls_check.py` on every pull request and that script asserts the nine
+`btb_rls_check.py` on every pull request and that script asserts the ten
 per-account rows exist. Delete them and the RLS isolation suite fails on every
 PR, including ones that touch nothing but CSS. That happened on 11 September
 2026 and blocked an unrelated PR.
@@ -62,3 +62,16 @@ All four are now inert by construction rather than by clean-up:
 
 The teardown is for scratch and branch databases, or for a deliberate clean
 slate you intend to re-seed straight away.
+
+## Non-vacuous admin-table check
+
+`btb_rls_check.py` first signs in as account A and calls
+`rls_fixtures_present()`. The function returns one boolean confirming that the
+hardcoded synthetic rows exist in `prompt_versions` and `audit_events`; it does
+not return either row or accept arbitrary IDs. CI then repeats the anonymous
+queries and requires both tables to return zero rows.
+
+This distinguishes "zero because the table is empty" from "zero while the
+known sentinel exists" without placing a service-role key in GitHub Actions.
+Migration `0007_rls_fixture_presence_check.sql` defines the function with an
+empty search path and fully qualified table names.
