@@ -6,6 +6,8 @@ import {
   buildAskBabyContext,
   shouldRedirectToHealth,
   REDIRECT_ANSWER,
+  parseAskModelResponse,
+  buildModelCallRunRow,
 } from '@btb/shared';
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
@@ -47,6 +49,12 @@ export class ConversationAccessError extends Error {
     this.name = 'ConversationAccessError';
   }
 }
+
+// Shown to the parent AND stored as the assistant's turn in ai_messages when
+// OpenAI's response fails validation. One shared constant so the message a
+// parent sees and the message route.ts logs can never drift apart.
+export const ASK_VALIDATION_FAILURE_MESSAGE =
+  "Couldn't reach the assistant. Please try again.";
 
 // Postgres's SQLSTATE for a row-level security policy rejecting a write.
 // Branch on this, not on error message text -- see PostgrestError.ts.
@@ -172,11 +180,74 @@ export async function answerQuestion(
   }
 
   const latencyMs = Date.now() - startedAt;
-  const answer = completion.choices[0]?.message?.content ?? '';
 
-  // From here on, the parent already has a real answer. A logging failure
-  // must never take that away -- same principle the fever checker's
-  // fire-and-forget logging follows. Failures are reported, not thrown.
+  // Validate the response shape before any of it is trusted. A malformed
+  // response (missing/empty content, missing usage, etc.) must never reach
+  // a parent -- this is the check that used to be missing, per #46.
+  const parsed = parseAskModelResponse(completion);
+
+  // Best-effort tokens even on a validation failure -- usage can be fine
+  // even when content itself is what failed, and ai_runs' token columns
+  // are nullable for exactly this case.
+  const rawInputTokens = completion.usage?.prompt_tokens ?? null;
+  const rawOutputTokens = completion.usage?.completion_tokens ?? null;
+
+  if (!parsed.ok) {
+    console.error('[ask] OpenAI response failed validation:', parsed.reason);
+
+    // The failure is still "the assistant's turn" in this conversation --
+    // stored so future context-window assembly and conversation history
+    // stay coherent, same pattern as the guard's REDIRECT_ANSWER above.
+    try {
+      const { data: failureMessage, error: failureMessageError } = await supabase
+        .from('ai_messages')
+        .insert({
+          conversation_id: conversationId,
+          role: 'assistant',
+          content: ASK_VALIDATION_FAILURE_MESSAGE,
+        })
+        .select('id')
+        .single();
+
+      if (failureMessageError || !failureMessage) {
+        throw new Error(failureMessageError?.message ?? 'insert returned no row');
+      }
+
+      // This is a real call that reached OpenAI and failed validation --
+      // exactly the kind of run this table exists to make visible, unlike
+      // a guard-blocked question which never called a model at all.
+      const serviceRole = createServiceRoleClient();
+      const { error: runError } = await serviceRole.from('ai_runs').insert(
+        buildModelCallRunRow({
+          messageId: failureMessage.id,
+          promptVersion: activePromptVersion.version,
+          model: activePromptVersion.model,
+          inputTokens: rawInputTokens,
+          outputTokens: rawOutputTokens,
+          latencyMs,
+          validationOk: false,
+        }),
+      );
+
+      if (runError) {
+        console.error('[ask] Failed to record failed ai_runs row:', runError.message);
+      }
+    } catch (err) {
+      console.error(
+        '[ask] Failed to log the validation failure:',
+        err instanceof Error ? err.message : err,
+      );
+    }
+
+    throw new AskUpstreamError(`OpenAI response failed validation: ${parsed.reason}`);
+  }
+
+  const answer = parsed.answer;
+
+  // From here on, the parent already has a real, validated answer. A
+  // logging failure must never take that away -- same principle the fever
+  // checker's fire-and-forget logging follows. Failures are reported, not
+  // thrown.
   try {
     const { data: assistantMessage, error: assistantMessageError } = await supabase
       .from('ai_messages')
@@ -192,20 +263,17 @@ export async function answerQuestion(
     // server-recorded metadata, not something a user's own session is
     // trusted to write. Service role only.
     const serviceRole = createServiceRoleClient();
-    const { error: runError } = await serviceRole.from('ai_runs').insert({
-      message_id: assistantMessage.id,
-      prompt_version: activePromptVersion.version,
-      model: activePromptVersion.model,
-      input_tokens: completion.usage?.prompt_tokens ?? null,
-      output_tokens: completion.usage?.completion_tokens ?? null,
-      latency_ms: latencyMs,
-      // Real validation is a separate ticket's scope. false, not a
-      // placeholder true -- a run this table has never actually checked
-      // must not read back later as "passed validation". The API
-      // response's validationOk can stay true; this is the stored row.
-      validation_ok: false,
-      redirected_to_health: false,
-    });
+    const { error: runError } = await serviceRole.from('ai_runs').insert(
+      buildModelCallRunRow({
+        messageId: assistantMessage.id,
+        promptVersion: activePromptVersion.version,
+        model: activePromptVersion.model,
+        inputTokens: parsed.inputTokens,
+        outputTokens: parsed.outputTokens,
+        latencyMs,
+        validationOk: true,
+      }),
+    );
 
     if (runError) {
       console.error('[ask] Failed to record ai_runs:', runError.message);
