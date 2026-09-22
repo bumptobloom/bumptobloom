@@ -2,53 +2,36 @@ import 'server-only';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import { AskUpstreamError, RateLimitedError } from './errors';
 
-export const RATE_LIMIT_MAX_RUNS_PER_HOUR = 20;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+// Per Product's usage-control note: 10 questions per parent per UTC
+// calendar day, not the 20/hour we originally guessed.
+export const RATE_LIMIT_MAX_QUESTIONS_PER_DAY = 10;
 
 /**
- * Throws if this parent has reached the hourly limit of real OpenAI calls.
+ * Throws if this parent has reached today's (UTC) question budget.
  *
- * Counts ai_runs specifically, not requests to this route -- a
- * triage-guard redirect or a rejected request never reaches OpenAI, so it
- * never costs anything and should not count against the budget.
+ * Reserves the attempt atomically in the database via reserve_ask_attempt()
+ * -- see migration 0009 -- so a burst of concurrent requests cannot all slip
+ * through, and so an attempt counts even if the OpenAI call that follows
+ * times out or errors. Only ai_runs -- successful completions -- was counted
+ * before, which let repeated failures retry the budget forever for free.
  *
- * Count-then-insert is not atomic: simultaneous requests at 19 can all pass.
- * That is accepted -- this is a cost ceiling, not an exact limit.
- *
- * ai_runs has no policy granting authenticated users read access either
- * (only service_role can see it), so this always runs as service role,
- * same as the prompt_versions lookup.
+ * service_role only: the function itself is not reachable by
+ * anon/authenticated at the database level either, since it takes an
+ * arbitrary parent_id.
  */
 export async function assertUnderRateLimit(parentId: string): Promise<void> {
   const serviceRole = createServiceRoleClient();
 
-  const { data: conversations, error: conversationsError } = await serviceRole
-    .from('ai_conversations')
-    .select('id')
-    .eq('parent_id', parentId);
+  const { data: allowed, error } = await serviceRole.rpc('reserve_ask_attempt', {
+    p_parent_id: parentId,
+    p_max_per_day: RATE_LIMIT_MAX_QUESTIONS_PER_DAY,
+  });
 
-  if (conversationsError) {
-    throw new AskUpstreamError(`Failed to check rate limit: ${conversationsError.message}`);
+  if (error) {
+    throw new AskUpstreamError(`Failed to check rate limit: ${error.message}`);
   }
 
-  const conversationIds = (conversations ?? []).map((row) => row.id);
-  if (conversationIds.length === 0) {
-    return;
-  }
-
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-
-  const { count, error: countError } = await serviceRole
-    .from('ai_runs')
-    .select('id, ai_messages!inner(conversation_id)', { count: 'exact', head: true })
-    .in('ai_messages.conversation_id', conversationIds)
-    .gte('created_at', windowStart);
-
-  if (countError) {
-    throw new AskUpstreamError(`Failed to check rate limit: ${countError.message}`);
-  }
-
-  if ((count ?? 0) >= RATE_LIMIT_MAX_RUNS_PER_HOUR) {
+  if (!allowed) {
     throw new RateLimitedError();
   }
 }
