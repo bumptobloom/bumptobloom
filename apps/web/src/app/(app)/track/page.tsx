@@ -5,6 +5,7 @@ import { getMilestones } from '@/lib/api/milestones';
 import { MilestoneChecklist } from '@/components/track/milestone-checklist';
 import { MonthStrip } from '@/components/track/month-strip';
 import { getMonthTypical } from '@/lib/api/month-guidance';
+import { Callout } from '@/components/ui/callout';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +36,8 @@ export default async function TrackPage({
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
-      <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-        MILESTONE TRACKER
+      <h1 className="type-eyebrow text-[var(--text-secondary)]">
+        Milestone tracker
       </h1>
 
       <MonthStrip month={milestones.month} />
@@ -44,27 +45,25 @@ export default async function TrackPage({
       {viewingOtherMonth ? (
         <Link
           href="/track"
-          className="-mt-1 self-center text-[0.75rem] text-[var(--text-brand)]"
+          className="type-label -mt-1 self-center text-[var(--text-brand)]"
         >
           Back to {milestones.babyMonth} months
         </Link>
       ) : null}
 
       {/* US-03. One sentence per month, from month_guidance. */}
-      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
-        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-          {milestones.month} MONTHS &mdash; WHAT IS TYPICAL
-        </h2>
-        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-          {typical ?? 'Nothing published for this month yet.'}
-        </p>
-      </article>
+      <Callout
+        variant="info"
+        eyebrow={`${milestones.month} months \u2014 what is typical`}
+      >
+        {typical ?? 'Nothing published for this month yet.'}
+      </Callout>
 
       <MilestoneChecklist babyId={home.baby.id} domains={milestones.domains} />
 
       <p
         role="note"
-        className="mt-2 px-1 text-center text-[0.72rem] leading-[1.6] text-[var(--text-secondary)]"
+        className="type-eyebrow mt-[var(--space-8)] px-[var(--space-4)] text-center normal-case tracking-normal text-[var(--text-secondary)]"
       >
         {milestones.disclaimer}
       </p>
