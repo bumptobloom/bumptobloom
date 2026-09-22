@@ -21,6 +21,11 @@ export interface AnswerQuestionInput {
 export interface AnswerQuestionResult {
   answer: string;
   conversationId: string;
+  // The stored assistant turn, so the screen can attach a thumbs up or down
+  // to it. Null when the answer was never stored: a guard redirect, or a
+  // logging failure. Feedback is simply unavailable then, which is correct --
+  // there is no row to rate.
+  messageId: string | null;
   promptVersion: string | null;
   model: string | null;
   validationOk: boolean;
@@ -136,6 +141,8 @@ export async function answerQuestion(
     return {
       answer: REDIRECT_ANSWER,
       conversationId,
+      // A redirect is a refusal, not an answer. Nothing to rate.
+      messageId: null,
       promptVersion: null,
       model: null,
       validationOk: true,
@@ -177,6 +184,8 @@ export async function answerQuestion(
   // From here on, the parent already has a real answer. A logging failure
   // must never take that away -- same principle the fever checker's
   // fire-and-forget logging follows. Failures are reported, not thrown.
+  let assistantMessageId: string | null = null;
+
   try {
     const { data: assistantMessage, error: assistantMessageError } = await supabase
       .from('ai_messages')
@@ -187,6 +196,8 @@ export async function answerQuestion(
     if (assistantMessageError || !assistantMessage) {
       throw new Error(assistantMessageError?.message ?? 'insert returned no row');
     }
+
+    assistantMessageId = assistantMessage.id;
 
     // ai_runs has no INSERT policy for authenticated users -- this is
     // server-recorded metadata, not something a user's own session is
@@ -220,6 +231,7 @@ export async function answerQuestion(
   return {
     answer,
     conversationId,
+    messageId: assistantMessageId,
     promptVersion: activePromptVersion.version,
     model: activePromptVersion.model,
     validationOk: true,
