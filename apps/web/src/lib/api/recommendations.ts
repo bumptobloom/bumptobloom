@@ -16,7 +16,7 @@ export const MOCK_RECOMMENDATIONS: RecommendationsResponse = {
   bucketLabel: '15-24 months',
   products: [
     {
-      id: 'p1111111-1111-4111-a111-111111111111',
+      id: 'a1111111-1111-4111-a111-111111111111',
       name: 'Balance Bike',
       rationale: 'Supports balance, coordination and confidence through active outdoor play.',
       indicativePriceCents: 4500,
@@ -26,7 +26,7 @@ export const MOCK_RECOMMENDATIONS: RecommendationsResponse = {
       ],
     },
     {
-      id: 'p2222222-2222-4222-a222-222222222222',
+      id: 'a2222222-2222-4222-a222-222222222222',
       name: 'Board Books Set',
       rationale: 'Supports the fast vocabulary growth typical at this age.',
       indicativePriceCents: 1600,
