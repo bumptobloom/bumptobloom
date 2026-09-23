@@ -1,4 +1,4 @@
--- Database-level proof that 0008_temperature_readings_range.sql actually
+-- Database-level proof that 0010_temperature_readings_range.sql actually
 -- rejects impossible readings, asked for by Keya reviewing #224.
 --
 -- The point of this test is that it does NOT go through

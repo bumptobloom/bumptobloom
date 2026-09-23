@@ -45,3 +45,34 @@ export default async function TrackPage({
 <h1 className="type-eyebrow text-[var(--text-secondary)]">
   Milestone tracker
 </h1>
+
+      <MonthStrip month={milestones.month} />
+
+      {viewingOtherMonth ? (
+        <Link
+          href="/track"
+          className="type-label -mt-1 self-center text-[var(--text-brand)]"
+        >
+          Back to {milestones.babyMonth} months
+        </Link>
+      ) : null}
+
+      {/* US-03. One sentence per month, from month_guidance. */}
+      <Callout
+        variant="info"
+        eyebrow={`${milestones.month} months \u2014 what is typical`}
+      >
+        {typical ?? 'Nothing published for this month yet.'}
+      </Callout>
+
+      <MilestoneChecklist babyId={home.baby.id} domains={milestones.domains} />
+
+      <p
+        role="note"
+        className="type-eyebrow mt-[var(--space-8)] px-[var(--space-4)] text-center normal-case tracking-normal text-[var(--text-secondary)]"
+      >
+        {milestones.disclaimer}
+      </p>
+    </section>
+  );
+}
