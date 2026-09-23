@@ -1,7 +1,5 @@
--- Seed: Product Catalog with Developmental Rationales (Issue #41)
--- Age buckets: 0–3, 4–8, 9–14, 15–24 months
--- Every product has a written rationale tied to developmental milestones.
--- Retailer search URLs have zero affiliate codes (#109).
+-- Migration: 0009_product_catalog_and_recommendations.sql
+-- Seed the curated product catalog and age recommendation rules for production.
 
 begin;
 
