@@ -73,9 +73,20 @@ export default async function LearnPage({
         month_guidance row Home and Track read, so the three screens cannot
         drift apart.
       */}
+<<<<<<< HEAD
       <Callout variant="info" eyebrow={`Month ${feed.month} \u2014 what is typical`}>
         {typical ?? 'Nothing published for this month yet.'}
       </Callout>
+=======
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
+          MONTH {feed.month} &mdash; WHAT IS TYPICAL
+        </h2>
+        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+          {typical ?? 'Nothing published for this month yet.'}
+        </p>
+      </article>
+>>>>>>> origin/181-temperature-readings-data-layer-and-todays-summary
 
       {feed.cards.length === 0 ? (
         <p className="type-body px-[var(--space-4)] text-[var(--text-secondary)]">
@@ -85,11 +96,18 @@ export default async function LearnPage({
         <ul className="flex flex-col gap-[var(--space-20)]">
           {feed.cards.map((card) => (
             <li key={card.id}>
+<<<<<<< HEAD
               <Callout variant="neutral">
                 {/* US-1: every card carries its guidance category. Pill shape
                     is from frame 04; the type is design's eyebrow role. */}
                 <p className="type-eyebrow inline-block rounded-[var(--radius-pill)] bg-[var(--surface-moss)] px-[var(--space-12)] py-[var(--space-4)] text-[var(--text-brand)]">
                   {card.categoryLabel}
+=======
+              <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+                {/* US-1: every card carries its guidance category. */}
+                <p className="inline-block rounded-full bg-[var(--surface-moss)] px-3 py-1 text-[0.65rem] tracking-[0.06em] text-[var(--text-brand)]">
+                  {card.categoryLabel.toUpperCase()}
+>>>>>>> origin/181-temperature-readings-data-layer-and-todays-summary
                 </p>
 
                 <h3 className="type-small-title text-[var(--text-primary)]">

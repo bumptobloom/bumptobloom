@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AppHeader } from '@/components/app-header';
 import { BottomTabBar } from '@/components/bottom-tab-bar';
+import { OfflineGate } from '@/components/offline-gate';
 
 /**
  * Phone-width column. On a laptop the app stays a phone-shaped column
@@ -20,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-[var(--page-surface)]">
         <AppHeader />
         <main className="flex-1 px-[var(--space-20)] pt-[var(--space-20)] pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-          {children}
+          <OfflineGate>{children}</OfflineGate>
         </main>
         <BottomTabBar />
       </div>

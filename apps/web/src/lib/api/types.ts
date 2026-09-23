@@ -195,3 +195,43 @@ export interface RecommendationsResponse {
   products: RecommendedProduct[];
   disclaimer: string;
 }
+
+// ============================================================
+// VITALS — TEMPERATURE LOG (Issue #181 - Rasheed Oyewole)
+// ============================================================
+//
+// ADR-007: Vitals is a log, not a triage tool. These shapes carry a reading
+// and nothing that interprets it. No tier, no severity, no "is high" flag, no
+// colour. If a screen needs one of those, that is a product decision, not a
+// data-layer field.
+
+export type TemperatureMethod = 'tympanic' | 'axillary' | 'temporal' | 'rectal';
+
+export interface TemperatureReading {
+  id: string;
+  babyId: string;
+  tempF: number;
+  method: TemperatureMethod;
+  notes: string | null;
+  takenAt: string; // ISO timestamp, stored as temperature_readings.created_at
+}
+
+export interface NewTemperatureReading {
+  babyId: string;
+  tempF: number;
+  method: TemperatureMethod;
+  notes?: string | null;
+  /** When the reading was taken. Defaults to now. Cannot be in the future. */
+  takenAt?: string;
+}
+
+/** Derived from today's readings every time. Never stored. */
+export interface TemperatureSummary {
+  highestTempF: number | null; // null when there are no readings today
+  count: number;
+}
+
+export interface TodaysTemperatures {
+  readings: TemperatureReading[]; // newest first
+  summary: TemperatureSummary;
+}

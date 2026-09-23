@@ -36,8 +36,13 @@ export default async function TrackPage({
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
+<<<<<<< HEAD
       <h1 className="type-eyebrow text-[var(--text-secondary)]">
         Milestone tracker
+=======
+      <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
+        MILESTONE TRACKER
+>>>>>>> origin/181-temperature-readings-data-layer-and-todays-summary
       </h1>
 
       <MonthStrip month={milestones.month} />
@@ -52,12 +57,23 @@ export default async function TrackPage({
       ) : null}
 
       {/* US-03. One sentence per month, from month_guidance. */}
+<<<<<<< HEAD
       <Callout
         variant="info"
         eyebrow={`${milestones.month} months \u2014 what is typical`}
       >
         {typical ?? 'Nothing published for this month yet.'}
       </Callout>
+=======
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
+          {milestones.month} MONTHS &mdash; WHAT IS TYPICAL
+        </h2>
+        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+          {typical ?? 'Nothing published for this month yet.'}
+        </p>
+      </article>
+>>>>>>> origin/181-temperature-readings-data-layer-and-todays-summary
 
       <MilestoneChecklist babyId={home.baby.id} domains={milestones.domains} />
 
