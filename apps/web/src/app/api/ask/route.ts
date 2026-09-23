@@ -5,6 +5,7 @@ import {
   BabyNotFoundError,
   ConversationAccessError,
   AskUpstreamError,
+  RateLimitedError,
 } from "@/lib/ask/answer-question"
 
 // A parent's question, not a document. Bounds cost -- an unbounded body
@@ -69,6 +70,10 @@ export async function POST(request: Request) {
 
     if (err instanceof ConversationAccessError) {
       return NextResponse.json({ error: err.message }, { status: 403 })
+    }
+
+    if (err instanceof RateLimitedError) {
+      return NextResponse.json({ error: err.message }, { status: 429 })
     }
 
     if (err instanceof AskUpstreamError) {
