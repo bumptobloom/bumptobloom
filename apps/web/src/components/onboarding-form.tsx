@@ -18,8 +18,9 @@ export function OnboardingForm({ baby }: { baby: BabyProfile | null }) {
   return (
     <BabyProfileForm
       baby={baby}
-      onSaved={() => {
+      onSaved={(_, photoUploadError) => {
         router.refresh();
+        if (photoUploadError) return;
         router.push('/home');
       }}
     />
