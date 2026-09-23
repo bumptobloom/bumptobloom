@@ -4,6 +4,7 @@ import { getHome } from '@/lib/api/home';
 import { getLearnFeed } from '@/lib/api/learn-feed';
 import { MonthStrip } from '@/components/track/month-strip';
 import { getMonthTypical } from '@/lib/api/month-guidance';
+import { Callout } from '@/components/ui/callout';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,13 +43,13 @@ export default async function LearnPage({
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
       {/* US-1: "The user sees 'Guidance Feeds' on top." */}
-      <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-        GUIDANCE FEEDS
+      <h1 className="type-eyebrow text-[var(--text-secondary)]">
+        Guidance feeds
       </h1>
 
       {/* US-1: a page title indicating the child's age, e.g. "Month 18,
           tailored to you". US-2: the heading updates with the selected month. */}
-      <p className="-mt-1 text-[1.15rem] leading-snug text-[var(--text-primary)]">
+      <p className="type-card-title -mt-1 text-[var(--text-primary)]">
         Month {feed.month}, tailored to you
       </p>
 
@@ -57,7 +58,7 @@ export default async function LearnPage({
       {viewingOtherMonth ? (
         <Link
           href="/learn"
-          className="-mt-1 self-center text-[0.75rem] text-[var(--text-brand)]"
+          className="type-label -mt-1 self-center text-[var(--text-brand)]"
         >
           Back to {feed.babyMonth} months
         </Link>
@@ -72,39 +73,41 @@ export default async function LearnPage({
         month_guidance row Home and Track read, so the three screens cannot
         drift apart.
       */}
-      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
-        <h2 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-          MONTH {feed.month} &mdash; WHAT IS TYPICAL
-        </h2>
-        <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
-          {typical ?? 'Nothing published for this month yet.'}
-        </p>
-      </article>
+      <Callout variant="info" eyebrow={`Month ${feed.month} \u2014 what is typical`}>
+        {typical ?? 'Nothing published for this month yet.'}
+      </Callout>
 
       {feed.cards.length === 0 ? (
-        <p className="px-1 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+        <p className="type-body px-[var(--space-4)] text-[var(--text-secondary)]">
           No guidance published for this month yet.
         </p>
       ) : (
         <ul className="flex flex-col gap-[var(--space-20)]">
           {feed.cards.map((card) => (
             <li key={card.id}>
-              <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
-                {/* US-1: every card carries its guidance category. */}
-                <p className="inline-block rounded-full bg-[var(--surface-moss)] px-3 py-1 text-[0.65rem] tracking-[0.06em] text-[var(--text-brand)]">
-                  {card.categoryLabel.toUpperCase()}
+              <Callout variant="neutral">
+                {/* US-1: every card carries its guidance category. Pill shape
+                    is from frame 04; the type is design's eyebrow role. */}
+                <p className="type-eyebrow inline-block rounded-[var(--radius-pill)] bg-[var(--surface-moss)] px-[var(--space-12)] py-[var(--space-4)] text-[var(--text-brand)]">
+                  {card.categoryLabel}
                 </p>
 
-                <h3 className="mt-2.5 text-[1.05rem] leading-snug text-[var(--text-primary)]">
+                <h3 className="type-small-title text-[var(--text-primary)]">
                   {card.title}
                 </h3>
 
-                <p className="mt-2 text-[0.85rem] leading-[1.55] text-[var(--text-secondary)]">
+                <p className="type-body text-[var(--text-secondary)]">
                   {card.body}
                 </p>
 
+                {/*
+                  This is the seeded "Safety / Escalation Note". Design's spec
+                  of 20 Sep puts medical and escalation copy in the Safety
+                  variant; it used to be styled as Caution, which is the
+                  softer, non-urgent one.
+                */}
                 {card.safetyNote ? (
-                  <p className="mt-2.5 rounded-[14px] bg-[var(--surface-terra)]/55 px-3.5 py-2.5 text-[0.8rem] leading-[1.5] text-[var(--text-accent-terracotta)]">
+                  <p className="type-body rounded-[var(--radius-12)] bg-[var(--surface-alert)] px-[var(--space-14)] py-[var(--space-12)] text-[var(--text-alert)]">
                     {card.safetyNote}
                   </p>
                 ) : null}
@@ -114,7 +117,7 @@ export default async function LearnPage({
                   set in the same block, so it reads as attribution and not as
                   another sentence of advice.
                 */}
-                <p className="mt-3.5 border-t border-[var(--border-subtle)] pt-2.5 text-[0.72rem] text-[var(--text-secondary)]">
+                <p className="type-eyebrow border-t border-[var(--border-subtle)] pt-[var(--space-12)] normal-case tracking-normal text-[var(--text-secondary)]">
                   Source:{' '}
                   {card.sourceUrl ? (
                     <a
@@ -129,7 +132,7 @@ export default async function LearnPage({
                     card.sourceLabel
                   )}
                 </p>
-              </article>
+              </Callout>
             </li>
           ))}
         </ul>
@@ -138,7 +141,7 @@ export default async function LearnPage({
       {/* US-5, verbatim. */}
       <p
         role="note"
-        className="mt-2 px-1 text-center text-[0.72rem] leading-[1.6] text-[var(--text-secondary)]"
+        className="type-eyebrow mt-[var(--space-8)] px-[var(--space-4)] text-center normal-case tracking-normal text-[var(--text-secondary)]"
       >
         {feed.disclaimer}
       </p>

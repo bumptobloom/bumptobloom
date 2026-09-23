@@ -12,6 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assessFever,
+  isFeverRange,
   FeverInputError,
   type FeverInput,
   type Tier,
@@ -174,4 +175,54 @@ test('flags tympanic as unreliable under 6 months', () => {
   assert.equal(r.methodCaution, true);
   const older = assessFever({ ageMonths: 9, tempF: 100.0, method: 'tympanic', redFlags: [] });
   assert.equal(older.methodCaution, false);
+});
+
+// --------------------------------------------------- isFeverRange (ADR-007)
+// The Vitals log's label. Boolean only. These cases exist to stop anyone
+// quietly turning the label back into a severity judgement.
+
+test('isFeverRange uses the same 100.4 rectal-equivalent threshold as triage', () => {
+  assert.equal(isFeverRange(100.4, 'rectal'), true);
+  assert.equal(isFeverRange(100.3, 'rectal'), false);
+});
+
+test('isFeverRange converts by method before comparing', () => {
+  // Axillary reads ~1.0 lower than rectal, so 99.4 axillary is 100.4 rectal-equivalent.
+  assert.equal(isFeverRange(99.4, 'axillary'), true);
+  assert.equal(isFeverRange(99.4, 'rectal'), false);
+  // Temporal is offset 0.5.
+  assert.equal(isFeverRange(99.9, 'temporal'), true);
+  assert.equal(isFeverRange(99.8, 'temporal'), false);
+});
+
+test('isFeverRange agrees with the triage engine on whether a fever is present', () => {
+  const methods: Method[] = ['rectal', 'tympanic', 'temporal', 'axillary'];
+  for (const method of methods) {
+    for (let tempF = 96; tempF <= 106; tempF += 0.1) {
+      const t = Math.round(tempF * 10) / 10;
+      const triageSaysFever = !assessFever({
+        ageMonths: 12,
+        tempF: t,
+        method,
+        redFlags: [],
+      }).reasons.includes('no_fever');
+
+      assert.equal(
+        isFeverRange(t, method),
+        triageSaysFever,
+        `disagreement at ${t} ${method}`,
+      );
+    }
+  }
+});
+
+test('isFeverRange refuses the same implausible readings assessFever refuses', () => {
+  assert.throws(() => isFeverRange(45, 'rectal'), FeverInputError);
+  assert.throws(() => isFeverRange(200, 'rectal'), FeverInputError);
+  assert.throws(() => isFeverRange(Number.NaN, 'rectal'), FeverInputError);
+  assert.throws(() => isFeverRange(100, 'oral ' as Method), FeverInputError);
+});
+
+test('isFeverRange returns a boolean and never a tier', () => {
+  assert.equal(typeof isFeverRange(104, 'rectal'), 'boolean');
 });

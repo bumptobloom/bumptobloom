@@ -208,3 +208,19 @@
     @apply font-sans;
   }
 }
+
+/* ---- Type utilities ------------------------------------------------------
+   One class per role from design's 20 Sep scale. Use these instead of writing
+   a size. If a screen needs something that is not one of these nine, that is a
+   question for design, not a number to invent. */
+@layer components {
+  .type-eyebrow     { font: var(--type-eyebrow);      letter-spacing: 0.08em; text-transform: uppercase; }
+  .type-body        { font: var(--type-body); }
+  .type-body-date   { font: var(--type-body-date); }
+  .type-label       { font: var(--type-label); }
+  .type-small-title { font: var(--type-small-title); }
+  .type-card-title  { font: var(--type-card-title); }
+  .type-track-num   { font: var(--type-track-number); }
+  .type-track-unit  { font: var(--type-track-unit); }
+  .type-nav-chevron { font: var(--type-nav-chevron); }
+}
