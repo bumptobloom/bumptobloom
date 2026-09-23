@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs';
-import { scrubPii } from '@/lib/sentry/scrub-pii';
+import { scrubPii, scrubPiiTransaction } from '@/lib/sentry/scrub-pii';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -7,4 +7,5 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
   sendDefaultPii: false,
   beforeSend: scrubPii,
+  beforeSendTransaction: scrubPiiTransaction,
 });
