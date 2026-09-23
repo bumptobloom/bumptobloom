@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { NotebookPen } from 'lucide-react';
+import { ChevronDown, NotebookPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { saveTemperatureReadingAction } from '@/app/actions/temperature';
 import { MAX_TEMP_F, MIN_TEMP_F } from '@/lib/api/temperature-utils';
@@ -133,19 +133,27 @@ export function TemperatureForm({ babyId }: { babyId: string }) {
 
       <div className="mt-[var(--space-20)]">
         <FieldLabel htmlFor="temp-method">Add Mode of Measurement</FieldLabel>
-        <select
-          id="temp-method"
-          name="method"
-          value={method}
-          onChange={(event) => setMethod(event.target.value as TemperatureMethod)}
-          className={`${fieldClass} appearance-none bg-[image:none]`}
-        >
-          {METHOD_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            id="temp-method"
+            name="method"
+            value={method}
+            onChange={(event) => setMethod(event.target.value as TemperatureMethod)}
+            className={`${fieldClass} appearance-none bg-[image:none] pr-12`}
+          >
+            {METHOD_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {/* appearance-none removes the platform chevron, and without a
+              replacement the field reads as a text input. Frame 07 shows one. */}
+          <ChevronDown
+            aria-hidden
+            className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-[var(--text-secondary)]"
+          />
+        </div>
       </div>
 
       <div className="mt-[var(--space-20)]">

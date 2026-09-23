@@ -23,12 +23,18 @@ function Stat({
   alert?: boolean;
 }) {
   return (
-    <div className="flex flex-1 items-center gap-[var(--space-12)]">
+    <div className="flex items-center gap-[var(--space-12)]">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--card-primary)] text-[var(--text-brand)]">
         {icon}
       </span>
-      <div className="min-w-0">
-        <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
+      <div>
+        {/* No flex-1 here. Equal halves are too narrow for "Highest Recorded"
+            at body size in a 430px column, and it wrapped to two lines. The
+            two stats need different widths, not the same one. */}
+        <p
+          className="whitespace-nowrap text-[var(--text-secondary)]"
+          style={{ font: 'var(--type-body)' }}
+        >
           {label}
         </p>
         <p
@@ -60,7 +66,7 @@ export function TodaysSummary({
 
   return (
     <Callout variant="info" eyebrow="Today's summary">
-      <div className="flex items-stretch gap-[var(--space-12)]">
+      <div className="flex items-stretch justify-between gap-[var(--space-12)]">
         <Stat
           icon={<Thermometer className="size-5" aria-hidden />}
           label="Highest Recorded"
