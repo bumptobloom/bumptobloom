@@ -60,21 +60,35 @@ test('rejects whitespace-only content', () => {
   assert.equal(result.ok, false);
 });
 
-test('rejects a response missing usage entirely', () => {
+test('accepts a response missing usage entirely, tokens fall through as null', () => {
   const raw = validRawResponse();
   delete (raw as any).usage;
   const result = parseAskModelResponse(raw);
-  assert.equal(result.ok, false);
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.inputTokens, null);
+    assert.equal(result.outputTokens, null);
+    assert.equal(result.answer, 'Here is a warm, helpful answer.');
+  }
 });
 
-test('rejects non-numeric token counts', () => {
+test('accepts a response with usage explicitly null, tokens fall through as null', () => {
+  const result = parseAskModelResponse(validRawResponse({ usage: null }));
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.inputTokens, null);
+    assert.equal(result.outputTokens, null);
+  }
+});
+
+test('rejects non-numeric token counts when usage IS present but malformed', () => {
   const result = parseAskModelResponse(
     validRawResponse({ usage: { prompt_tokens: 'a lot', completion_tokens: 45 } }),
   );
   assert.equal(result.ok, false);
 });
 
-test('rejects negative token counts', () => {
+test('rejects negative token counts when usage IS present but malformed', () => {
   const result = parseAskModelResponse(
     validRawResponse({ usage: { prompt_tokens: -1, completion_tokens: 45 } }),
   );

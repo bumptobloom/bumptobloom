@@ -26,15 +26,22 @@ const OpenAIUsageSchema = z.object({
 
 const OpenAIChatCompletionSchema = z.object({
   choices: z.array(OpenAIChoiceSchema).min(1),
-  usage: OpenAIUsageSchema,
+  // Optional AND nullable: usage is absent on some streaming responses
+  // (unless stream_options.include_usage is set) and on some gateway
+  // setups, per Sonakshi's review on #46 — some providers send an explicit
+  // null rather than omitting the key, so covering both here rather than
+  // just .optional() with the same reasoning she gave.
+  usage: OpenAIUsageSchema.nullish(),
 });
 
 export type ParsedAskModelResponse =
   | {
       ok: true;
       answer: string;
-      inputTokens: number;
-      outputTokens: number;
+      // null when usage was absent — tokens are for cost tracking, they
+      // must never be able to throw away an answer a parent is waiting for.
+      inputTokens: number | null;
+      outputTokens: number | null;
     }
   | {
       ok: false;
@@ -62,7 +69,7 @@ export function parseAskModelResponse(raw: unknown): ParsedAskModelResponse {
   return {
     ok: true,
     answer: choices[0].message.content,
-    inputTokens: usage.prompt_tokens,
-    outputTokens: usage.completion_tokens,
+    inputTokens: usage?.prompt_tokens ?? null,
+    outputTokens: usage?.completion_tokens ?? null,
   };
 }

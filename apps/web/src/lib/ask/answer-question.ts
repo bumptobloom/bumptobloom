@@ -53,6 +53,14 @@ export class ConversationAccessError extends Error {
 // Shown to the parent AND stored as the assistant's turn in ai_messages when
 // OpenAI's response fails validation. One shared constant so the message a
 // parent sees and the message route.ts logs can never drift apart.
+//
+// #71's context-window assembly reads from ai_messages and will see this as
+// a normal previous assistant turn unless it's excluded. There's no flag
+// column on ai_messages for this (schema change, not made here) — the
+// signal already exists via ai_runs: any assistant message whose
+// corresponding ai_runs row (join on message_id) has validation_ok = false
+// is one of these failure placeholders, not a real answer, and #71 should
+// skip it when building context.
 export const ASK_VALIDATION_FAILURE_MESSAGE =
   "Couldn't reach the assistant. Please try again.";
 
