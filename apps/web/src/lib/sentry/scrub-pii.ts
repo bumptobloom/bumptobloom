@@ -101,5 +101,16 @@ export function scrubPii(event: ErrorEvent, _hint: EventHint): ErrorEvent {
 
 export function scrubPiiTransaction(event: TransactionEvent, _hint: EventHint): TransactionEvent {
   scrubCommon(event);
+
+  // Spans can carry free-form values: request URLs with query strings, IDs,
+  // or database query text in description and data. Keep the structural
+  // timing information (op, ids, timestamps, status) and drop the rest.
+  if (event.spans) {
+    for (const span of event.spans) {
+      delete span.description;
+      span.data = {};
+    }
+  }
+
   return event;
 }
