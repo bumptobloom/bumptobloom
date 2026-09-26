@@ -41,6 +41,16 @@ export class AskUpstreamError extends Error {
   }
 }
 
+function buildConversationTitle(question: string): string {
+  const normalized = question.replace(/\s+/g, ' ').trim();
+
+  if (normalized.length <= 50) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 47).trimEnd()}...`;
+}
+
 export class ConversationAccessError extends Error {
   constructor() {
     super('This conversation does not belong to the authenticated parent');
@@ -90,7 +100,11 @@ export async function answerQuestion(
   } else {
     const { data: newConversation, error: createConversationError } = await supabase
       .from('ai_conversations')
-      .insert({ parent_id: parentProfile.id, baby_id: input.babyId })
+      .insert({
+        parent_id: parentProfile.id,
+        baby_id: input.babyId,
+        title: buildConversationTitle(input.question),
+      })
       .select('id')
       .single();
 

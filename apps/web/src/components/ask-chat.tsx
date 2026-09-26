@@ -1,9 +1,14 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+
 import { Send } from 'lucide-react';
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import type {
+  ConversationHistory,
+  ConversationMessage,
+} from '@/lib/api/types';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -19,12 +24,39 @@ type AskResponse = {
 const ASK_DISCLAIMER =
   'AI can make mistakes. For medical concerns, contact a qualified healthcare professional. If you are experiencing a medical emergency, call 911.';
 
-export function AskChat({ babyId }: { babyId: string }) {
+const isChatMessage = (
+  message: ConversationMessage,
+): message is ConversationMessage & {
+  role: 'user' | 'assistant';
+} => message.role === 'user' || message.role === 'assistant';
+
+const toMessages = (
+  conversation: ConversationHistory | null,
+): Message[] =>
+  conversation
+    ? conversation.messages.filter(isChatMessage).map((message) => ({
+        role: message.role,
+        content: message.content,
+      }))
+    : [];
+
+export function AskChat({
+  babyId,
+  initialConversation,
+}: {
+  babyId: string;
+  initialConversation: ConversationHistory | null;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState('');
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(
+    initialConversation?.id ?? null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const conversationMessages = toMessages(initialConversation);
+  const displayedMessages = [...conversationMessages, ...messages];
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,6 +74,7 @@ export function AskChat({ babyId }: { babyId: string }) {
       ...current,
       { role: 'user', content: trimmedQuestion },
     ]);
+
     setQuestion('');
 
     const controller = new AbortController();
@@ -106,18 +139,19 @@ export function AskChat({ babyId }: { babyId: string }) {
         <h1 className="text-[1.5rem] font-semibold text-[var(--text-primary)]">
           Bloom companion
         </h1>
+
         <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Ask questions about your baby&apos;s development.
         </p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto">
-        {messages.length === 0 ? (
+        {displayedMessages.length === 0 ? (
           <div className="rounded-3xl bg-[var(--card-secondary)] p-4 text-sm text-[var(--text-secondary)]">
             Hi! I&apos;m Bloom. What would you like to know?
           </div>
         ) : (
-          messages.map((message, index) => (
+          displayedMessages.map((message, index) => (
             <div
               key={`${message.role}-${index}`}
               className={
