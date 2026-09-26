@@ -122,7 +122,6 @@ export async function addMessage(
 
 export async function getConversations(): Promise<ConversationSummary[]> {
   const supabase = await createServerClient();
-
   await requireUser(supabase);
 
   const { data: conversations, error } = await supabase
@@ -137,9 +136,49 @@ export async function getConversations(): Promise<ConversationSummary[]> {
     );
   }
 
-  return conversations.map(toConversationSummary);
-}
+  const conversationIds = conversations.map((conversation) => conversation.id);
 
+  if (conversationIds.length === 0) {
+    return [];
+  }
+
+  const { data: messages, error: messagesError } = await supabase
+    .from('ai_messages')
+    .select('conversation_id, role, content, created_at')
+    .in('conversation_id', conversationIds)
+    .eq('role', 'user')
+    .order('created_at', { ascending: true });
+
+  if (messagesError) {
+    console.error('[getConversations] Database error fetching conversation titles');
+    throw new Error(
+      `Database error fetching conversation titles: ${messagesError.message}`
+    );
+  }
+
+  const firstQuestionByConversation = new Map<string, string>();
+
+  for (const message of messages) {
+    if (!firstQuestionByConversation.has(message.conversation_id)) {
+      firstQuestionByConversation.set(message.conversation_id, message.content);
+    }
+  }
+
+  return conversations.map((conversation) => {
+    const summary = toConversationSummary(conversation);
+
+    if (summary.title?.trim()) {
+      return summary;
+    }
+
+    const firstQuestion = firstQuestionByConversation.get(conversation.id);
+
+    return {
+      ...summary,
+      title: firstQuestion?.trim() || 'New conversation',
+    };
+  });
+}
 export async function getConversation(
   conversationId: string
 ): Promise<ConversationHistory | null> {
