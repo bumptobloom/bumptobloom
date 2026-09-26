@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FormEvent, useState } from 'react';
 
 import { Send } from 'lucide-react';
@@ -147,27 +148,64 @@ export function AskChat({
 
       <div className="flex-1 space-y-4 overflow-y-auto">
         {displayedMessages.length === 0 ? (
-          <div className="rounded-3xl bg-[var(--card-secondary)] p-4 text-sm text-[var(--text-secondary)]">
-            Hi! I&apos;m Bloom. What would you like to know?
+          <div className="flex items-start gap-2">
+            <Image
+              src="/brand/avatar.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 shrink-0 object-contain"
+            />
+            <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+              <p className="font-medium">Hi there! I&apos;m Bloom</p>
+              <div className="my-2 h-px bg-[var(--border-subtle)]" />
+              <p>
+                Ask me anything about feeding, sleeping, diaper and digestion,
+                crying and soothing, mom&apos;s wellbeing.
+              </p>
+            </div>
           </div>
         ) : (
-          displayedMessages.map((message, index) => (
-            <div
-              key={`${message.role}-${index}`}
-              className={
-                message.role === 'user'
-                  ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
-                  : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
-              }
-            >
-              {message.content}
-            </div>
-          ))
+          displayedMessages.map((message, index) =>
+            message.role === 'user' ? (
+              <div
+                key={`${message.role}-${index}`}
+                className="ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]"
+              >
+                {message.content}
+              </div>
+            ) : (
+              <div
+                key={`${message.role}-${index}`}
+                className="flex items-start gap-2"
+              >
+                <Image
+                  src="/brand/avatar.svg"
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="size-8 shrink-0 object-contain"
+                />
+                <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
+                  {message.content}
+                </div>
+              </div>
+            ),
+          )
         )}
 
         {loading ? (
-          <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-            Bloom is thinking…
+          <div className="flex items-start gap-2">
+            <Image
+              src="/brand/avatar.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 shrink-0 object-contain"
+            />
+            <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              Bloom is thinking…
+            </div>
           </div>
         ) : null}
 
