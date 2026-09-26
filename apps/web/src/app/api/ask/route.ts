@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import * as Sentry from "@sentry/nextjs"
 import { createServerClient } from "@/lib/supabase"
 import {
   answerQuestion,
@@ -76,6 +77,11 @@ export async function POST(request: Request) {
       // assistant" state, never a cached or generated fallback, and never
       // anything that degrades toward a medical answer.
       console.error("[ask] Upstream error:", err.message)
+      // Handled gracefully for the user, but still worth Sentry visibility -
+      // repeated upstream failures are an operational signal, not a bug in
+      // this route. The question text itself never reaches Sentry: the
+      // request body is stripped globally in scrubPii's beforeSend.
+      Sentry.captureException(err)
       return NextResponse.json(
         { error: "Couldn't reach the assistant. Please try again." },
         { status: 502 }
@@ -83,6 +89,7 @@ export async function POST(request: Request) {
     }
 
     console.error("[ask] Unexpected error:", err)
+    Sentry.captureException(err)
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 })
   }
 }
