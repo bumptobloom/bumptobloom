@@ -2,6 +2,9 @@ import { calculateBabyAge } from '@btb/shared';
 import { createServerClient } from '@/lib/supabase';
 import { validateBabyInput } from '@/lib/validation/baby';
 
+const BABY_AVATARS_BUCKET = 'baby-avatars';
+const AVATAR_SIGNED_URL_TTL_SECONDS = 60 * 60;
+
 export interface BabyInput {
   name: string;
   birthDate: string;
@@ -15,6 +18,7 @@ export interface BabyProfile {
   dueDate: string | null;
   ageMonths: number;
   ageLabel: string;
+  avatarUrl: string | null;
 }
 
 async function getParentId(
@@ -50,6 +54,7 @@ function toBabyProfile(baby: {
   name: string;
   birth_date: string;
   due_date: string | null;
+  avatarUrl: string | null;
 }): BabyProfile {
   const age = calculateBabyAge(baby.birth_date, { dueDate: baby.due_date });
 
@@ -60,6 +65,7 @@ function toBabyProfile(baby: {
     dueDate: baby.due_date ?? null,
     ageMonths: age.ageMonths,
     ageLabel: age.ageLabel,
+    avatarUrl: baby.avatarUrl,
   };
 }
 
@@ -77,7 +83,7 @@ export async function getBaby(babyId?: string): Promise<BabyProfile | null> {
 
   let query = supabase
     .from('babies')
-    .select('id, name, birth_date, due_date');
+    .select('id, name, birth_date, due_date, avatar_path');
 
   if (babyId) {
     query = query.eq('id', babyId);
@@ -97,7 +103,18 @@ export async function getBaby(babyId?: string): Promise<BabyProfile | null> {
     return null;
   }
 
-  return toBabyProfile(baby);
+  let avatarUrl: string | null = null;
+  if (baby.avatar_path) {
+    const { data: signedAvatar, error: avatarError } = await supabase.storage
+      .from(BABY_AVATARS_BUCKET)
+      .createSignedUrl(baby.avatar_path, AVATAR_SIGNED_URL_TTL_SECONDS);
+
+    if (!avatarError) {
+      avatarUrl = signedAvatar.signedUrl;
+    }
+  }
+
+  return toBabyProfile({ ...baby, avatarUrl });
 }
 
 export async function createBaby(input: BabyInput): Promise<BabyProfile> {
@@ -113,7 +130,7 @@ export async function createBaby(input: BabyInput): Promise<BabyProfile> {
       birth_date: validated.birthDate,
       due_date: validated.dueDate,
     })
-    .select('id, name, birth_date, due_date')
+    .select('id, name, birth_date, due_date, avatar_path')
     .single();
 
   if (error) {
@@ -121,7 +138,7 @@ export async function createBaby(input: BabyInput): Promise<BabyProfile> {
     throw new Error(`Database error creating baby: ${error.message}`);
   }
 
-  return toBabyProfile(baby);
+  return toBabyProfile({ ...baby, avatarUrl: null });
 }
 
 export async function updateBaby(
@@ -142,7 +159,7 @@ export async function updateBaby(
     })
     .eq('id', babyId)
     .eq('parent_id', parentId)
-    .select('id, name, birth_date, due_date')
+    .select('id, name, birth_date, due_date, avatar_path')
     .single();
 
   if (error) {
@@ -150,5 +167,16 @@ export async function updateBaby(
     throw new Error(`Database error updating baby: ${error.message}`);
   }
 
-  return toBabyProfile(baby);
+  let avatarUrl: string | null = null;
+  if (baby.avatar_path) {
+    const { data: signedAvatar, error: avatarError } = await supabase.storage
+      .from(BABY_AVATARS_BUCKET)
+      .createSignedUrl(baby.avatar_path, AVATAR_SIGNED_URL_TTL_SECONDS);
+
+    if (!avatarError) {
+      avatarUrl = signedAvatar.signedUrl;
+    }
+  }
+
+  return toBabyProfile({ ...baby, avatarUrl });
 }

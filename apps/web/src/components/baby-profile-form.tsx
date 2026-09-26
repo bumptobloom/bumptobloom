@@ -46,7 +46,7 @@ export default function BabyProfileForm({
   const [birthDate, setBirthDate] = useState(baby?.birthDate ?? '');
   const [dueDate, setDueDate] = useState(baby?.dueDate ?? '');
   const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(baby?.avatarUrl ?? null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedBaby, setSavedBaby] = useState<BabyProfile | null>(baby);
