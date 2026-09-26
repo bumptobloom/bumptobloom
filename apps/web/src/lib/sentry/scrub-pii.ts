@@ -24,6 +24,23 @@ function stripQueryString(url: string | undefined): string | undefined {
 }
 
 /**
+ * Keeps only Sentry's own SDK metadata keys (sentry.op, sentry.origin,
+ * sentry.source, sentry.sample_rate, ...). Everything else in span or trace
+ * data - http.url, http.query, url.full, db statements - can carry IDs,
+ * query parameters or user text, so it is dropped.
+ */
+function keepSentryKeys(data: Record<string, unknown> | undefined): Record<string, unknown> {
+  const kept: Record<string, unknown> = {};
+  if (!data) return kept;
+  for (const [key, value] of Object.entries(data)) {
+    if (key.startsWith('sentry.')) {
+      kept[key] = value;
+    }
+  }
+  return kept;
+}
+
+/**
  * Strips personal and infant health data from Sentry events before they
  * leave the app.
  *
@@ -32,11 +49,10 @@ function stripQueryString(url: string | undefined): string | undefined {
  * Per issue #131, no personal data may reach Sentry either - not even a
  * pseudonymous account id.
  *
- * This is deliberately a strip-first, not an allow-list-second, function:
- * every field that could plausibly carry free-form user-entered text
- * (exception messages, breadcrumbs, tags, extra, contexts, query strings)
- * is either removed or reduced to structural information only (type,
- * category, timestamp) with the content dropped. See scrub-pii.test.ts for
+ * This is deliberately a strip-first function: every field that could
+ * plausibly carry free-form user-entered text (exception messages,
+ * breadcrumbs, tags, extra, contexts, query strings) is either removed or
+ * reduced to structural information only. See scrub-pii.test.ts for
  * canary-value proof that nothing survives.
  */
 function scrubCommon(event: ErrorEvent | TransactionEvent): ErrorEvent | TransactionEvent {
@@ -56,8 +72,7 @@ function scrubCommon(event: ErrorEvent | TransactionEvent): ErrorEvent | Transac
 
   // Breadcrumbs: keep the shape (category/type/level/timestamp) so the
   // sequence of events leading to an error is still visible, but drop
-  // anything that could carry entered text - console log contents, fetch
-  // URLs with query params, DOM click target text, etc.
+  // anything that could carry entered text.
   if (event.breadcrumbs) {
     event.breadcrumbs = event.breadcrumbs.map((crumb: Breadcrumb) => ({
       category: crumb.category,
@@ -68,11 +83,30 @@ function scrubCommon(event: ErrorEvent | TransactionEvent): ErrorEvent | Transac
   }
 
   // Free-form fields that could carry baby IDs, conversation IDs, product
-  // IDs, health values, or arbitrary user text. None of this is essential
-  // to reading a stack trace.
+  // IDs, health values, or arbitrary user text.
   delete event.tags;
   delete event.extra;
-  delete event.contexts;
+
+  // Contexts: drop everything except the trace context. Sentry treats a
+  // transaction without contexts.trace as invalid and discards it, so the
+  // trace context is kept - but only its structural ids and status, with
+  // its data filtered to Sentry's own metadata keys.
+  const trace = event.contexts?.trace;
+  if (trace) {
+    event.contexts = {
+      trace: {
+        trace_id: trace.trace_id,
+        span_id: trace.span_id,
+        parent_span_id: trace.parent_span_id,
+        op: trace.op,
+        status: trace.status,
+        origin: trace.origin,
+        data: keepSentryKeys(trace.data),
+      },
+    };
+  } else {
+    delete event.contexts;
+  }
 
   return event;
 }
@@ -82,10 +116,7 @@ export function scrubPii(event: ErrorEvent, _hint: EventHint): ErrorEvent {
 
   // Exception messages are the highest-risk field: AskUpstreamError wraps
   // the raw OpenAI provider error, which can echo the parent's question
-  // back verbatim. Deleting the request body does not help here, since the
-  // message already carries the text independently. Keep only the
-  // exception type and stack trace - readable line numbers come from the
-  // stack trace via source maps, not from the message string.
+  // back verbatim. Keep only the exception type and stack trace.
   if (event.exception?.values) {
     for (const exceptionValue of event.exception.values) {
       exceptionValue.value = '[message redacted - see stack trace]';
@@ -104,11 +135,11 @@ export function scrubPiiTransaction(event: TransactionEvent, _hint: EventHint): 
 
   // Spans can carry free-form values: request URLs with query strings, IDs,
   // or database query text in description and data. Keep the structural
-  // timing information (op, ids, timestamps, status) and drop the rest.
+  // timing information and Sentry's own metadata keys, drop the rest.
   if (event.spans) {
     for (const span of event.spans) {
       delete span.description;
-      span.data = {};
+      span.data = keepSentryKeys(span.data) as typeof span.data;
     }
   }
 

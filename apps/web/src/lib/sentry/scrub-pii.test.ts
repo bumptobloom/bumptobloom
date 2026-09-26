@@ -170,3 +170,47 @@ test('scrubPiiTransaction removes canary values from transaction spans', () => {
   // Structure survives so performance data is still useful.
   assert.equal(result.spans?.[0]?.op, 'http.client');
 });
+
+test('scrubPiiTransaction keeps the trace context Sentry requires, minus sensitive data', () => {
+  const event = {
+    ...buildTransactionEvent(),
+    contexts: {
+      trace: {
+        trace_id: 'trace-abc',
+        span_id: 'span-root',
+        op: 'http.server',
+        status: 'internal_error',
+        data: {
+          'sentry.op': 'http.server',
+          'http.url': `/api/ask?debug=${CANARY_QUERY_PARAM}`,
+          'baby.id': CANARY_BABY_ID,
+        },
+      },
+      custom: { temp: CANARY_TEMPERATURE },
+    },
+    spans: [
+      {
+        span_id: 'span1',
+        trace_id: 'trace-abc',
+        start_timestamp: 1,
+        timestamp: 2,
+        op: 'http.client',
+        description: `GET /api/ask?q=${CANARY_QUESTION}`,
+        data: { 'sentry.origin': 'auto.http', 'http.query': `q=${CANARY_QUESTION}` },
+      },
+    ],
+  };
+
+  const result = scrubPiiTransaction(event as never, {} as never);
+  const serialized = JSON.stringify(result);
+
+  for (const canary of ALL_CANARIES) {
+    assert.equal(serialized.includes(canary), false, `canary leaked: ${canary}`);
+  }
+
+  // The structure Sentry needs to accept the transaction survives.
+  assert.equal(result.contexts?.trace?.trace_id, 'trace-abc');
+  assert.equal(result.contexts?.trace?.span_id, 'span-root');
+  assert.equal(result.contexts?.trace?.data?.['sentry.op'], 'http.server');
+  assert.equal(result.spans?.[0]?.data?.['sentry.origin'], 'auto.http');
+});
