@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { ArrowLeft, User } from 'lucide-react';
 import { createBabyAction, updateBabyAction } from '@/app/actions/baby';
 import { type BabyProfile } from '@/lib/api/baby';
+import { uploadBabyAvatar } from '@/lib/api/baby-avatar';
 import { validateBabyInput } from '@/lib/validation/baby';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 
 interface BabyProfileFormProps {
   baby?: BabyProfile | null;
-  onSaved?: (baby: BabyProfile) => void;
+  onSaved?: (baby: BabyProfile, photoUploadError?: string) => void;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -44,11 +45,30 @@ export default function BabyProfileForm({
   const [name, setName] = useState(baby?.name ?? '');
   const [birthDate, setBirthDate] = useState(baby?.birthDate ?? '');
   const [dueDate, setDueDate] = useState(baby?.dueDate ?? '');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(baby?.avatarUrl ?? null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [savedBaby, setSavedBaby] = useState<BabyProfile | null>(baby);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    setPhoto(file);
+    setError('');
+
+    if (!file) {
+      setPhotoPreview(null);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoPreview(typeof reader.result === 'string' ? reader.result : null);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError('');
 
@@ -65,30 +85,40 @@ export default function BabyProfileForm({
 
     setSaving(true);
 
-    const input = {
-      name,
-      birthDate,
-      dueDate: dueDate || null,
-    };
+    try {
+      const input = {
+        name,
+        birthDate,
+        dueDate: dueDate || null,
+      };
 
-    const save = savedBaby
-      ? updateBabyAction(savedBaby.id, input)
-      : createBabyAction(input);
+      const result = savedBaby
+        ? await updateBabyAction(savedBaby.id, input)
+        : await createBabyAction(input);
 
-    save
-      .then((result) => {
-        setSavedBaby(result);
-        setName(result.name);
-        setBirthDate(result.birthDate);
-        setDueDate(result.dueDate ?? '');
-        onSaved?.(result);
-      })
-      .catch((saveError) => {
-        setError(getErrorMessage(saveError));
-      })
-      .finally(() => {
-        setSaving(false);
-      });
+      setSavedBaby(result);
+      setName(result.name);
+      setBirthDate(result.birthDate);
+      setDueDate(result.dueDate ?? '');
+
+      let photoUploadError: string | undefined;
+
+      if (photo) {
+        try {
+          await uploadBabyAvatar(result.id, photo);
+        } catch {
+          photoUploadError =
+            'Baby profile saved, but the photo could not be uploaded. Please try again.';
+          setError(photoUploadError);
+        }
+      }
+
+      onSaved?.(result, photoUploadError);
+    } catch (saveError) {
+      setError(getErrorMessage(saveError));
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -105,18 +135,32 @@ export default function BabyProfileForm({
         Back
       </Link>
 
-      {/*
-        Figma 02 shows an uploaded photo with an edit affordance. Product asked
-        for a baby emoji for the MVP rather than infant photo storage, so this
-        is display only — there is no upload control until that is revisited.
-      */}
       <div className="flex flex-col items-center gap-1.5 pt-1">
-        <div
-          aria-hidden
-          className="flex size-20 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[2rem]"
+        <label
+          htmlFor="baby-photo"
+          className="relative flex size-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[var(--surface-terra)] text-[2rem]"
         >
-          👶
-        </div>
+          {photoPreview ? (
+            <img
+              src={photoPreview}
+              alt="Baby profile preview"
+              className="size-full object-cover"
+            />
+          ) : (
+            <span aria-hidden>👶</span>
+          )}
+          <span className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full bg-[var(--card-primary)] text-[0.9rem] shadow-sm">
+            ✎
+          </span>
+        </label>
+        <input
+          id="baby-photo"
+          name="photo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handlePhotoChange}
+          className="sr-only"
+        />
         <span className="text-[0.72rem] text-[var(--text-secondary)]">
           Profile Picture
         </span>
