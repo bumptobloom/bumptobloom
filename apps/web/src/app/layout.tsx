@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Karla, Petrona, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./serwist-provider";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 
 /**
  * Two families, confirmed by design on 20 Sep. Until then the whole app was
@@ -50,7 +51,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${karla.variable} ${petrona.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AnalyticsProvider>{children}</AnalyticsProvider>
+        </Providers>
       </body>
     </html>
   );

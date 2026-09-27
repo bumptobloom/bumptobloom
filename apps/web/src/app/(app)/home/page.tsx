@@ -1,3 +1,4 @@
+import { TrackPageView } from '@/components/track-page-view';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -112,6 +113,7 @@ export default async function HomePage() {
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
+      <TrackPageView event="home_viewed" />
       <p className="text-[var(--text-secondary)]" style={{ font: 'var(--type-body-date)' }}>
         {formatToday(now)}
       </p>

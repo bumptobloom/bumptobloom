@@ -7,6 +7,7 @@ import {
   markMilestoneAction,
   unmarkMilestoneAction,
 } from '@/app/actions/milestones';
+import { trackEvent } from '@/lib/analytics';
 
 const DOMAIN_ICON = {
   physical: Footprints,
@@ -51,6 +52,7 @@ export function MilestoneChecklist({
           await unmarkMilestoneAction(babyId, milestoneId);
         } else {
           await markMilestoneAction(babyId, milestoneId);
+          trackEvent('milestone_completed');
         }
       } catch {
         // Put it back. Showing a tick that did not save is worse than an error.

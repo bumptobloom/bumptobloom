@@ -1,3 +1,4 @@
+import { TrackPageView } from '@/components/track-page-view';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
@@ -35,6 +36,7 @@ export default async function TrackPage({
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
+      <TrackPageView event="milestone_viewed" properties={{ month: milestones.month }} />
       <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
         MILESTONE TRACKER
       </h1>

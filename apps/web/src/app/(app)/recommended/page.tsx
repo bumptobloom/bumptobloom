@@ -1,3 +1,4 @@
+import { TrackPageView } from '@/components/track-page-view';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
@@ -17,6 +18,7 @@ export default async function RecommendedPage() {
 
   return (
     <section className="flex flex-col gap-5">
+      <TrackPageView event="recommendations_viewed" />
       <header>
         <h1 className="text-[24px] leading-tight font-semibold" style={{ color: 'var(--text-primary)' }}>
           Recommended for You
