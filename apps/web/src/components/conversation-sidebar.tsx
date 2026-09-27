@@ -25,7 +25,7 @@ export function ConversationSidebar({
 
   const startNewConversation = () => {
     onClose();
-    router.push('/ask');
+    window.location.assign('/ask');
   };
 
   return (
