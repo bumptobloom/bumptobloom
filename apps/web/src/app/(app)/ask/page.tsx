@@ -21,18 +21,32 @@ export default async function AskPage(props: {
   }
 
   const requestedConversationId = searchParams?.conversationId ?? null;
+  const conversations = await getConversations();
 
-  const [conversations, selectedConversation] = await Promise.all([
-    getConversations(),
+  const conversationHistories = await Promise.all(
+    conversations.map(async (conversation) => {
+      const history = await getConversation(conversation.id);
+      return history;
+    }),
+  );
+
+  const histories = conversationHistories.filter(
+    (conversation): conversation is NonNullable<typeof conversation> =>
+      conversation !== null,
+  );
+
+  const selectedConversation =
     requestedConversationId
-      ? getConversation(requestedConversationId)
-      : Promise.resolve(null),
-  ]);
+      ? histories.find(
+          (conversation) => conversation.id === requestedConversationId,
+        ) ?? null
+      : null;
 
   return (
     <AskConversationShell
       babyId={home.baby.id}
       conversations={conversations}
+      conversationHistories={histories}
       selectedConversation={selectedConversation}
     />
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { Menu } from 'lucide-react';
 
 import type {
@@ -14,24 +15,70 @@ import { ConversationSidebar } from '@/components/conversation-sidebar';
 export function AskConversationShell({
   babyId,
   conversations,
+  conversationHistories,
   selectedConversation,
 }: {
   babyId: string;
   conversations: ConversationSummary[];
+  conversationHistories: ConversationHistory[];
   selectedConversation: ConversationHistory | null;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(
+    selectedConversation?.id ?? null,
+  );
   const [recentConversation, setRecentConversation] =
     useState<ConversationSummary | null>(null);
 
-  const displayedConversations = recentConversation
-    ? [
-        recentConversation,
-        ...conversations.filter(
-          (conversation) => conversation.id !== recentConversation.id,
-        ),
-      ]
-    : conversations;
+  const [histories] =
+    useState<ConversationHistory[]>(conversationHistories);
+
+  const displayedConversations = useMemo(
+    () =>
+      recentConversation
+        ? [
+            recentConversation,
+            ...conversations.filter(
+              (conversation) => conversation.id !== recentConversation.id,
+            ),
+          ]
+        : conversations,
+    [conversations, recentConversation],
+  );
+
+  const currentConversation = useMemo(
+    () =>
+      histories.find(
+        (conversation) => conversation.id === selectedConversationId,
+      ) ?? null,
+    [histories, selectedConversationId],
+  );
+
+  useEffect(() => {
+    if (selectedConversationId) {
+      window.history.replaceState(
+        null,
+        '',
+        `/ask?conversationId=${encodeURIComponent(selectedConversationId)}`,
+      );
+    } else {
+      window.history.replaceState(null, '', '/ask');
+    }
+  }, [selectedConversationId]);
+
+  const openConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+    setSidebarOpen(false);
+  };
+
+  const startNewConversation = () => {
+    setSelectedConversationId(null);
+    setSidebarOpen(false);
+  };
+
+  const handleConversationCreated = (conversation: ConversationSummary) => {
+    setRecentConversation(conversation);
+  };
 
   return (
     <section className="relative flex min-h-[calc(100dvh-9rem)] flex-col">
@@ -49,18 +96,20 @@ export function AskConversationShell({
 
       <div className="min-h-0 flex-1">
         <AskChat
-          key={selectedConversation?.id ?? 'new-conversation'}
+          key={selectedConversationId ?? 'new-conversation'}
           babyId={babyId}
-          initialConversation={selectedConversation}
-          onConversationCreated={setRecentConversation}
+          initialConversation={currentConversation}
+          onConversationCreated={handleConversationCreated}
         />
       </div>
 
       <ConversationSidebar
         conversations={displayedConversations}
-        selectedConversationId={selectedConversation?.id ?? null}
+        selectedConversationId={selectedConversationId}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onConversationSelect={openConversation}
+        onNewConversation={startNewConversation}
       />
     </section>
   );
