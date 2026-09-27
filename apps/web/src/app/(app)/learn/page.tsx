@@ -1,3 +1,4 @@
+import { TrackPageView } from '@/components/track-page-view';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getHome } from '@/lib/api/home';
@@ -41,6 +42,7 @@ export default async function LearnPage({
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
+      <TrackPageView event="content_viewed" properties={{ month: feed.month }} />
       {/* US-1: "The user sees 'Guidance Feeds' on top." */}
       <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
         GUIDANCE FEEDS

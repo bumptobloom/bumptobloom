@@ -9,10 +9,12 @@ import { sanitizeProperties } from './analytics-privacy';
  * - fever_opened, fever_check_completed, fever_result_viewed: the Fever
  *   Checker does not ship (ADR-007). Vitals is a log with no tiers, and its
  *   events wait on #126 because of the #50/#126 rules for Vitals data.
+ * - ask_opened, question_submitted, answer_received: the Ask chat screen is
+ *   not built yet (placeholder until after the demo).
  * - target_clicked, walmart_clicked: Amazon is the only retailer in the MVP.
  * - content_saved: save/bookmark was dropped from Learn (PRD 2.5).
  * - baby_age_viewed: the age is shown on Home, so home_viewed covers it.
- * - activity_completed: pending confirmation that Track still shows activities.
+ * - activity_completed: Track is a milestone checklist with no activities.
  *
  * Revisit this list once #126 defines the analytics question set.
  */
@@ -23,10 +25,7 @@ export type AnalyticsEvent =
   | 'content_viewed'
   | 'recommendations_viewed'
   | 'product_viewed'
-  | 'amazon_clicked'
-  | 'ask_opened'
-  | 'question_submitted'
-  | 'answer_received';
+  | 'amazon_clicked';
 
 /**
  * The only way the app sends an analytics event. Properties pass through the

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getProduct } from '@/lib/api/recommendations';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { TrackPageView } from '@/components/track-page-view';
+import { RetailerLink } from '@/components/retailer-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <section className="flex flex-col gap-5">
+      <TrackPageView event="product_viewed" properties={{ product_id: product.id }} />
       <div
         aria-hidden
         className="aspect-square w-full rounded-[18px]"
@@ -65,16 +68,16 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       </p>
 
       {product.retailers.map((retailer) => (
-        <a
+        <RetailerLink
           key={retailer.slug}
           href={retailer.url}
-          target="_blank"
-          rel="noreferrer"
+          retailerSlug={retailer.slug}
+          productId={product.id}
           className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
           style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
         >
           Shop Now on {retailer.name}
-        </a>
+        </RetailerLink>
       ))}
 
       <Link
