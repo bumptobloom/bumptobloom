@@ -1,10 +1,16 @@
-import { TabPlaceholder } from '@/components/tab-placeholder';
+import { redirect } from 'next/navigation';
 
-export default function AskPage() {
-  return (
-    <TabPlaceholder
-      title="Ask"
-      note="Not built yet. The question endpoint and the triage guard exist behind this screen. The chat interface is after the demo."
-    />
-  );
+import { AskChat } from '@/components/ask-chat';
+import { getHome } from '@/lib/api/home';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AskPage() {
+  const home = await getHome();
+
+  if (!home.baby) {
+    redirect('/onboarding');
+  }
+
+  return <AskChat babyId={home.baby.id} />;
 }
