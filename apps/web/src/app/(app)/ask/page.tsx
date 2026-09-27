@@ -11,26 +11,23 @@ export default async function AskPage(props: {
     conversationId?: string;
   }>;
 }) {
-  const home = await getHome();
+  const [home, searchParams] = await Promise.all([
+    getHome(),
+    props.searchParams,
+  ]);
 
   if (!home.baby) {
     redirect('/onboarding');
   }
 
-  const searchParams = await props.searchParams;
   const requestedConversationId = searchParams?.conversationId ?? null;
 
-  const conversations = await getConversations();
-
-  const selectedConversationId =
-    requestedConversationId &&
-    conversations.some((conversation) => conversation.id === requestedConversationId)
-      ? requestedConversationId
-      : null;
-
-  const selectedConversation = selectedConversationId
-    ? await getConversation(selectedConversationId)
-    : null;
+  const [conversations, selectedConversation] = await Promise.all([
+    getConversations(),
+    requestedConversationId
+      ? getConversation(requestedConversationId)
+      : Promise.resolve(null),
+  ]);
 
   return (
     <AskConversationShell

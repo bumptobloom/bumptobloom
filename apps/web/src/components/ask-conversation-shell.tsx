@@ -21,6 +21,17 @@ export function AskConversationShell({
   selectedConversation: ConversationHistory | null;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [recentConversation, setRecentConversation] =
+    useState<ConversationSummary | null>(null);
+
+  const displayedConversations = recentConversation
+    ? [
+        recentConversation,
+        ...conversations.filter(
+          (conversation) => conversation.id !== recentConversation.id,
+        ),
+      ]
+    : conversations;
 
   return (
     <section className="relative flex min-h-[calc(100dvh-9rem)] flex-col">
@@ -41,11 +52,12 @@ export function AskConversationShell({
           key={selectedConversation?.id ?? 'new-conversation'}
           babyId={babyId}
           initialConversation={selectedConversation}
+          onConversationCreated={setRecentConversation}
         />
       </div>
 
       <ConversationSidebar
-        conversations={conversations}
+        conversations={displayedConversations}
         selectedConversationId={selectedConversation?.id ?? null}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Plus, X } from 'lucide-react';
 
@@ -18,6 +19,18 @@ export function ConversationSidebar({
 }) {
   const router = useRouter();
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    conversations.forEach((conversation) => {
+      router.prefetch(
+        `/ask?conversationId=${encodeURIComponent(conversation.id)}`,
+      );
+    });
+  }, [open, conversations, router]);
+
   const openConversation = (conversationId: string) => {
     onClose();
     router.push(`/ask?conversationId=${encodeURIComponent(conversationId)}`);
@@ -25,7 +38,7 @@ export function ConversationSidebar({
 
   const startNewConversation = () => {
     onClose();
-    window.location.assign('/ask');
+    router.push('/ask');
   };
 
   return (

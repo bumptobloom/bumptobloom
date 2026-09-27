@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
 import { Send } from 'lucide-react';
@@ -9,6 +11,7 @@ import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import type {
   ConversationHistory,
   ConversationMessage,
+  ConversationSummary,
 } from '@/lib/api/types';
 
 type Message = {
@@ -44,10 +47,13 @@ const toMessages = (
 export function AskChat({
   babyId,
   initialConversation,
+  onConversationCreated,
 }: {
   babyId: string;
   initialConversation: ConversationHistory | null;
+  onConversationCreated?: (conversation: ConversationSummary) => void;
 }) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(
@@ -107,7 +113,23 @@ export function AskChat({
 
       const result = data as AskResponse;
 
+      const wasNewConversation = conversationId === null;
+
       setConversationId(result.conversationId);
+
+      if (wasNewConversation) {
+        const title =
+          trimmedQuestion.length <= 50
+            ? trimmedQuestion
+            : `${trimmedQuestion.slice(0, 47).trimEnd()}...`;
+
+        onConversationCreated?.({
+          id: result.conversationId,
+          babyId,
+          title,
+          createdAt: new Date().toISOString(),
+        });
+      }
 
       setMessages((current) => [
         ...current,
@@ -116,6 +138,7 @@ export function AskChat({
           content: result.answer,
         },
       ]);
+      router.refresh();
     } catch (err) {
       if (!navigator.onLine) {
         setError("You're offline. Please reconnect and try again.");
@@ -187,7 +210,29 @@ export function AskChat({
                   className="size-8 shrink-0 object-contain"
                 />
                 <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]">
-                  {message.content}
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => (
+                        <p className="mb-3 last:mb-0">{children}</p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="mb-3 list-disc space-y-1 pl-5 last:mb-0">
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="mb-3 list-decimal space-y-1 pl-5 last:mb-0">
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }) => <li>{children}</li>,
+                      strong: ({ children }) => (
+                        <strong className="font-semibold">{children}</strong>
+                      ),
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
                 </div>
               </div>
             ),
