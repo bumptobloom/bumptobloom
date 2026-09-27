@@ -51,7 +51,7 @@ export function AskChat({
 }: {
   babyId: string;
   initialConversation: ConversationHistory | null;
-  onConversationCreated?: (conversation: ConversationSummary) => void;
+  onConversationCreated?: (conversation: ConversationHistory) => void;
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -123,11 +123,29 @@ export function AskChat({
             ? trimmedQuestion
             : `${trimmedQuestion.slice(0, 47).trimEnd()}...`;
 
+        const createdAt = new Date().toISOString();
+
         onConversationCreated?.({
           id: result.conversationId,
           babyId,
           title,
-          createdAt: new Date().toISOString(),
+          createdAt,
+          messages: [
+            {
+              id: crypto.randomUUID(),
+              conversationId: result.conversationId,
+              role: 'user',
+              content: trimmedQuestion,
+              createdAt,
+            },
+            {
+              id: crypto.randomUUID(),
+              conversationId: result.conversationId,
+              role: 'assistant',
+              content: result.answer,
+              createdAt: new Date().toISOString(),
+            },
+          ],
         });
       }
 
