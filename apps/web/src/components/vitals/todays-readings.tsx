@@ -1,3 +1,5 @@
+'use client';
+import { useEffect, useState } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { isFeverRange } from '@btb/fever-rules';
 import type { TemperatureReading } from '@/lib/api/types';
@@ -25,6 +27,10 @@ function formatTime(iso: string, timezone: string): string {
  * that goes nowhere. Asked in #btb-all on 23 Sep.
  */
 export function TodaysReadings({ readings, timezone,}: { readings: TemperatureReading[]; timezone: string;}) {
+  const [browserTimezone, setBrowserTimezone] = useState<string | null>(null);
+  useEffect(() => {
+    setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }, []);
   return (
     <section className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
       <h2
@@ -60,7 +66,9 @@ export function TodaysReadings({ readings, timezone,}: { readings: TemperatureRe
                     className="shrink-0 text-[var(--text-secondary)]"
                     style={{ font: 'var(--type-body)' }}
                   >
-                    {formatTime(reading.takenAt, timezone)}
+                    {browserTimezone
+                      ? formatTime(reading.takenAt, browserTimezone)
+                      : 'Loading…'}
                   </span>
 
                   <span
