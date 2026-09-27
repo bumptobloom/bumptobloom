@@ -147,8 +147,12 @@ getSavedContent(babyId?: string): Promise<LearnItem[]>
 ### TypeScript Types
 
 ```ts
-export type LearnCategory = 'developmental' | 'feeding' | 'sleep' | 'diaper';
-
+export type LearnCategory =
+  | 'feeding'
+  | 'sleep'
+  | 'crying_soothing'
+  | 'diaper_digestion'
+  | 'mom_wellbeing';
 export interface LearnItem {
   id: string;
   category: LearnCategory;

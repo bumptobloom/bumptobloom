@@ -82,3 +82,12 @@ Before this prompt is used:
 - Another person must review the wording and privacy boundaries.
 - The Ask screen must show its required standing disclaimer.
 - Prompt changes must be versioned and evaluated before becoming active.
+
+## Answer evaluation
+
+The versioned answer-quality golden set lives at
+`packages/shared/eval/ask-golden-set.jsonl`. Human raters use
+`docs/ASK-EVAL-RUBRIC.md`, and `scripts/score_ask_eval.py` validates the dataset,
+creates calibration sheets, and reports scores per dimension. Prompt changes
+must be evaluated against the same cases and rubric so before/after results are
+comparable.
