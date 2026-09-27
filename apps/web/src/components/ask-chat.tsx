@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
-import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
 import { Send } from 'lucide-react';
@@ -11,7 +10,6 @@ import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import type {
   ConversationHistory,
   ConversationMessage,
-  ConversationSummary,
 } from '@/lib/api/types';
 
 type Message = {
@@ -53,7 +51,6 @@ export function AskChat({
   initialConversation: ConversationHistory | null;
   onConversationCreated?: (conversation: ConversationHistory) => void;
 }) {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(
@@ -156,8 +153,7 @@ export function AskChat({
           content: result.answer,
         },
       ]);
-      router.refresh();
-    } catch (err) {
+      } catch (err) {
       if (!navigator.onLine) {
         setError("You're offline. Please reconnect and try again.");
       } else if (err instanceof DOMException && err.name === 'AbortError') {

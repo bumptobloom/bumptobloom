@@ -8,7 +8,6 @@ import type {
   ConversationHistory,
   ConversationSummary,
 } from '@/lib/api/types';
-
 import { AskChat } from '@/components/ask-chat';
 import { ConversationSidebar } from '@/components/conversation-sidebar';
 
@@ -24,13 +23,12 @@ export function AskConversationShell({
   selectedConversation: ConversationHistory | null;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(
-    selectedConversation?.id ?? null,
-  );
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    string | null
+  >(selectedConversation?.id ?? null);
   const [recentConversation, setRecentConversation] =
     useState<ConversationSummary | null>(null);
-
-  const [histories] =
+  const [histories, setHistories] =
     useState<ConversationHistory[]>(conversationHistories);
 
   const displayedConversations = useMemo(
@@ -67,6 +65,14 @@ export function AskConversationShell({
   }, [selectedConversationId]);
 
   const openConversation = (conversationId: string) => {
+    const conversation = histories.find(
+      (item) => item.id === conversationId,
+    );
+
+    if (!conversation) {
+      return;
+    }
+
     setSelectedConversationId(conversationId);
     setSidebarOpen(false);
   };
@@ -76,8 +82,20 @@ export function AskConversationShell({
     setSidebarOpen(false);
   };
 
-  const handleConversationCreated = (conversation: ConversationSummary) => {
-    setRecentConversation(conversation);
+  const handleConversationCreated = (conversation: ConversationHistory) => {
+    setRecentConversation({
+      id: conversation.id,
+      babyId: conversation.babyId,
+      title: conversation.title,
+      createdAt: conversation.createdAt,
+    });
+
+    setHistories((current) => [
+      conversation,
+      ...current.filter((item) => item.id !== conversation.id),
+    ]);
+
+    setSelectedConversationId(conversation.id);
   };
 
   return (
