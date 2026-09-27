@@ -1,7 +1,14 @@
 -- Migration: 0009_product_catalog_and_recommendations.sql
--- Seed the curated product catalog and age recommendation rules for production.
+-- Seed the curated product catalog and age recommendation rules for production with description and why_helpful fields.
 
 begin;
+
+-- ============================================================
+-- 0. SCHEMA ENHANCEMENTS
+-- ============================================================
+
+alter table products add column if not exists description text;
+alter table products add column if not exists why_helpful text[] not null default '{}';
 
 -- ============================================================
 -- 1. RETAILERS
@@ -33,7 +40,7 @@ set name = excluded.name;
 -- 3. PRODUCTS (16 Curated Products across 4 Age Buckets)
 -- ============================================================
 
-insert into products (id, category_id, name, rationale, indicative_price_cents, image_path)
+insert into products (id, category_id, name, rationale, description, why_helpful, indicative_price_cents, image_path)
 values
   -- Bucket 0–3 months
   (
@@ -41,6 +48,12 @@ values
     'd1000001-0000-4000-a000-000000000001',
     'High-Contrast Black & White Art Cards',
     'Stimulates early visual development and optic nerve growth before full color perception emerges.',
+    'A collection of durable, high-contrast black-and-white visual stimulation cards designed for newborns and young infants.',
+    array[
+      'Stimulates optic nerve development during early visual milestones',
+      'Encourages sustained visual tracking and focus',
+      'Provides engaging visual stimulation during tummy time and floor play'
+    ],
     1200,
     null
   ),
@@ -49,6 +62,12 @@ values
     'd1000002-0000-4000-a000-000000000002',
     'Inflatable Tummy Time Water Mat',
     'Encourages head lifting and upper-body strength during daily tummy time with interactive visual feedback.',
+    'A leak-proof, sensory water play mat with floating sea creatures that responds to baby''s touch during tummy time.',
+    array[
+      'Builds neck, shoulder, and core upper-body strength',
+      'Introduces tactile and visual cause-and-effect sensations',
+      'Makes daily tummy time more engaging and comfortable'
+    ],
     1500,
     null
   ),
@@ -57,6 +76,12 @@ values
     'd1000004-0000-4000-a000-000000000004',
     'Sound Machine with Constant White Noise',
     'Replicates continuous womb sound rhythms to ease sleep transitions and mask abrupt household sounds.',
+    'A compact, non-looping white noise sound machine providing constant soothing acoustic backgrounds for infant sleep.',
+    array[
+      'Recreates calming womb acoustic environments',
+      'Masks household noises that can disrupt light newborn sleep cycles',
+      'Establishes a predictable, calming sleep association'
+    ],
     2200,
     null
   ),
@@ -65,6 +90,12 @@ values
     'd1000005-0000-4000-a000-000000000005',
     'Organic Cotton Muslin Burp Cloths (4-Pack)',
     'Gentle, breathable cotton absorbs frequent newborn spit-ups without irritating delicate newborn skin.',
+    'Multi-layered, absorbent organic cotton muslin cloths designed for frequent feeding, burping, and daily cleanups.',
+    array[
+      'Ultra-soft breathable weave protects sensitive newborn skin',
+      'High absorbency manages spit-ups and drool during and after feedings',
+      'Durable fabric withstands frequent daily laundering'
+    ],
     1400,
     null
   ),
@@ -75,6 +106,12 @@ values
     'd1000003-0000-4000-a000-000000000003',
     '100% Food-Grade Silicone Baby Teether',
     'Relieves gum pressure during early tooth eruption while encouraging two-handed grasping and oral motor exploration.',
+    'A flexible, BPA-free textured silicone teether designed with easy-grip handles for teething infants.',
+    array[
+      'Soothes sore, tender gums during early tooth eruption',
+      'Encourages two-handed grasping and bilateral coordination',
+      'Promotes safe oral motor exploration and sensory integration'
+    ],
     900,
     null
   ),
@@ -83,6 +120,12 @@ values
     'd1000003-0000-4000-a000-000000000003',
     'Ergonomic Silicone Starter Spoon Set',
     'Soft-tipped, shallow silicone bowl protects sensitive gums as baby explores puree and puree-to-finger food transitions.',
+    'Ergonomically contoured silicone feeding spoons with shallow bowls designed for early self-feeding and assisted puree transitions.',
+    array[
+      'Soft-edged silicone protects tender gums and emerging teeth',
+      'Shallow spoon bowl allows easy food removal for beginner eaters',
+      'Contoured grip supports comfortable parent-assisted and baby self-feeding'
+    ],
     1000,
     null
   ),
@@ -91,6 +134,12 @@ values
     'd1000002-0000-4000-a000-000000000002',
     'Textured Sensory Rattle Ball',
     'Develops hand-eye coordination, palmar grasp, and auditory tracking through light rattles and varied surface textures.',
+    'A lightweight, easy-to-grasp flexible ball featuring varied sensory textures and gentle rattling chime sounds.',
+    array[
+      'Develops palmar grasp and finger dexterity',
+      'Promotes auditory localization and tracking',
+      'Encourages rolling, reaching, and early gross motor movement'
+    ],
     1100,
     null
   ),
@@ -99,6 +148,12 @@ values
     'd1000001-0000-4000-a000-000000000001',
     'Soft Fabric Crinkle Peek-a-Boo Book',
     'Engages tactile and auditory curiosity while introducing early interactive routines through crinkle pages.',
+    'An interactive, chew-safe soft fabric book with crinkly pages, lift-the-flap elements, and high-contrast patterns.',
+    array[
+      'Introduces early interactive peek-a-boo routines',
+      'Stimulates auditory and tactile sensory processing',
+      'Durable, chewable fabric supports early book handling'
+    ],
     1300,
     null
   ),
@@ -109,6 +164,12 @@ values
     'd1000003-0000-4000-a000-000000000003',
     'Weighted Straw Silicone Open/Trainer Cup',
     'Promotes mature swallowing mechanics and oral muscle coordination during the transition from bottles to cups.',
+    'A spill-resistant training cup with a 360-degree weighted straw and removable handles to support open cup learning.',
+    array[
+      'Encourages mature swallowing patterns and lip closure',
+      'Handles support two-handed grasping and drinking independence',
+      'Weighted straw enables drinking from any angle'
+    ],
     1200,
     null
   ),
@@ -117,6 +178,12 @@ values
     'd1000002-0000-4000-a000-000000000002',
     'Wooden Push Walker & Activity Center',
     'Provides a stable base to build confidence, balance, and leg strength for babies pulling up and taking first steps.',
+    'A sturdy wooden push wagon with integrated sensory gears, bead mazes, and non-slip rubber-trimmed wheels.',
+    array[
+      'Provides sturdy stability for pulling up and first steps',
+      'Strengthens leg muscles and improves balance coordination',
+      'Activity center provides engaging sitting and standing play'
+    ],
     3800,
     null
   ),
@@ -125,6 +192,12 @@ values
     'd1000001-0000-4000-a000-000000000001',
     'Shape Sorting Cube & Stacking Rings',
     'Teaches spatial awareness, shape recognition, and fine motor problem-solving through trial-and-error play.',
+    'A classic wooden shape-sorting box and ring stacker set designed to build spatial reasoning and cognitive problem-solving.',
+    array[
+      'Refines pincer grasp and hand-eye coordination',
+      'Introduces early shape recognition, sizing, and color concepts',
+      'Fosters trial-and-error problem solving and spatial awareness'
+    ],
     1600,
     null
   ),
@@ -133,6 +206,12 @@ values
     'd1000003-0000-4000-a000-000000000003',
     'Silicone Suction Divided Plate with Grip',
     'High walls and non-slip suction base support self-feeding autonomy and pincer grasp refinement with table foods.',
+    'A non-toxic divided silicone toddler plate featuring strong table suction and curved inner walls for easy scooping.',
+    array[
+      'Strong suction base prevents accidental tipping and plate throwing',
+      'Curved inner walls assist beginner eaters in scooping table foods',
+      'Divided sections keep food separate for selective early eaters'
+    ],
     1400,
     null
   ),
@@ -143,6 +222,12 @@ values
     'd1000002-0000-4000-a000-000000000002',
     'Toddler Balance Bike',
     'Supports balance, coordination and confidence through active outdoor play.',
+    'A sturdy, pedal-free balance bike that helps toddlers build balance and steering coordination before moving to pedal bikes.',
+    array[
+      'Builds balance and bilateral motor coordination',
+      'Encourages outdoor physical activity and independence',
+      'Boosts confidence and gross motor stability'
+    ],
     4500,
     null
   ),
@@ -151,6 +236,12 @@ values
     'd1000001-0000-4000-a000-000000000001',
     'First Words Chunky Board Books Set',
     'Supports the fast vocabulary growth typical at this age.',
+    'A sturdy starter library of chunky board books designed to build early toddler vocabulary through simple, durable pages.',
+    array[
+      'Introduces essential everyday words and visual naming concepts',
+      'Durable, thick cardboard pages withstand curious toddler handling',
+      'Fosters positive early parent-child reading habits'
+    ],
     1600,
     null
   ),
@@ -159,6 +250,12 @@ values
     'd1000001-0000-4000-a000-000000000001',
     'Large Wooden Building Blocks Set (30 pcs)',
     'Fosters creative construction, early engineering concepts, and hand-eye dexterity through stacking and balance.',
+    'A set of solid natural wood blocks in assorted geometric shapes for open-ended building, stacking, and spatial play.',
+    array[
+      'Builds hand-eye dexterity, balance, and spatial reasoning',
+      'Encourages open-ended creative and constructive play',
+      'Introduces early physics concepts like gravity, balance, and stability'
+    ],
     2400,
     null
   ),
@@ -167,6 +264,12 @@ values
     'd1000005-0000-4000-a000-000000000005',
     'Non-Slip Toddler Step Stool',
     'Promotes self-care autonomy for handwashing, teeth brushing, and independent participation in daily family routines.',
+    'A dual-height, non-slip toddler step stool with rubber grip feet designed for bathroom and kitchen sink reach.',
+    array[
+      'Empowers toddler autonomy in handwashing and teeth brushing routines',
+      'Non-slip surface and rubber base provide reliable stability',
+      'Lightweight frame allows toddlers to move the stool independently'
+    ],
     1800,
     null
   )
@@ -175,6 +278,8 @@ set
   category_id = excluded.category_id,
   name = excluded.name,
   rationale = excluded.rationale,
+  description = excluded.description,
+  why_helpful = excluded.why_helpful,
   indicative_price_cents = excluded.indicative_price_cents,
   image_path = excluded.image_path;
 
