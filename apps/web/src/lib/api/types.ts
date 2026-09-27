@@ -239,6 +239,7 @@ export interface TemperatureSummary {
 }
 
 export interface TodaysTemperatures {
-  readings: TemperatureReading[]; // newest first
+  readings: TemperatureReading[];
   summary: TemperatureSummary;
+  timezone: string;
 }
