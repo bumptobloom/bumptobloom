@@ -1,4 +1,5 @@
 import { withSerwist } from "@serwist/turbopack";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -18,4 +19,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(nextConfig);
+export default withSentryConfig(withSerwist(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Only used at build time to upload source maps - never shipped to the
+  // client. See #131: the DSN is the only Sentry value allowed in the
+  // client bundle.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+});
