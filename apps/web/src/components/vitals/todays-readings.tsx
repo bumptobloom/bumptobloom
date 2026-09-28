@@ -1,5 +1,4 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { NotebookPen } from 'lucide-react';
 import { isFeverRange } from '@btb/fever-rules';
 import type { TemperatureReading } from '@/lib/api/types';
@@ -26,11 +25,15 @@ function formatTime(iso: string, timezone: string): string {
  * said what tapping it opens, so it is left out rather than built as a control
  * that goes nowhere. Asked in #btb-all on 23 Sep.
  */
+
+function getDisplayTimezone(fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || fallback;
+}
+
 export function TodaysReadings({ readings, timezone,}: { readings: TemperatureReading[]; timezone: string;}) {
-  const [browserTimezone, setBrowserTimezone] = useState<string | null>(null);
-  useEffect(() => {
-    setBrowserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
+  const displayTimezone = getDisplayTimezone(timezone);
   return (
     <section className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
       <h2
@@ -63,12 +66,11 @@ export function TodaysReadings({ readings, timezone,}: { readings: TemperatureRe
               >
                 <div className="flex items-center gap-[var(--space-12)]">
                   <span
+                    suppressHydrationWarning
                     className="shrink-0 text-[var(--text-secondary)]"
                     style={{ font: 'var(--type-body)' }}
                   >
-                    {browserTimezone
-                      ? formatTime(reading.takenAt, browserTimezone)
-                      : 'Loading…'}
+                    {formatTime(reading.takenAt, displayTimezone)}
                   </span>
 
                   <span
