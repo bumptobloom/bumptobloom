@@ -28,8 +28,22 @@ export function AskConversationShell({
   >(selectedConversation?.id ?? null);
   const [recentConversation, setRecentConversation] =
     useState<ConversationSummary | null>(null);
-  const [histories, setHistories] =
-    useState<ConversationHistory[]>(conversationHistories);
+  const [localHistories, setLocalHistories] =
+    useState<ConversationHistory[]>([]);
+
+  const histories = useMemo(() => {
+    const merged = new Map<string, ConversationHistory>();
+
+    for (const conversation of conversationHistories) {
+      merged.set(conversation.id, conversation);
+    }
+
+    for (const conversation of localHistories) {
+      merged.set(conversation.id, conversation);
+    }
+
+    return Array.from(merged.values());
+  }, [conversationHistories, localHistories]);
 
   const displayedConversations = useMemo(
     () =>
@@ -90,7 +104,7 @@ export function AskConversationShell({
       createdAt: conversation.createdAt,
     });
 
-    setHistories((current) => [
+    setLocalHistories((current) => [
       conversation,
       ...current.filter((item) => item.id !== conversation.id),
     ]);
