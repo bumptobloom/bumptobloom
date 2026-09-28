@@ -5,7 +5,6 @@ import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { TemperatureForm } from '@/components/vitals/temperature-form';
 import { TodaysReadings } from '@/components/vitals/todays-readings';
 import { TodaysSummary } from '@/components/vitals/todays-summary';
-import { VITALS_DISCLAIMER } from '@/components/vitals/disclaimer';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +29,7 @@ export default async function VitalsPage() {
 
       <TodaysReadings readings={readings} timezone={timezone} />
 
-      <StandingDisclaimer text={VITALS_DISCLAIMER} />
+      <StandingDisclaimer />
     </section>
   );
 }
