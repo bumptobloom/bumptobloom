@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   // with a parse error that looks like a Vercel problem and is not.
   transpilePackages: ["@btb/fever-rules", "@btb/shared"],
 
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "bxlwvjidluogyeoucopn.supabase.co",
+        pathname: "/storage/v1/object/sign/**",
+      },
+    ],
+  },
   // The fifth tab was /health until 15 Sep. Anything already linked or
   // bookmarked should land on the renamed route rather than a 404.
   async redirects() {

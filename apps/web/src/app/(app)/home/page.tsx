@@ -125,7 +125,6 @@ export default async function HomePage() {
             width={64}
             height={64}
             className="size-16 shrink-0 rounded-[var(--radius-16)] object-cover"
-            unoptimized
           />
         ) : (
           <div
