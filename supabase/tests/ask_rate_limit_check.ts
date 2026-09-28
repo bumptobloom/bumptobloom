@@ -8,19 +8,21 @@
 // btb_rls_check.py -- so this follows that same convention instead of
 // inventing a second one.
 //
-// This is not wired into CI. btb_rls_check.py runs as anon/authenticated
-// against a shared dev project with no privileged secret available to that
-// job. This script needs SUPABASE_SECRET_KEY, which is a materially
-// different trust level, so wiring it into CI is a separate decision for
-// whoever owns that secret, not something to slip in unannounced here. Run
-// it locally against a local Supabase instance:
-//   node --experimental-strip-types supabase/tests/ask_rate_limit_check.ts
+// It runs in CI as part of the "ask-limiter" job, against a throwaway local
+// `supabase start` -- the keys are the CLI's public local defaults, so no
+// repository secret is involved (btb_rls_check.py's shared-project job has
+// no privileged secret, and this does not change that). To run it by hand:
+//   SUPABASE_URL=... SUPABASE_SECRET_KEY=... \
+//     node --experimental-strip-types supabase/tests/ask_rate_limit_check.ts
+//
+// It creates and deletes users, so it refuses to run against anything but a
+// local Supabase.
 //
 // What this proves: the limit boundary (below/at/above), that two parents'
 // counters are independent, and that concurrent requests cannot both slip
-// through past the limit. What it does NOT prove: the 429 status code or
-// the ask_rate_limited audit row, since those live in the Next.js route,
-// not in this RPC. Those still need a manual run against the real route.
+// through past the limit. The 429 status, the audit rows and the health
+// redirect exemption live in the Next.js route, not in this RPC; those are
+// covered by ask_route_check.ts.
 
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
@@ -57,6 +59,15 @@ loadLocalEnv();
 
 const url = requiredEnv('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
 const secretKey = requiredEnv('SUPABASE_SECRET_KEY');
+
+// A stray .env.local can point at the shared dev project, and this script
+// creates and deletes users.
+const host = new URL(url).hostname;
+if (!['127.0.0.1', 'localhost', '::1', '[::1]'].includes(host)) {
+  throw new Error(
+    `Refusing to run: the Supabase URL host is "${host}". This check only runs against a local Supabase.`,
+  );
+}
 const supabase = createClient(url, secretKey);
 
 let failures = 0;
