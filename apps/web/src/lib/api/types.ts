@@ -54,15 +54,23 @@ export interface HomeData {
 // ============================================================
 
 /**
- * The 4 canonical Learn categories agreed in the Master Sheet (ADR-002 / DECISIONS.md).
+ * The five canonical Learn categories, in the order PRD 2.5 US-1 lists
+ * them. The `content` check constraint in migration 0007 allows exactly
+ * these values, and LEARN_CATEGORY_LABELS in learn-utils.ts renders them.
  */
-export type LearnCategory = 'developmental' | 'feeding' | 'sleep' | 'diaper';
+export type LearnCategory =
+  | 'feeding'
+  | 'sleep'
+  | 'crying_soothing'
+  | 'diaper_digestion'
+  | 'mom_wellbeing';
 
 export const LEARN_CATEGORIES: LearnCategory[] = [
-  'developmental',
   'feeding',
   'sleep',
-  'diaper',
+  'crying_soothing',
+  'diaper_digestion',
+  'mom_wellbeing',
 ];
 
 export interface LearnItem {
@@ -107,7 +115,6 @@ export interface ActivityItem {
   completed: boolean;
   completedAt: string | null;
 }
-
 
 export interface MilestoneItem {
   id: string;
