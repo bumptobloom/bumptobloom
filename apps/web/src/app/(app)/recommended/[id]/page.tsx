@@ -88,7 +88,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         Back to Recommended
       </Link>
 
-      <StandingDisclaimer text="Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product's age and safety information before purchasing. We may earn a small commission at no extra cost to you." />
+      <StandingDisclaimer text="Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product's age and safety information before purchasing." />
     </section>
   );
 }

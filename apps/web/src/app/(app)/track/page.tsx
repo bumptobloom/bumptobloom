@@ -38,7 +38,7 @@ export default async function TrackPage({
     <section className="flex flex-col gap-[var(--space-20)]">
       <TrackPageView event="milestone_viewed" properties={{ month: milestones.month }} />
       <h1 className="text-[0.68rem] tracking-[0.08em] text-[var(--text-secondary)]">
-        MILESTONE TRACKER
+        TRACK MILESTONES
       </h1>
 
       <MonthStrip month={milestones.month} />

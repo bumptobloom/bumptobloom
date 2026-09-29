@@ -107,7 +107,12 @@ export default async function LearnPage({
 
                 {card.safetyNote ? (
                   <p className="mt-2.5 rounded-[14px] bg-[var(--surface-terra)]/55 px-3.5 py-2.5 text-[0.8rem] leading-[1.5] text-[var(--text-accent-terracotta)]">
-                    {card.safetyNote}
+                    {card.category === 'mom_wellbeing'
+                      ? card.safetyNote.replace(
+                          /call or text 988/gi,
+                          'call 911, call or text 988',
+                        )
+                      : card.safetyNote}
                   </p>
                 ) : null}
 
