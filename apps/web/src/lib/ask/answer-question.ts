@@ -10,6 +10,7 @@ import {
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
+import { researchAskQuestion, AskResearchResult, AskSource } from './web-research';
 
 export interface AnswerQuestionInput {
   userId: string;
@@ -20,7 +21,9 @@ export interface AnswerQuestionInput {
 
 export interface AnswerQuestionResult {
   answer: string;
+  sources: AskSource[];
   conversationId: string;
+  messageId: string | null;
   promptVersion: string | null;
   model: string | null;
   validationOk: boolean;
@@ -135,7 +138,9 @@ export async function answerQuestion(
 
     return {
       answer: REDIRECT_ANSWER,
+      sources: [],
       conversationId,
+      messageId: null,
       promptVersion: null,
       model: null,
       validationOk: true,
@@ -151,6 +156,15 @@ export async function answerQuestion(
   const activePromptVersion = await getActivePromptVersion();
   const systemPrompt = buildSystemPrompt(activePromptVersion.systemPrompt, context);
 
+  let research: AskResearchResult;
+  try {
+    research = await researchAskQuestion(input.question);
+  } catch (err) {
+    throw new AskUpstreamError(
+      err instanceof Error ? err.message : 'Web research request failed',
+    );
+  }
+
   const openai = createOpenAIClient();
   const startedAt = Date.now();
   let completion;
@@ -160,6 +174,17 @@ export async function answerQuestion(
       model: activePromptVersion.model,
       messages: [
         { role: 'system', content: systemPrompt },
+        {
+          role: 'system',
+          content: [
+            'Use the following web research as supporting evidence for your answer.',
+            'Answer naturally and clearly. Use a short paragraph for a simple answer, bullets when there are multiple suggestions, and numbered steps when explaining a process.',
+            'Do not mention the research process or invent citations.',
+            '',
+            'WEB RESEARCH:',
+            research.summary,
+          ].join('\\n'),
+        },
         { role: 'user', content: input.question },
       ],
     });
@@ -173,6 +198,7 @@ export async function answerQuestion(
 
   const latencyMs = Date.now() - startedAt;
   const answer = completion.choices[0]?.message?.content ?? '';
+  let assistantMessageId: string | null = null;
 
   // From here on, the parent already has a real answer. A logging failure
   // must never take that away -- same principle the fever checker's
@@ -180,13 +206,20 @@ export async function answerQuestion(
   try {
     const { data: assistantMessage, error: assistantMessageError } = await supabase
       .from('ai_messages')
-      .insert({ conversation_id: conversationId, role: 'assistant', content: answer })
+      .insert({
+        conversation_id: conversationId,
+        role: 'assistant',
+        content: answer,
+        sources: research.sources,
+      })
       .select('id')
       .single();
 
     if (assistantMessageError || !assistantMessage) {
       throw new Error(assistantMessageError?.message ?? 'insert returned no row');
     }
+
+    assistantMessageId = assistantMessage.id;
 
     // ai_runs has no INSERT policy for authenticated users -- this is
     // server-recorded metadata, not something a user's own session is
@@ -219,7 +252,9 @@ export async function answerQuestion(
 
   return {
     answer,
+    sources: research.sources,
     conversationId,
+    messageId: assistantMessageId,
     promptVersion: activePromptVersion.version,
     model: activePromptVersion.model,
     validationOk: true,

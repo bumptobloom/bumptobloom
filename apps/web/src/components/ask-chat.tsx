@@ -1,18 +1,28 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { Send } from 'lucide-react';
+import { Send, ThumbsDown, ThumbsUp } from 'lucide-react';
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+
+type AskSource = {
+  title: string;
+  url: string;
+};
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  sources?: AskSource[];
+  messageId?: string | null;
+  feedback?: 1 | -1 | null;
 };
 
 type AskResponse = {
   answer: string;
+  sources: AskSource[];
   conversationId: string;
+  messageId: string | null;
   redirectedToHealth: boolean;
 };
 
@@ -25,6 +35,35 @@ export function AskChat({ babyId }: { babyId: string }) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleFeedback = async (
+    messageId: string,
+    feedback: 1 | -1,
+  ) => {
+    setMessages((current) =>
+      current.map((message) =>
+        message.messageId === messageId
+          ? { ...message, feedback }
+          : message,
+      ),
+    );
+
+    try {
+      const response = await fetch('/api/ask/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageId, feedback }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Could not save feedback.');
+      }
+    } catch (err) {
+      console.error('[ask] Failed to save feedback:', err);
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,7 +84,7 @@ export function AskChat({ babyId }: { babyId: string }) {
     setQuestion('');
 
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15_000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
 
     try {
       if (!navigator.onLine) {
@@ -80,13 +119,16 @@ export function AskChat({ babyId }: { babyId: string }) {
         {
           role: 'assistant',
           content: result.answer,
+          sources: result.sources,
+          messageId: result.messageId,
+          feedback: null,
         },
       ]);
     } catch (err) {
       if (!navigator.onLine) {
         setError("You're offline. Please reconnect and try again.");
       } else if (err instanceof DOMException && err.name === 'AbortError') {
-        setError("Couldn't reach the assistant. Please try again.");
+        setError("Request timed out after 45 seconds. Please try again.");
       } else {
         setError(
           err instanceof Error
@@ -126,7 +168,61 @@ export function AskChat({ babyId }: { babyId: string }) {
                   : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
               }
             >
-              {message.content}
+              <div className="whitespace-pre-wrap">
+                {message.content}
+              </div>
+
+              {message.role === 'assistant' && message.sources?.length ? (
+                <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
+                  <p className="text-xs font-medium text-[var(--text-secondary)]">
+                    Sources:{' '}
+                    {message.sources.map((source, sourceIndex) => (
+                      <span key={source.url}>
+                        {sourceIndex > 0 ? ' · ' : ''}
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                        >
+                          {source.title}
+                        </a>
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              ) : null}
+              {message.role === 'assistant' && message.messageId ? (
+                <div className="mt-3 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(message.messageId!, 1)}
+                    aria-label="Helpful answer"
+                    aria-pressed={message.feedback === 1}
+                    className={`rounded-full p-2 transition ${
+                      message.feedback === 1
+                        ? 'bg-[var(--surface-terra)]'
+                        : 'hover:bg-[var(--card-primary)]'
+                    }`}
+                  >
+                    <ThumbsUp className="size-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(message.messageId!, -1)}
+                    aria-label="Unhelpful answer"
+                    aria-pressed={message.feedback === -1}
+                    className={`rounded-full p-2 transition ${
+                      message.feedback === -1
+                        ? 'bg-[var(--surface-terra)]'
+                        : 'hover:bg-[var(--card-primary)]'
+                    }`}
+                  >
+                    <ThumbsDown className="size-4" />
+                  </button>
+                </div>
+              ) : null}
             </div>
           ))
         )}
