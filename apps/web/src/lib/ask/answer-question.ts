@@ -93,7 +93,11 @@ export async function answerQuestion(
   } else {
     const { data: newConversation, error: createConversationError } = await supabase
       .from('ai_conversations')
-      .insert({ parent_id: parentProfile.id, baby_id: input.babyId })
+      .insert({
+        parent_id: parentProfile.id,
+        baby_id: input.babyId,
+        title: input.question.trim().slice(0, 80),
+      })
       .select('id')
       .single();
 
