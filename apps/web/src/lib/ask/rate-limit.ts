@@ -10,7 +10,7 @@ export const RATE_LIMIT_MAX_QUESTIONS_PER_DAY = 10;
  * Throws if this parent has reached today's (UTC) question budget.
  *
  * Reserves the attempt atomically in the database via reserve_ask_attempt()
- * -- see migration 0009 -- so a burst of concurrent requests cannot all slip
+ * -- see migration 0012 -- so a burst of concurrent requests cannot all slip
  * through, and so an attempt counts even if the OpenAI call that follows
  * times out or errors. Only ai_runs -- successful completions -- was counted
  * before, which let repeated failures retry the budget forever for free.
