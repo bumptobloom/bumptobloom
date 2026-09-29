@@ -171,7 +171,7 @@ jobs:
       - name: Build and start the app
         run: |
           npm run build --workspace=apps/web
-          nohup npm run start --workspace=apps/web > "$RUNNER_TEMP/app.log" 2>&1 &
+          nohup npm run start --workspace=apps/web -- --hostname 127.0.0.1 > "$RUNNER_TEMP/app.log" 2>&1 &
           for i in $(seq 1 60); do
             if curl -s -o /dev/null http://127.0.0.1:3000/; then exit 0; fi
             sleep 2
