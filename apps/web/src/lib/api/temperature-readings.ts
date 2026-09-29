@@ -89,7 +89,11 @@ export async function getTodaysTemperatures(
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { readings: [], summary: summarizeReadings([]) };
+    return {
+      readings: [],
+      summary: summarizeReadings([]),
+      timezone: 'UTC',
+    };
   }
 
   const { data: profile } = await supabase
@@ -98,7 +102,8 @@ export async function getTodaysTemperatures(
     .eq('user_id', user.id)
     .maybeSingle();
 
-  const { start, end } = todayBoundsUtc(now, profile?.timezone);
+  const timezone = profile?.timezone ?? 'UTC';
+  const { start, end } = todayBoundsUtc(now, timezone);
 
   const { data, error } = await supabase
     .from('temperature_readings')
@@ -114,5 +119,9 @@ export async function getTodaysTemperatures(
   }
 
   const readings = (data ?? []).map((row) => toReading(row as TemperatureRow));
-  return { readings, summary: summarizeReadings(readings) };
+  return {
+    readings,
+    summary: summarizeReadings(readings),
+    timezone,
+  };
 }
