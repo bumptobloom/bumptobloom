@@ -26,8 +26,8 @@ export function AskConversationShell({
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(selectedConversation?.id ?? null);
-  const [recentConversation, setRecentConversation] =
-    useState<ConversationSummary | null>(null);
+  const [recentConversations, setRecentConversations] =
+    useState<ConversationSummary[]>([]);
   const [localHistories, setLocalHistories] =
     useState<ConversationHistory[]>([]);
 
@@ -45,18 +45,27 @@ export function AskConversationShell({
     return Array.from(merged.values());
   }, [conversationHistories, localHistories]);
 
-  const displayedConversations = useMemo(
-    () =>
-      recentConversation
-        ? [
-            recentConversation,
-            ...conversations.filter(
-              (conversation) => conversation.id !== recentConversation.id,
-            ),
-          ]
-        : conversations,
-    [conversations, recentConversation],
-  );
+  const displayedConversations = useMemo(() => {
+    const merged = new Map<string, ConversationSummary>();
+
+    for (const conversation of conversations) {
+      merged.set(conversation.id, conversation);
+    }
+
+    for (const conversation of recentConversations) {
+      merged.set(conversation.id, conversation);
+    }
+
+    return [
+      ...recentConversations,
+      ...Array.from(merged.values()).filter(
+        (conversation) =>
+          !recentConversations.some(
+            (recent) => recent.id === conversation.id,
+          ),
+      ),
+    ];
+  }, [conversations, recentConversations]);
 
   const currentConversation = useMemo(
     () =>
@@ -97,12 +106,17 @@ export function AskConversationShell({
   };
 
   const handleConversationCreated = (conversation: ConversationHistory) => {
-    setRecentConversation({
-      id: conversation.id,
-      babyId: conversation.babyId,
-      title: conversation.title,
-      createdAt: conversation.createdAt,
-    });
+    const summary = {
+    id: conversation.id,
+    babyId: conversation.babyId,
+    title: conversation.title,
+    createdAt: conversation.createdAt,
+  };
+
+  setRecentConversations((current) => [
+    summary,
+    ...current.filter((item) => item.id !== summary.id),
+  ]);
 
     setLocalHistories((current) => [
       conversation,
