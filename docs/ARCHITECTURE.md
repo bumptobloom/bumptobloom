@@ -84,6 +84,44 @@ Fire-and-forget: POST /api/health/fever-check to log it
 OpenAI appears nowhere in that diagram. That is the point — triage is
 deterministic, in-process, and cannot fail open.
 
+## Ask module structure
+
+Owned end to end by Pod I. Prompt, context and validation are separate files,
+not one function doing all three:
+
+```
+apps/web/src/app/api/ask/route.ts        session auth, request validation,
+                                          maps errors to HTTP status
+apps/web/src/lib/ask/
+  openai-client.ts                       the OpenAI client, key from
+                                          OPENAI_API_KEY (never a literal),
+                                          15s timeout, server-only
+  prompt-version.ts                      loads the active row from
+                                          prompt_versions
+  build-system-prompt.ts                 system prompt + context, assembled
+  answer-question.ts                     orchestrates the above end to end
+  rate-limit.ts                          per-parent daily budget
+  classify-openai-error.ts               sanitizes provider errors before
+                                          they reach audit_events or logs
+  errors.ts                              the shared error classes
+  log-audit-event.ts                     writes ask_* events to audit_events
+packages/shared/src/
+  ask-prompt.ts                          the base system prompt text
+  ask-context.ts                         builds the age/stage context object
+```
+
+Response validation (Zod, catching a malformed OpenAI response before it
+reaches a parent) is #46's addition, not yet on `main`.
+
+An earlier plan (ADR-005) ran this behind a Supabase Edge Function
+(`supabase/functions/ask`), so the OpenAI key would never ship in a mobile
+bundle. ADR-006 moved everything into this Next.js app, so the key lives in
+a route handler instead. There is no `supabase/functions` directory, and
+there shouldn't be one.
+
+Local run: `npm run dev`, then `POST /api/ask` with a session cookie —
+replaces `supabase functions serve` from the superseded plan.
+
 ## Environments
 
 | | App | DB |
