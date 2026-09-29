@@ -10,6 +10,22 @@ import {
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
+import { assertUnderRateLimit } from './rate-limit';
+import { logAskAuditEvent } from './log-audit-event';
+import { classifyOpenAIError } from './classify-openai-error';
+import {
+  BabyNotFoundError,
+  ConversationAccessError,
+  AskUpstreamError,
+  RateLimitedError,
+} from './errors';
+
+export {
+  BabyNotFoundError,
+  ConversationAccessError,
+  AskUpstreamError,
+  RateLimitedError,
+} from './errors';
 
 export interface AnswerQuestionInput {
   userId: string;
@@ -25,27 +41,6 @@ export interface AnswerQuestionResult {
   model: string | null;
   validationOk: boolean;
   redirectedToHealth: boolean;
-}
-
-export class BabyNotFoundError extends Error {
-  constructor() {
-    super('Baby not found or does not belong to the authenticated parent');
-    this.name = 'BabyNotFoundError';
-  }
-}
-
-export class AskUpstreamError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'AskUpstreamError';
-  }
-}
-
-export class ConversationAccessError extends Error {
-  constructor() {
-    super('This conversation does not belong to the authenticated parent');
-    this.name = 'ConversationAccessError';
-  }
 }
 
 // Postgres's SQLSTATE for a row-level security policy rejecting a write.
@@ -81,6 +76,22 @@ export async function answerQuestion(
 
   if (parentError || !parentProfile) {
     throw new AskUpstreamError('Parent profile not found for the authenticated user');
+  }
+
+  // A redirect never reaches OpenAI and costs nothing, so it must stay
+  // reachable at the limit -- a symptom question should get the pediatrician
+  // and 911 pointer, not "try again later".
+  const redirectToHealth = shouldRedirectToHealth(input.question);
+
+  if (!redirectToHealth) {
+    try {
+      await assertUnderRateLimit(parentProfile.id);
+    } catch (err) {
+      if (err instanceof RateLimitedError) {
+        await logAskAuditEvent('ask_rate_limited', input.userId, null, {});
+      }
+      throw err;
+    }
   }
 
   let conversationId: string;
@@ -124,7 +135,7 @@ export async function answerQuestion(
   // The triage guard runs before any model call. A redirect never "answers"
   // via a model, so there is nothing truthful to put in ai_runs's NOT NULL
   // prompt_version/model columns -- no run row exists for this case.
-  if (shouldRedirectToHealth(input.question)) {
+  if (redirectToHealth) {
     const { error: refusalMessageError } = await supabase
       .from('ai_messages')
       .insert({ conversation_id: conversationId, role: 'assistant', content: REDIRECT_ANSWER });
@@ -166,9 +177,11 @@ export async function answerQuestion(
   } catch (err) {
     // Per docs/API-CONTRACTS.md: any error here means a plain "couldn't
     // reach the assistant" state -- never a cached or generated fallback.
-    throw new AskUpstreamError(
-      err instanceof Error ? err.message : 'OpenAI request failed',
-    );
+    // Never pass err.message on: OpenAI can echo the parent's own question
+    // back in it, and this reaches both audit_events and the server logs.
+    const { eventType, payload, summary } = classifyOpenAIError(err);
+    await logAskAuditEvent(eventType, input.userId, conversationId, payload);
+    throw new AskUpstreamError(`OpenAI request failed: ${summary}`);
   }
 
   const latencyMs = Date.now() - startedAt;
