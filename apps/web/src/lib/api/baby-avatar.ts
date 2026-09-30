@@ -13,7 +13,7 @@ const ALLOWED_IMAGE_TYPES = new Map([
 ]);
 
 const MAX_UPLOAD_DIMENSION = 1200;
-const OPTIMIZE_AFTER_BYTES = 1 * 1024 * 1024;
+const OPTIMIZE_AFTER_BYTES = 0;
 
 async function optimizeAvatar(file: File): Promise<File> {
   if (file.size <= OPTIMIZE_AFTER_BYTES) {
@@ -131,16 +131,17 @@ export async function uploadBabyAvatar(
   }
 
   if (baby.avatar_path && baby.avatar_path !== avatarPath) {
-    const { error: cleanupError } = await supabase.storage
+    void supabase.storage
       .from(BABY_AVATARS_BUCKET)
-      .remove([baby.avatar_path]);
-
-    if (cleanupError) {
-      console.error(
-        '[uploadBabyAvatar] Unable to remove previous avatar:',
-        cleanupError,
-      );
-    }
+      .remove([baby.avatar_path])
+      .then(({ error: cleanupError }) => {
+        if (cleanupError) {
+          console.error(
+            '[uploadBabyAvatar] Unable to remove previous avatar:',
+            cleanupError,
+          );
+        }
+      });
   }
 
   const { data: signedAvatar, error: signedUrlError } =

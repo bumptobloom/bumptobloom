@@ -2,7 +2,7 @@ import { TrackPageView } from '@/components/track-page-view';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Pencil, Thermometer, MessageCircle, ShoppingBag } from 'lucide-react';
+import { Pencil, Heart, MessageCircle, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { getMonthTypical } from '@/lib/api/month-guidance';
@@ -130,6 +130,9 @@ export default async function HomePage() {
             alt={`${baby.name}'s profile photo`}
             width={64}
             height={64}
+            priority
+            sizes="64px"
+            unoptimized
             className="size-16 shrink-0 rounded-[var(--radius-16)] object-cover"
           />
         ) : (
@@ -180,7 +183,7 @@ export default async function HomePage() {
         href="/vitals"
         className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--surface-terra)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <Thermometer className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
+        <Heart className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
         <div>
           <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
           <p className="mt-[var(--space-4)] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>

@@ -196,6 +196,7 @@ export default function BabyProfileForm({
           required
           value={birthDate}
           onChange={(event) => setBirthDate(event.target.value)}
+          aria-label="Date of birth, MM/DD/YYYY"
           className={dateFieldClass}
         />
       </label>
