@@ -151,6 +151,11 @@ export interface ConversationMessage {
   conversationId: string;
   role: ConversationMessageRole;
   content: string;
+  sources: Array<{
+    title: string;
+    url: string;
+  }>;
+  feedback: 1 | -1 | null;
   createdAt: string;
 }
 
@@ -158,6 +163,7 @@ export interface ConversationSummary {
   id: string;
   babyId: string | null;
   title: string | null;
+  isPinned: boolean;
   createdAt: string;
 }
 

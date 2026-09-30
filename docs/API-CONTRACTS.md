@@ -307,10 +307,22 @@ must never reach the browser.
 POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
 GET  /api/ask/conversations
 GET  /api/ask/conversations/:id
+PATCH /api/ask/conversations/:id
+DELETE /api/ask/conversations/:id
 ```
 
 Conversation history can also be read in a Server Component with RLS — no route
 needed for that half.
+
+`PATCH /api/ask/conversations/:id` supports:
+
+- Rename: `{ "action": "rename", "title": "..." }`
+- Pin/unpin: `{ "action": "pin", "isPinned": true }`
+
+`DELETE /api/ask/conversations/:id` deletes the conversation and its messages.
+
+These mutation routes require an authenticated session and rely on the existing
+Supabase RLS policies to restrict access to the current parent's conversations.
 
 Response:
 

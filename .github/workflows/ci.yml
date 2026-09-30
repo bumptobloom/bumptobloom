@@ -51,10 +51,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # npm install, not npm ci: there is no lockfile committed until the
-      # Next.js app is fully scaffolded in Week 1. Switch to `npm ci` plus
-      # `cache: npm` on the setup-node step once package-lock.json lands.
-      - run: npm install
+      - run: npm ci
       - run: npm run lint --if-present
       - run: npm run test --if-present
       # `next build` type-checks the app itself, and it has to: some of the
