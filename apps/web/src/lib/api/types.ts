@@ -187,6 +187,7 @@ export interface RecommendedProduct {
   rationale: string; // Required - a recommendation without a reason is just an advert
   indicativePriceCents: number;
   imageUrl: string;
+  emoji: string;
   retailers: RetailerLink[];
 }
 

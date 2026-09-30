@@ -15,27 +15,67 @@ export const MOCK_RECOMMENDATIONS: RecommendationsResponse = {
   ageMonths: 18.3,
   bucketLabel: '15-24 months',
   products: [
-    {
-      id: 'p1111111-1111-4111-a111-111111111111',
-      name: 'Balance Bike',
-      rationale: 'Supports balance, coordination and confidence through active outdoor play.',
-      indicativePriceCents: 4500,
-      imageUrl: '',
-      retailers: [
-        { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=balance+bike+toddler' },
-      ],
-    },
-    {
-      id: 'p2222222-2222-4222-a222-222222222222',
-      name: 'Board Books Set',
-      rationale: 'Supports the fast vocabulary growth typical at this age.',
-      indicativePriceCents: 1600,
-      imageUrl: '',
-      retailers: [
-        { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=board+books+toddler' },
-      ],
-    },
-  ],
+  {
+    id: 'p1111111-1111-4111-a111-111111111111',
+    name: 'Stack & Nest Cups',
+    rationale: 'Builds motor skills and hand-eye coordination.',
+    indicativePriceCents: 1800,
+    imageUrl: '',
+    emoji: '🥤',
+    retailers: [
+      {
+        slug: 'amazon',
+        name: 'Amazon',
+        url: 'https://www.amazon.com/s?k=stacking+cups+toddler',
+      },
+    ],
+  },
+  {
+    id: 'p2222222-2222-4222-a222-222222222222',
+    name: 'Balance Bike',
+    rationale: 'Supports balance, coordination and confidence.',
+    indicativePriceCents: 4500,
+    imageUrl: '',
+    emoji: '🚲',
+    retailers: [
+      {
+        slug: 'amazon',
+        name: 'Amazon',
+        url: 'https://www.amazon.com/s?k=balance+bike+toddler',
+      },
+    ],
+  },
+  {
+    id: 'p3333333-3333-4333-a333-333333333333',
+    name: 'First Words Books',
+    rationale: 'Encourages language development and early vocabulary.',
+    indicativePriceCents: 1600,
+    imageUrl: '',
+    emoji: '📖',
+    retailers: [
+      {
+        slug: 'amazon',
+        name: 'Amazon',
+        url: 'https://www.amazon.com/s?k=first+words+books+toddler',
+      },
+    ],
+  },
+  {
+    id: 'p4444444-4444-4444-a444-444444444444',
+    name: 'Shape Sorter Toy',
+    rationale: 'Supports problem solving and fine motor skills.',
+    indicativePriceCents: 2200,
+    imageUrl: '',
+    emoji: '🧩',
+    retailers: [
+      {
+        slug: 'amazon',
+        name: 'Amazon',
+        url: 'https://www.amazon.com/s?k=shape+sorter+toddler',
+      },
+    ],
+  },
+],
   disclaimer: RECOMMENDATIONS_LIST_DISCLAIMER,
 };
 
