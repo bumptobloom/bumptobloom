@@ -52,13 +52,10 @@ export function AskConversationShell({
 
   useEffect(() => {
     if (!selectedConversationId) {
-      setSelectedConversation(null);
-      setLoadingConversation(false);
       return;
     }
 
     if (selectedConversation?.id === selectedConversationId) {
-      setLoadingConversation(false);
       return;
     }
 

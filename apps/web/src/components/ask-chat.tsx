@@ -64,16 +64,6 @@ export function AskChat({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMessages(
-      initialConversation
-        ? initialConversation.messages.map(toMessage)
-        : [],
-    );
-    setConversationId(initialConversation?.id ?? null);
-    setQuestion('');
-    setError(null);
-  }, [initialConversation]);
 
   const handleFeedback = async (
     messageId: string,
