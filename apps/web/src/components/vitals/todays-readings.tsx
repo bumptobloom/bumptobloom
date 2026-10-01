@@ -26,19 +26,37 @@ function formatTime(iso: string, timezone: string): string {
  * that goes nowhere. Asked in #btb-all on 23 Sep.
  */
 
-function getDisplayTimezone(fallback: string): string {
-  if (typeof window === 'undefined') return fallback;
-
+/**
+ * `timezone` is the parent's own `parent_profiles.timezone`, handed down by the
+ * page from getTodaysTemperatures. Deliberately not the browser's zone, and no
+ * fallback to one.
+ *
+ * getTodaysTemperatures picks the day's rows with `todayBoundsUtc(now,
+ * profile.timezone)`. Formatting with the browser's zone instead made the two
+ * disagree: a mother whose profile is America/New_York, opening the app in
+ * London, got her New York day labelled with London times - an 11pm reading
+ * shown as 4am under "Today's readings". Choosing the day in one zone and
+ * printing the clock in another is how a reading ends up looking like it was
+ * taken on a different day than it was.
+ *
+ * Keya's decision, 1 Oct: Vitals follows the parent's timezone on both the
+ * query and the display, Home stays on UTC. lib/timezone.ts, which read the
+ * browser's zone, is deleted with this change - nothing imported it.
+ */
+export function TodaysReadings({
+  readings,
+  timezone,
+}: {
+  readings: TemperatureReading[];
+  timezone: string;
+}) {
   return (
-    Intl.DateTimeFormat().resolvedOptions().timeZone || fallback
-  );
-}
-
-export function TodaysReadings({ readings, timezone,}: { readings: TemperatureReading[]; timezone: string;}) {
-  const displayTimezone = getDisplayTimezone(timezone);
-  return (
-    <section className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
+    <section
+      aria-labelledby="todays-readings-heading"
+      className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]"
+    >
       <h2
+        id="todays-readings-heading"
         className="uppercase tracking-wide text-[var(--text-brand)]"
         style={{ font: 'var(--type-eyebrow)' }}
       >
@@ -67,12 +85,13 @@ export function TodaysReadings({ readings, timezone,}: { readings: TemperatureRe
                 }
               >
                 <div className="flex items-center gap-[var(--space-12)]">
-                  <span
+                  <time
+                    dateTime={reading.takenAt}
                     className="shrink-0 text-[var(--text-secondary)]"
                     style={{ font: 'var(--type-body)' }}
                   >
-                    {formatTime(reading.takenAt, displayTimezone)}
-                  </span>
+                    {formatTime(reading.takenAt, timezone)}
+                  </time>
 
                   <span
                     className={
