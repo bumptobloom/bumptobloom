@@ -91,6 +91,25 @@ jobs:
           fi
           echo "No server-only secrets exposed via NEXT_PUBLIC_."
 
+  migrations:
+    name: Migration numbering
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The checker first, so a checker that cannot fail does not sit here
+      # reporting success. Same reason the RLS job tests its own checker.
+      - name: Verify the migration checker catches collisions and stale names
+        run: python3 scripts/test_check_migrations.py
+        working-directory: scripts
+      # On a pull_request this runs against the PR merged into main, so a
+      # branch whose number was free when it was written goes red as soon as
+      # another PR merges and takes it.
+      - name: Check migration numbers and references
+        run: python3 scripts/check_migrations.py
+
   rls:
     name: RLS isolation suite
     runs-on: ubuntu-latest
