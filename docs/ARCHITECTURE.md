@@ -98,7 +98,11 @@ apps/web/src/lib/ask/
                                           15s timeout, server-only
   prompt-version.ts                      loads the active row from
                                           prompt_versions
+  pick-active-prompt-version.ts          picks the one active row, throws on
+                                          zero or more than one
   build-system-prompt.ts                 system prompt + context, assembled
+  web-research.ts                        runs the live web search, returns
+                                          the summary and cited sources
   answer-question.ts                     orchestrates the above end to end
   rate-limit.ts                          per-parent daily budget
   classify-openai-error.ts               sanitizes provider errors before
@@ -111,7 +115,9 @@ packages/shared/src/
 ```
 
 Response validation (Zod, catching a malformed OpenAI response before it
-reaches a parent) is #46's addition, not yet on `main`.
+reaches a parent) is #46's addition, not yet on `main`. Rate limiting and
+audit logging (`rate-limit.ts`, `classify-openai-error.ts`, `errors.ts`,
+`log-audit-event.ts`) are #72's addition, not yet on `main`.
 
 An earlier plan (ADR-005) ran this behind a Supabase Edge Function
 (`supabase/functions/ask`), so the OpenAI key would never ship in a mobile
