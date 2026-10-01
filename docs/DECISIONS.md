@@ -399,3 +399,15 @@ Roughly a week of engineering: the rules engine, its test table, the result
 screens that were specced and never built. Set against removing the only launch
 gate we had no route through, that is a good trade, and Product finding it
 themselves rather than handing us the risk is the right way round.
+
+## Retailer links and affiliate tracking
+
+**Status:** Accepted  
+**Date:** September 25, 2026  
+**Related issue:** #109
+
+BumpToBloom uses plain search URLs for supported retailers, including Amazon, Target, and Walmart. The application does not use affiliate IDs, referral codes, or click-tracking parameters.
+
+The Cart and Recommended Products experiences are convenience features that help parents find relevant products. They are not revenue or affiliate-marketing features.
+
+Any future proposal to introduce affiliate links or retailer tracking requires a separate product, privacy, and legal review before implementation.
