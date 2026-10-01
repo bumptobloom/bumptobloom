@@ -1,24 +1,42 @@
 import { redirect } from 'next/navigation';
-import { AskChat } from '@/components/ask-chat';
-import { StandingDisclaimer } from '@/components/standing-disclaimer';
+
+import { AskConversationShell } from '@/components/ask-conversation-shell';
+
 import { getHome } from '@/lib/api/home';
+import { getConversations } from '@/lib/api/conversations';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AskPage() {
-  const home = await getHome();
+export default async function AskPage(props: {
+  searchParams?: Promise<{
+    conversationId?: string;
+  }>;
+}) {
+  const [home, searchParams] = await Promise.all([
+    getHome(),
+    props.searchParams,
+  ]);
 
   if (!home.baby) {
     redirect('/onboarding');
   }
 
+  const conversations = await getConversations();
+  const requestedConversationId = searchParams?.conversationId ?? null;
+
+  const selectedConversationId =
+    requestedConversationId &&
+    conversations.some(
+      (conversation) => conversation.id === requestedConversationId,
+    )
+      ? requestedConversationId
+      : null;
+
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-[var(--space-16)]">
-      <h1 className="type-eyebrow text-[var(--text-secondary)]">Ask Bloom</h1>
-
-      <AskChat babyId={home.baby.id} />
-
-      <StandingDisclaimer />
-    </section>
+    <AskConversationShell
+      babyId={home.baby.id}
+      conversations={conversations}
+      selectedConversationId={selectedConversationId}
+    />
   );
 }
