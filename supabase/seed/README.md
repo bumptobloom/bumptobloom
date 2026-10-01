@@ -20,6 +20,8 @@ Rules:
 - Track displays physical, cognitive and language. Social-emotional rows remain
   in the database for a later release and are not queried in V1.
 - Seeds are applied with the service role, never from the client.
+- Products use four age buckets: 0–3, 4–8, 9–14, and 15–24 months. Every product has a mandatory written rationale explaining how it supports developmental milestones.
+- Retailers use clean search URLs for Amazon, Target, and Walmart with zero affiliate tracking parameters (#109).
 
 ## Deployment
 
