@@ -10,6 +10,7 @@ import {
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
+import { researchAskQuestion, AskResearchResult, AskSource } from './web-research';
 
 export interface AnswerQuestionInput {
   userId: string;
@@ -20,11 +21,8 @@ export interface AnswerQuestionInput {
 
 export interface AnswerQuestionResult {
   answer: string;
+  sources: AskSource[];
   conversationId: string;
-  // The stored assistant turn, so the screen can attach a thumbs up or down
-  // to it. Null when the answer was never stored: a guard redirect, or a
-  // logging failure. Feedback is simply unavailable then, which is correct --
-  // there is no row to rate.
   messageId: string | null;
   promptVersion: string | null;
   model: string | null;
@@ -95,7 +93,11 @@ export async function answerQuestion(
   } else {
     const { data: newConversation, error: createConversationError } = await supabase
       .from('ai_conversations')
-      .insert({ parent_id: parentProfile.id, baby_id: input.babyId })
+      .insert({
+        parent_id: parentProfile.id,
+        baby_id: input.babyId,
+        title: input.question.trim().slice(0, 80),
+      })
       .select('id')
       .single();
 
@@ -140,8 +142,8 @@ export async function answerQuestion(
 
     return {
       answer: REDIRECT_ANSWER,
+      sources: [],
       conversationId,
-      // A redirect is a refusal, not an answer. Nothing to rate.
       messageId: null,
       promptVersion: null,
       model: null,
@@ -158,6 +160,15 @@ export async function answerQuestion(
   const activePromptVersion = await getActivePromptVersion();
   const systemPrompt = buildSystemPrompt(activePromptVersion.systemPrompt, context);
 
+  let research: AskResearchResult;
+  try {
+    research = await researchAskQuestion(input.question);
+  } catch (err) {
+    throw new AskUpstreamError(
+      err instanceof Error ? err.message : 'Web research request failed',
+    );
+  }
+
   const openai = createOpenAIClient();
   const startedAt = Date.now();
   let completion;
@@ -167,6 +178,17 @@ export async function answerQuestion(
       model: activePromptVersion.model,
       messages: [
         { role: 'system', content: systemPrompt },
+        {
+          role: 'system',
+          content: [
+            'Use the following web research as supporting evidence for your answer.',
+            'Answer naturally and clearly. Use a short paragraph for a simple answer, bullets when there are multiple suggestions, and numbered steps when explaining a process.',
+            'Do not mention the research process or invent citations.',
+            '',
+            'WEB RESEARCH:',
+            research.summary,
+          ].join('\\n'),
+        },
         { role: 'user', content: input.question },
       ],
     });
@@ -180,16 +202,20 @@ export async function answerQuestion(
 
   const latencyMs = Date.now() - startedAt;
   const answer = completion.choices[0]?.message?.content ?? '';
+  let assistantMessageId: string | null = null;
 
   // From here on, the parent already has a real answer. A logging failure
   // must never take that away -- same principle the fever checker's
   // fire-and-forget logging follows. Failures are reported, not thrown.
-  let assistantMessageId: string | null = null;
-
   try {
     const { data: assistantMessage, error: assistantMessageError } = await supabase
       .from('ai_messages')
-      .insert({ conversation_id: conversationId, role: 'assistant', content: answer })
+      .insert({
+        conversation_id: conversationId,
+        role: 'assistant',
+        content: answer,
+        sources: research.sources,
+      })
       .select('id')
       .single();
 
@@ -230,6 +256,7 @@ export async function answerQuestion(
 
   return {
     answer,
+    sources: research.sources,
     conversationId,
     messageId: assistantMessageId,
     promptVersion: activePromptVersion.version,

@@ -7,8 +7,8 @@ import type {
   ConversationSummary,
 } from './types';
 
-const CONVERSATION_COLUMNS = 'id, baby_id, title, created_at';
-const MESSAGE_COLUMNS = 'id, conversation_id, role, content, created_at';
+const CONVERSATION_COLUMNS = 'id, baby_id, title, is_pinned, created_at';
+const MESSAGE_COLUMNS = 'id, conversation_id, role, content, sources, feedback, created_at';
 
 async function requireUser(
   supabase: Awaited<ReturnType<typeof createServerClient>>
@@ -29,12 +29,14 @@ function toConversationSummary(row: {
   id: string;
   baby_id: string | null;
   title: string | null;
+  is_pinned: boolean;
   created_at: string;
 }): ConversationSummary {
   return {
     id: row.id,
     babyId: row.baby_id,
     title: row.title,
+    isPinned: row.is_pinned,
     createdAt: row.created_at,
   };
 }
@@ -44,6 +46,11 @@ function toConversationMessage(row: {
   conversation_id: string;
   role: string;
   content: string;
+  sources: Array<{
+    title: string;
+    url: string;
+  }>;
+  feedback: 1 | -1 | null;
   created_at: string;
 }): ConversationMessage {
   return {
@@ -51,6 +58,8 @@ function toConversationMessage(row: {
     conversationId: row.conversation_id,
     role: row.role as ConversationMessageRole,
     content: row.content,
+    sources: row.sources,
+    feedback: row.feedback,
     createdAt: row.created_at,
   };
 }
@@ -120,6 +129,80 @@ export async function addMessage(
   return toConversationMessage(message);
 }
 
+
+export async function renameConversation(
+  conversationId: string,
+  title: string,
+): Promise<ConversationSummary> {
+  const supabase = await createServerClient();
+  await requireUser(supabase);
+
+  const { data: conversation, error } = await supabase
+    .from('ai_conversations')
+    .update({ title })
+    .eq('id', conversationId)
+    .select(CONVERSATION_COLUMNS)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[renameConversation] Database error renaming conversation');
+    throw new Error(`Database error renaming conversation: ${error.message}`);
+  }
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
+  return toConversationSummary(conversation);
+}
+
+export async function setConversationPinned(
+  conversationId: string,
+  isPinned: boolean,
+): Promise<ConversationSummary> {
+  const supabase = await createServerClient();
+  await requireUser(supabase);
+
+  const { data: conversation, error } = await supabase
+    .from('ai_conversations')
+    .update({ is_pinned: isPinned })
+    .eq('id', conversationId)
+    .select(CONVERSATION_COLUMNS)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[setConversationPinned] Database error updating pin state');
+    throw new Error(`Database error updating pin state: ${error.message}`);
+  }
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
+  return toConversationSummary(conversation);
+}
+
+export async function deleteConversation(conversationId: string): Promise<void> {
+  const supabase = await createServerClient();
+  await requireUser(supabase);
+
+  const { data: conversation, error } = await supabase
+    .from('ai_conversations')
+    .delete()
+    .eq('id', conversationId)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.error('[deleteConversation] Database error deleting conversation');
+    throw new Error(`Database error deleting conversation: ${error.message}`);
+  }
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+}
+
 export async function getConversations(): Promise<ConversationSummary[]> {
   const supabase = await createServerClient();
 
@@ -128,6 +211,7 @@ export async function getConversations(): Promise<ConversationSummary[]> {
   const { data: conversations, error } = await supabase
     .from('ai_conversations')
     .select(CONVERSATION_COLUMNS)
+    .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) {
