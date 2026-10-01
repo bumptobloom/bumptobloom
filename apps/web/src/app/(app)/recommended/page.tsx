@@ -1,101 +1,105 @@
-import { TrackPageView } from '@/components/track-page-view';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { TrackPageView } from '@/components/track-page-view';
 import { getHome } from '@/lib/api/home';
 import { getRecommendations } from '@/lib/api/recommendations';
+import { MonthStrip } from '@/components/track/month-strip';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RecommendedPage() {
+/**
+ * Recommended for You. Figma 09.
+ *
+ * The month row is MonthStrip, the same control Track and Learn use, rather
+ * than a second hand-rolled one. That gets the clickable months for free and
+ * keeps all three screens behaving identically: plain links with a `month`
+ * query param, so every month is a real URL a parent can land on or share and
+ * it works without JavaScript.
+ */
+export default async function RecommendedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const home = await getHome();
 
   if (!home.baby) {
     redirect('/onboarding');
   }
 
-  const recommendations = await getRecommendations(home.baby.id);
-  const currentMonth = Math.floor(recommendations.ageMonths);
-  const firstMonth = Math.max(0, Math.min(19, currentMonth - 2));
-  const visibleMonths = Array.from(
-    { length: 6 },
-    (_, index) => firstMonth + index,
+  const { month: monthParam } = await searchParams;
+  const parsed = monthParam === undefined ? undefined : Number(monthParam);
+
+  const recommendations = await getRecommendations(
+    home.baby.id,
+    parsed === undefined || Number.isNaN(parsed) ? undefined : parsed,
   );
 
+  const babyMonth = Math.floor(recommendations.ageMonths);
+  const month =
+    parsed === undefined || Number.isNaN(parsed)
+      ? babyMonth
+      : Math.min(24, Math.max(0, Math.floor(parsed)));
+
+  const viewingOtherMonth = month !== babyMonth;
+
   return (
-    <section className="flex flex-col gap-5">
+    <section className="flex flex-col gap-[var(--space-20)]">
       <TrackPageView event="recommendations_viewed" />
-      <header>
-        <h1
-          className="text-[24px] font-semibold leading-tight"
-          style={{ color: 'var(--text-primary)' }}
-        >
+
+      <header className="flex flex-col gap-[var(--space-12)]">
+        <h1 className="type-card-title text-[var(--text-primary)]">
           Recommended for You
         </h1>
 
-        <p
-          className="mt-2 text-[17px]"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          Essentials for Month {currentMonth}
+        <p className="type-body text-[var(--text-secondary)]">
+          Essentials for Month {month}
         </p>
 
-        <div className="mt-8 flex items-center justify-between">
-          {visibleMonths.map((month) => {
-            const active = month === currentMonth;
+        <MonthStrip month={month} basePath="/recommended" label="Recommendation month" />
 
-            return (
-              <div
-                key={month}
-                className={`flex flex-col items-center ${
-                  active ? 'font-semibold' : ''
-                }`}
-                style={{ color: 'var(--text-primary)' }}
-              >
-                <span
-                  className={`flex size-12 items-center justify-center rounded-full ${
-                    active ? 'border-2 border-[var(--text-brand)]' : ''
-                  }`}
-                >
-                  {month}
-                </span>
-
-                <span className="text-xs">mo</span>
-
-                {active ? (
-                  <span className="mt-1 h-1 w-8 rounded-full bg-[var(--text-brand)]" />
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
+        {viewingOtherMonth ? (
+          <Link
+            href="/recommended"
+            className="type-label self-center text-[var(--text-brand)]"
+          >
+            Back to {babyMonth} months
+          </Link>
+        ) : null}
       </header>
 
-      <div className="flex flex-col gap-4">
-        {recommendations.products.map((product) => (
-          <Link
-            key={product.id}
-            href={`/recommended/${product.id}`}
-            className="flex gap-4 rounded-[18px] border p-4"
-            style={{ background: 'var(--card-primary)', borderColor: 'var(--border-card)' }}
-          >
-            <div
-              aria-hidden
-              className="flex size-16 shrink-0 items-center justify-center rounded-[12px] bg-[var(--surface-terra)] text-3xl"
-            >
-              {product.emoji}
-            </div>
-            <div className="flex flex-col gap-1">
-              <h2 className="text-[16px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {product.name}
-              </h2>
-              <p className="text-[14px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                {product.rationale}
-              </p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {recommendations.products.length === 0 ? (
+        <p className="type-body text-[var(--text-secondary)]">
+          No products published for {recommendations.bucketLabel} yet.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-[var(--space-16)]">
+          {recommendations.products.map((product) => (
+            <li key={product.id}>
+              <Link
+                href={`/recommended/${product.id}?month=${month}`}
+                className="flex gap-[var(--space-16)] rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-16)]"
+              >
+                <span
+                  aria-hidden
+                  className="flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-12)] bg-[var(--surface-terra)] text-3xl"
+                >
+                  {product.emoji}
+                </span>
+                <span className="flex flex-col gap-[var(--space-4)]">
+                  <span className="type-label text-[var(--text-primary)]">
+                    {product.name}
+                  </span>
+                  <span className="type-body text-[var(--text-secondary)]">
+                    {product.rationale}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <StandingDisclaimer text={recommendations.disclaimer} />
     </section>
