@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { TrackPageView } from '@/components/track-page-view';
 import { getHome } from '@/lib/api/home';
-import { getRecommendations } from '@/lib/api/recommendations';
+import { getRecommendations, productIcon } from '@/lib/api/recommendations';
 import { MonthStrip } from '@/components/track/month-strip';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 
@@ -85,7 +85,7 @@ export default async function RecommendedPage({
                   aria-hidden
                   className="flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-12)] bg-[var(--surface-terra)] text-3xl"
                 >
-                  {product.emoji}
+                  {productIcon(product)}
                 </span>
                 <span className="flex flex-col gap-[var(--space-4)]">
                   <span className="type-label text-[var(--text-primary)]">

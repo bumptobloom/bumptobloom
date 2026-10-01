@@ -273,6 +273,7 @@ getProduct(id)
 Retailer links are plain search URLs — no affiliate programme, no tracking:
 `https://www.amazon.com/s?k=belly+oil+for+pregnancy`
 
+### `getRecommendations(babyId)`
 ```json
 {
   "ageMonths": 18.3,
@@ -287,12 +288,29 @@ Retailer links are plain search URLs — no affiliate programme, no tracking:
       "retailers": [{ "slug": "amazon", "name": "Amazon", "url": "https://…" }]
     }
   ],
-  "disclaimer": "Curated suggestions, not medical necessity…"
+  "disclaimer": "Products chosen with your child in mind. Please review age recommendations, safety information, and product details before purchasing."
 }
 ```
 
-`rationale` is required — a recommendation without a reason is just an advert.
-There is no
+### `getProduct(id)`
+```json
+{
+  "id": "uuid",
+  "name": "Board Books Set",
+  "rationale": "Supports the fast vocabulary growth typical at this age.",
+  "description": "A sturdy starter library of chunky board books designed to build early toddler vocabulary through simple, durable pages.",
+  "whyHelpful": [
+    "Introduces essential everyday words and visual naming concepts",
+    "Durable, thick cardboard pages withstand curious toddler handling",
+    "Fosters positive early parent-child reading habits"
+  ],
+  "indicativePriceCents": 1600,
+  "imageUrl": "https://…",
+  "retailers": [{ "slug": "amazon", "name": "Amazon", "url": "https://…" }]
+}
+```
+
+`rationale`, `description`, and `whyHelpful` are required on product details. There is no
 cart total and no checkout; per the design-change log, "Add to List" and all
 payment steps are removed for the MVP.
 

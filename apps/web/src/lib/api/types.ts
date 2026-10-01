@@ -187,7 +187,10 @@ export interface RecommendedProduct {
   rationale: string; // Required - a recommendation without a reason is just an advert
   indicativePriceCents: number;
   imageUrl: string;
-  emoji: string;
+  // Optional: the products table has no emoji column and #225 builds this
+  // straight from DB rows. Decorative, always rendered aria-hidden.
+  // Use productIcon() rather than reading this directly.
+  emoji?: string;
   retailers: RetailerLink[];
 }
 
