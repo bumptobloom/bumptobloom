@@ -1,30 +1,98 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { Send } from 'lucide-react';
+import { FormEvent, useEffect, useState } from 'react';
+
+import { Send, ThumbsDown, ThumbsUp } from 'lucide-react';
+
+import type {
+  ConversationHistory,
+  ConversationMessage,
+} from '@/lib/api/types';
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+
+type AskSource = {
+  title: string;
+  url: string;
+};
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  sources?: AskSource[];
+  messageId?: string | null;
+  feedback?: 1 | -1 | null;
 };
 
 type AskResponse = {
   answer: string;
+  sources: AskSource[];
   conversationId: string;
+  messageId: string | null;
   redirectedToHealth: boolean;
 };
 
 const ASK_DISCLAIMER =
   'AI can make mistakes. For medical concerns, contact a qualified healthcare professional. If you are experiencing a medical emergency, call 911.';
 
-export function AskChat({ babyId }: { babyId: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+function toMessage(message: ConversationMessage): Message {
+  return {
+    role: message.role === 'assistant' ? 'assistant' : 'user',
+    content: message.content,
+    sources: message.sources,
+    messageId: message.role === 'assistant' ? message.id : null,
+    feedback: message.feedback,
+  };
+}
+
+export function AskChat({
+  babyId,
+  initialConversation,
+  onConversationCreated,
+}: {
+  babyId: string;
+  initialConversation?: ConversationHistory | null;
+  onConversationCreated?: (conversation: ConversationHistory) => void;
+}) {
+  const [messages, setMessages] = useState<Message[]>(() =>
+    initialConversation ? initialConversation.messages.map(toMessage) : [],
+  );
   const [question, setQuestion] = useState('');
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(
+    initialConversation?.id ?? null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+  const handleFeedback = async (
+    messageId: string,
+    feedback: 1 | -1,
+  ) => {
+    setMessages((current) =>
+      current.map((message) =>
+        message.messageId === messageId
+          ? { ...message, feedback }
+          : message,
+      ),
+    );
+
+    try {
+      const response = await fetch('/api/ask/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messageId, feedback }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Could not save feedback.');
+      }
+    } catch (err) {
+      console.error('[ask] Failed to save feedback:', err);
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,10 +110,11 @@ export function AskChat({ babyId }: { babyId: string }) {
       ...current,
       { role: 'user', content: trimmedQuestion },
     ]);
+
     setQuestion('');
 
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 15_000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
 
     try {
       if (!navigator.onLine) {
@@ -75,18 +144,52 @@ export function AskChat({ babyId }: { babyId: string }) {
 
       setConversationId(result.conversationId);
 
-      setMessages((current) => [
-        ...current,
-        {
-          role: 'assistant',
-          content: result.answer,
-        },
-      ]);
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: result.answer,
+        sources: result.sources,
+        messageId: result.messageId,
+        feedback: null,
+      };
+
+      setMessages((current) => [...current, assistantMessage]);
+
+      if (!conversationId && result.messageId) {
+        const now = new Date().toISOString();
+
+        onConversationCreated?.({
+          id: result.conversationId,
+          babyId,
+          title: trimmedQuestion.slice(0, 80),
+          isPinned: false,
+          createdAt: now,
+          messages: [
+            {
+              id: `pending-user-${result.conversationId}`,
+              conversationId: result.conversationId,
+              role: 'user',
+              content: trimmedQuestion,
+              sources: [],
+              feedback: null,
+              createdAt: now,
+            },
+            {
+              id: result.messageId,
+              conversationId: result.conversationId,
+              role: 'assistant',
+              content: result.answer,
+              sources: result.sources,
+              feedback: null,
+              createdAt: now,
+            },
+          ],
+        });
+      }
     } catch (err) {
       if (!navigator.onLine) {
         setError("You're offline. Please reconnect and try again.");
       } else if (err instanceof DOMException && err.name === 'AbortError') {
-        setError("Couldn't reach the assistant. Please try again.");
+        setError('Request timed out after 45 seconds. Please try again.');
       } else {
         setError(
           err instanceof Error
@@ -119,14 +222,67 @@ export function AskChat({ babyId }: { babyId: string }) {
         ) : (
           messages.map((message, index) => (
             <div
-              key={`${message.role}-${index}`}
+              key={`${message.messageId ?? message.role}-${index}`}
               className={
                 message.role === 'user'
                   ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
                   : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
               }
             >
-              {message.content}
+              <div className="whitespace-pre-wrap">{message.content}</div>
+
+              {message.role === 'assistant' && message.sources?.length ? (
+                <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
+                  <p className="text-xs font-medium text-[var(--text-secondary)]">
+                    Sources:{' '}
+                    {message.sources.map((source, sourceIndex) => (
+                      <span key={source.url}>
+                        {sourceIndex > 0 ? ' · ' : ''}
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                        >
+                          {source.title}
+                        </a>
+                      </span>
+                    ))}
+                  </p>
+                </div>
+              ) : null}
+
+              {message.role === 'assistant' && message.messageId ? (
+                <div className="mt-3 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(message.messageId!, 1)}
+                    aria-label="Helpful answer"
+                    aria-pressed={message.feedback === 1}
+                    className={`rounded-full p-2 transition ${
+                      message.feedback === 1
+                        ? 'bg-[var(--surface-terra)]'
+                        : 'hover:bg-[var(--card-primary)]'
+                    }`}
+                  >
+                    <ThumbsUp className="size-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(message.messageId!, -1)}
+                    aria-label="Unhelpful answer"
+                    aria-pressed={message.feedback === -1}
+                    className={`rounded-full p-2 transition ${
+                      message.feedback === -1
+                        ? 'bg-[var(--surface-terra)]'
+                        : 'hover:bg-[var(--card-primary)]'
+                    }`}
+                  >
+                    <ThumbsDown className="size-4" />
+                  </button>
+                </div>
+              ) : null}
             </div>
           ))
         )}
