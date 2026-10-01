@@ -13,7 +13,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from check_migrations import check_filenames_and_numbers, check_references
+from check_migrations import (
+    MIGRATIONS,
+    ROOT,
+    SKIP_FILES,
+    check_filenames_and_numbers,
+    check_references,
+    tracked_files,
+)
 
 
 class FilenameAndNumberTests(unittest.TestCase):
@@ -78,6 +85,35 @@ class ReferenceTests(unittest.TestCase):
         )
         errors = check_references({"0012_temperature_readings_range.sql"}, files, root)
         self.assertEqual(len(errors), 2)
+
+
+class RealRepoTests(unittest.TestCase):
+    """The checker has to be green on a clean tree, or nobody trusts it red.
+
+    The first version of this file was scanned by its own reference check and
+    reported 15 stale references -- all of them fixture names in these tests.
+    CI would have been red on every PR from the moment it merged, so the first
+    red would have been dismissed as noise and the real one after it too.
+    """
+
+    def test_the_checker_does_not_scan_itself(self):
+        scanned = {str(p.relative_to(ROOT)) for p in tracked_files()}
+        for skipped in SKIP_FILES:
+            self.assertNotIn(skipped, scanned)
+
+    def test_every_skipped_file_still_exists(self):
+        # A rename would leave a dead entry here and quietly put the renamed
+        # file back in the scan, which is the bug above all over again.
+        for skipped in SKIP_FILES:
+            self.assertTrue((ROOT / skipped).is_file(), f"{skipped} is gone")
+
+    def test_the_real_repo_has_no_stale_references(self):
+        # If this fails: either someone renumbered a migration and left a
+        # reference behind -- fix the reference, the checker is right -- or the
+        # checker has started scanning something it should not.
+        known = {p.name for p in MIGRATIONS.glob("*.sql")}
+        self.assertTrue(known, "no migrations found, so this would pass vacuously")
+        self.assertEqual(check_references(known), [])
 
 
 if __name__ == "__main__":

@@ -45,6 +45,19 @@ REFERENCE_RE = re.compile(r"\b(\d{4}_[a-z0-9_]+\.sql)\b")
 # Directories that are not ours to police.
 SKIP_DIRS = {".git", "node_modules", ".next", ".btb-draft", "dist", "build", ".venv"}
 
+# This checker and its tests are the only files in the repo that name migrations
+# which are deliberately not real: the docstring above quotes the stale 0010
+# reference that motivated check 2, the bad-filename error shows an example
+# name, and every reference test is built from fixture names. Scanning them
+# makes check 2 fail on the checker itself -- 15 problems on a clean tree, red
+# on every PR, which is exactly how this landed the first time. The cost is
+# that a genuinely stale reference inside these two files is the one place
+# check 2 cannot help. That is the price of having check 2 at all.
+SKIP_FILES = {
+    "scripts/check_migrations.py",
+    "scripts/test_check_migrations.py",
+}
+
 
 def tracked_files() -> list[Path]:
     """Only files git knows about, so a stray local file cannot fail CI."""
@@ -60,6 +73,8 @@ def tracked_files() -> list[Path]:
         if not name:
             continue
         if any(part in SKIP_DIRS for part in Path(name).parts):
+            continue
+        if name in SKIP_FILES:
             continue
         paths.append(ROOT / name)
     return paths
