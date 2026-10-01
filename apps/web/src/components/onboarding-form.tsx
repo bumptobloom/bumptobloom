@@ -11,6 +11,7 @@ export function OnboardingForm({ baby }: { baby: BabyProfile | null }) {
     <BabyProfileForm
       baby={baby}
       onSaved={(_, photoUploadError) => {
+        router.refresh();
         if (photoUploadError) return;
         router.push('/home');
       }}
