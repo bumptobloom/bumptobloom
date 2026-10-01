@@ -26,14 +26,7 @@ function formatTime(iso: string, timezone: string): string {
  * that goes nowhere. Asked in #btb-all on 23 Sep.
  */
 
-function getDisplayTimezone(fallback: string): string {
-  if (typeof window === 'undefined') return fallback;
-
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || fallback;
-}
-
 export function TodaysReadings({ readings, timezone,}: { readings: TemperatureReading[]; timezone: string;}) {
-  const displayTimezone = getDisplayTimezone(timezone);
   return (
     <section className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
       <h2
@@ -66,11 +59,10 @@ export function TodaysReadings({ readings, timezone,}: { readings: TemperatureRe
               >
                 <div className="flex items-center gap-[var(--space-12)]">
                   <span
-                    suppressHydrationWarning
                     className="shrink-0 text-[var(--text-secondary)]"
                     style={{ font: 'var(--type-body)' }}
                   >
-                    {formatTime(reading.takenAt, displayTimezone)}
+                    {formatTime(reading.takenAt, timezone)}
                   </span>
 
                   <span
