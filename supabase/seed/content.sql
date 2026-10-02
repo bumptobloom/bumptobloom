@@ -98,7 +98,7 @@ Contact your pediatrician for blood in stool, repeated vomiting, dehydration con
     'Rest when you can, accept help and tell someone how you’re feeling. Persistent sadness or anxiety deserves support.
 
 **Safety / Escalation Note:**
-In a crisis or with thoughts of harming yourself or baby, call or text 988 or seek emergency medical help.',
+Call 911, call or text 988.',
     0,
     2,
     'CDC Reproductive Health',
@@ -177,7 +177,7 @@ Seek advice for open sores, spreading redness, fever, blood in stool or persiste
     'Sleep loss and recovery can be hard. Ask for practical help and speak with your provider if low mood or anxiety persists.
 
 **Safety / Escalation Note:**
-Urgent warning signs can occur after birth. In a crisis or with thoughts of harming yourself or baby, call or text 988 or seek emergency help.',
+Call 911, call or text 988.',
     3,
     5,
     'CDC Reproductive Health',
@@ -256,7 +256,7 @@ Hard painful stools, blood, repeated diarrhea or signs of dehydration should be 
     'Protect small pockets of rest, eat regularly and accept support. Tell your provider if sadness or anxiety affects daily life.
 
 **Safety / Escalation Note:**
-Seek immediate care for urgent postpartum warning signs; pregnancy-related complications can occur up to a year after delivery. In crisis, call or text 988.',
+Call 911, call or text 988.',
     6,
     8,
     'CDC Reproductive Health',
@@ -335,7 +335,7 @@ Talk with your pediatrician if stools are consistently hard/painful, bloody, or 
     'Your well-being matters as routines change. Share the load, protect rest and ask for help when stress feels unmanageable.
 
 **Safety / Escalation Note:**
-CDC maternal warning signs apply through the first year after delivery. In crisis, call or text 988 or seek emergency help.',
+Call 911, call or text 988.',
     9,
     11,
     'CDC Hear Her Campaign',
@@ -414,7 +414,7 @@ Call your clinician for severe rash, open sores, spreading redness, fever or per
     'Build small routines for sleep, meals, movement and connection. Ask family or friends for specific, practical help.
 
 **Safety / Escalation Note:**
-If low mood, anxiety or loss of interest persists or affects daily life, contact a health professional. In crisis, call or text 988.',
+Call 911, call or text 988.',
     12,
     14,
     'CDC Reproductive Health',
@@ -493,7 +493,7 @@ Persistent hard/painful stools, blood, vomiting or poor intake should be discuss
     'Choose one or two priorities, share tasks and make room for rest or something restorative—even in short blocks.
 
 **Safety / Escalation Note:**
-Persistent depression or anxiety is treatable; reach out to a health professional for support. In crisis, call or text 988.',
+Call 911, call or text 988.',
     15,
     17,
     'CDC Reproductive Health',
@@ -572,7 +572,7 @@ Severe, spreading or persistent rash should be evaluated; watch for dehydration 
     'Regular meals, movement, connection and realistic expectations can support well-being. Ask for help before you are depleted.
 
 **Safety / Escalation Note:**
-If emotional symptoms persist or interfere with daily life, talk with a health professional. In crisis, call or text 988.',
+Call 911, call or text 988.',
     18,
     20,
     'CDC Reproductive Health',
@@ -651,7 +651,7 @@ Painful hard stools, blood, repeated vomiting or persistent diarrhea should be d
     'Parenting a toddler is demanding. Protect time for sleep, connection, movement and activities that help you recharge.
 
 **Safety / Escalation Note:**
-If sadness, anxiety or overwhelm is persistent or affects functioning, seek professional support. In crisis, call or text 988.',
+Call 911, call or text 988.',
     21,
     24,
     'CDC Reproductive Health',
@@ -720,13 +720,3 @@ where published
   'c0000001-0000-4000-8000-000000000040'::uuid
   ]);
 
-  UPDATE public.content
-SET body =
-  split_part(
-    body,
-    E'\n\n**Safety / Escalation Note:**\n',
-    1
-  ) ||
-  E'\n\n**Safety / Escalation Note:**\nCall 911, call or text 988.'
-WHERE category = 'mom_wellbeing'
-  AND body LIKE '%**Safety / Escalation Note:%';
