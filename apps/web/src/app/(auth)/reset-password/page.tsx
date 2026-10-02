@@ -190,29 +190,44 @@ function ResetPasswordAttempt({ code, urlError }: ResetPasswordAttemptProps) {
             </div>
           ) : null}
 
-          <TextField
-            revealable
-            required
-            autoComplete="new-password"
-            placeholder="New password"
-            icon={<Lock className="size-4" />}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div>
+            <label htmlFor="reset-new-password" className="sr-only">
+              New password
+            </label>
+            <TextField
+              id="reset-new-password"
+              revealable
+              required
+              autoComplete="new-password"
+              placeholder="New password"
+              aria-label="New password"
+              aria-describedby="reset-password-rules"
+              icon={<Lock className="size-4" aria-hidden />}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-          <p className="px-1 text-[0.72rem] text-[var(--text-secondary)]">
+          <p id="reset-password-rules" className="px-1 text-[0.72rem] text-[var(--text-secondary)]">
             {PASSWORD_RULE_TEXT}
           </p>
 
-          <TextField
-            revealable
-            required
-            autoComplete="new-password"
-            placeholder="Confirm new password"
-            icon={<Lock className="size-4" />}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <div>
+            <label htmlFor="reset-confirm-password" className="sr-only">
+              Confirm new password
+            </label>
+            <TextField
+              id="reset-confirm-password"
+              revealable
+              required
+              autoComplete="new-password"
+              placeholder="Confirm new password"
+              aria-label="Confirm new password"
+              icon={<Lock className="size-4" aria-hidden />}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
 
           <Button
             type="submit"

@@ -100,7 +100,7 @@ export default async function ProductDetailPage({
 
       <Link
         href={backHref}
-        className="type-label text-[var(--text-brand)] underline underline-offset-4"
+        className="type-label rounded text-[var(--text-brand)] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
         Back to Recommended
       </Link>

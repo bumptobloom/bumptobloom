@@ -313,23 +313,23 @@ export function AskChat({
                     <div className="rounded-[18px] border border-[#e6dfcf] bg-[#fffdf7] px-4 py-3 text-sm text-[var(--text-primary)]">
                       {message.redirectedToHealth ? (
                         <div className="w-full max-w-[380px] rounded-[16px] border border-[#B88768] bg-[#F7E6D8] px-5 py-5">
-  <div className="flex items-center gap-3">
-    <TriangleAlert
-      className="size-5 shrink-0 text-[#A96F4F]"
-      aria-hidden="true"
-    />
+                          <div className="flex items-center gap-3">
+                            <TriangleAlert
+                              className="size-5 shrink-0 text-[#A96F4F]"
+                              aria-hidden="true"
+                            />
 
-    <p className="text-[16px] font-medium leading-[22px] text-[#A96F4F]">
-      Contact your pediatrician
-    </p>
-  </div>
+                            <p className="text-[16px] font-medium leading-[22px] text-[#A96F4F]">
+                              Contact your pediatrician
+                            </p>
+                          </div>
 
-  <div className="mt-3 border-t border-[#E5D3C5]" />
+                          <div className="mt-3 border-t border-[#E5D3C5]" />
 
-  <p className="mt-4 text-[14px] leading-[22px] text-[#36453A]">
-    {message.content}
-  </p>
-</div>
+                          <p className="mt-4 text-[14px] leading-[22px] text-[#36453A]">
+                            {message.content}
+                          </p>
+                        </div>
                       ) : (
                         <AskAnswer content={message.content} />
                       )}
@@ -346,9 +346,10 @@ export function AskChat({
                                     href={source.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                                    className="rounded text-[var(--text-brand)] font-medium underline underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                                   >
                                     {source.title}
+                                    <span className="sr-only"> (opens in a new tab)</span>
                                   </a>
                                 </span>
                               ),
@@ -362,7 +363,6 @@ export function AskChat({
                       <span className="text-xs text-[#667064]">
                         {formatMessageTime(message.createdAt)}
                       </span>
-
                     </div>
                   </div>
                 </div>
@@ -372,7 +372,7 @@ export function AskChat({
         )}
 
         {loading ? (
-          <div className="mr-8 flex items-start gap-[var(--space-12)]">
+          <div className="mr-8 flex items-start gap-[var(--space-12)]" role="status" aria-live="polite">
             <img
               src="/Avatar.svg"
               alt="Bloom"
@@ -385,7 +385,7 @@ export function AskChat({
         ) : null}
 
         {error ? (
-          <p role="alert" className="text-sm text-[var(--text-secondary)]">
+          <p role="alert" className="text-sm text-[var(--text-alert)]">
             {error}
           </p>
         ) : null}
@@ -408,7 +408,7 @@ export function AskChat({
                 onClick={dictation.stop}
                 disabled={loading}
                 aria-label="Stop recording"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:bg-[var(--surface-terra)]"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:bg-[var(--surface-terra)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               >
                 <span className="text-xl leading-none">×</span>
               </button>
@@ -436,7 +436,7 @@ export function AskChat({
                 onClick={dictation.stop}
                 disabled={loading}
                 aria-label="Stop recording"
-                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)]"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               >
                 <span className="size-3 rounded-[2px] bg-current" />
               </button>
@@ -444,13 +444,14 @@ export function AskChat({
           ) : (
             <>
               <input
+                id="ask-question-input"
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 disabled={loading}
                 maxLength={2000}
                 placeholder="Ask Bloom something…"
                 aria-label="Ask Bloom a question"
-                className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+                className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               />
 
               {dictation.supported ? (
@@ -459,7 +460,7 @@ export function AskChat({
                   onClick={dictation.toggle}
                   disabled={loading}
                   aria-label="Dictate your question"
-                  className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-40"
+                  className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] disabled:opacity-40"
                 >
                   <Mic className="size-5" aria-hidden />
                 </button>
@@ -472,9 +473,9 @@ export function AskChat({
           type="submit"
           disabled={loading || !question.trim()}
           aria-label="Send question"
-          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-secondary)] text-[#fffcf4] disabled:opacity-40"
+          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-secondary)] text-[#fffcf4] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-secondary)] disabled:opacity-40"
         >
-          <Send className="size-5" />
+          <Send className="size-5" aria-hidden />
         </button>
       </form>
 

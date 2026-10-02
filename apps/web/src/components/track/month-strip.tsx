@@ -51,16 +51,17 @@ export function MonthStrip({
             <li key={m}>
               <Link
                 href={`${basePath}?month=${m}`}
+                aria-label={`Month ${m}${selected ? ', selected' : ''}`}
                 aria-current={selected ? 'true' : undefined}
                 className={cn(
-                  'flex size-11 flex-col items-center justify-center rounded-full leading-none transition',
+                  'flex size-11 flex-col items-center justify-center rounded-full leading-none transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]',
                   selected
                     ? 'border border-[var(--text-brand)] text-[var(--text-brand)]'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]',
                 )}
               >
-                <span className="text-[0.9rem]">{m}</span>
-                <span className="mt-0.5 text-[0.6rem]">mo</span>
+                <span className="text-[0.9rem]" aria-hidden>{m}</span>
+                <span className="mt-0.5 text-[0.6rem]" aria-hidden>mo</span>
               </Link>
             </li>
           );
@@ -73,7 +74,7 @@ export function MonthStrip({
         disabled={month === MAX_TRACK_MONTH}
         label="Next month"
       >
-        <ChevronRight className="size-4" />
+        <ChevronRight className="size-4" aria-hidden />
       </StepLink>
     </nav>
   );
@@ -95,7 +96,7 @@ function StepLink({
   if (disabled) {
     return (
       <span
-        aria-hidden
+        aria-hidden="true"
         className="flex size-8 shrink-0 items-center justify-center text-[var(--border-subtle)]"
       >
         {children}
@@ -107,7 +108,7 @@ function StepLink({
     <Link
       href={`${basePath}?month=${to}`}
       aria-label={label}
-      className="flex size-8 shrink-0 items-center justify-center text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
     >
       {children}
     </Link>

@@ -12,7 +12,7 @@ import { DEFAULT_METHOD, METHOD_OPTIONS } from './methods';
 const fieldClass =
   'w-full rounded-[var(--radius-input)] border border-[var(--border-subtle)] bg-[var(--surface-terra)]/40 px-4 py-3 ' +
   'text-[0.95rem] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] outline-none transition ' +
-  'focus:border-[var(--text-brand)] focus:ring-2 focus:ring-[var(--text-brand)]/20';
+  'focus:border-[var(--text-brand)] focus:ring-2 focus:ring-[var(--text-brand)]/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]';
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
@@ -137,6 +137,7 @@ export function TemperatureForm({
             max={MAX_TEMP_F}
             value={tempF}
             onChange={(event) => setTempF(event.target.value)}
+            aria-label="Temperature in degrees Fahrenheit"
             aria-describedby={error ? 'temp-error' : undefined}
             className={`${fieldClass} pr-12`}
           />
@@ -158,6 +159,7 @@ export function TemperatureForm({
             name="method"
             value={method}
             onChange={(event) => setMethod(event.target.value as TemperatureMethod)}
+            aria-label="Measurement method"
             className={`${fieldClass} appearance-none bg-[image:none] pr-12`}
           >
             {METHOD_OPTIONS.map((option) => (
@@ -184,6 +186,7 @@ export function TemperatureForm({
             rows={3}
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
+            aria-label="Notes (Optional)"
             placeholder="Add any notes about this reading..."
             className={`${fieldClass} resize-none pr-12`}
           />

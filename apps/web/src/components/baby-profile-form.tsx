@@ -130,27 +130,34 @@ export default function BabyProfileForm({
     >
       <Link
         href="/onboarding"
-        className="inline-flex items-center gap-1.5 text-[0.82rem] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+        className="inline-flex items-center gap-1.5 rounded text-[0.82rem] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <ArrowLeft className="size-4" />
+        <ArrowLeft className="size-4" aria-hidden />
         Back
       </Link>
 
       <div className="flex flex-col items-center gap-1.5 pt-1">
         <label
           htmlFor="baby-photo"
-          className="relative flex size-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[var(--surface-terra)] text-[2rem]"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              document.getElementById('baby-photo')?.click();
+            }
+          }}
+          className="relative flex size-20 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[var(--surface-terra)] text-[2rem] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           {photoPreview ? (
             <img
               src={photoPreview}
-              alt="Baby profile preview"
+              alt={name ? `${name}'s profile photo preview` : 'Baby profile preview'}
               className="size-full object-cover"
             />
           ) : (
             <span aria-hidden>👶</span>
           )}
-          <span className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full bg-[var(--card-primary)] text-[0.9rem] shadow-sm">
+          <span className="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full bg-[var(--card-primary)] text-[0.9rem] shadow-sm" aria-hidden>
             ✎
           </span>
         </label>
@@ -159,6 +166,7 @@ export default function BabyProfileForm({
           name="photo"
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          aria-label="Upload baby profile photo"
           onChange={handlePhotoChange}
           className="sr-only"
         />
@@ -173,33 +181,40 @@ export default function BabyProfileForm({
           : 'What\u2019s your baby\u2019s name and date of birth?'}
       </h1>
 
-      <label className="block">
-        <FieldLabel required>Name</FieldLabel>
+      <div>
+        <label htmlFor="baby-name">
+          <FieldLabel required>Name</FieldLabel>
+        </label>
         <TextField
           id="baby-name"
           name="name"
           type="text"
           required
+          aria-required="true"
+          aria-label="Baby's name"
           placeholder="Enter name"
-          icon={<User className="size-4" />}
+          icon={<User className="size-4" aria-hidden />}
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
-      </label>
+      </div>
 
-      <label className="block">
-        <FieldLabel required>Date of Birth</FieldLabel>
+      <div>
+        <label htmlFor="birth-date">
+          <FieldLabel required>Date of Birth</FieldLabel>
+        </label>
         <input
           id="birth-date"
           name="birthDate"
           type="date"
           required
+          aria-required="true"
+          aria-label="Date of birth, MM/DD/YYYY"
           value={birthDate}
           onChange={(event) => setBirthDate(event.target.value)}
-          aria-label="Date of birth, MM/DD/YYYY"
           className={dateFieldClass}
         />
-      </label>
+      </div>
 
       {/*
         Figma 02 and PRD US-04 collect name and date of birth only. Due date was

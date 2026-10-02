@@ -17,9 +17,16 @@ import { BottomTabBar } from '@/components/bottom-tab-bar';
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh w-full bg-[var(--canvas)]">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-[var(--page-surface)]">
         <AppHeader />
-        <main className="flex min-h-0 flex-1 flex-col px-[var(--space-20)] pt-[var(--space-20)] pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex min-h-0 flex-1 flex-col px-[var(--space-20)] pt-[var(--space-20)] pb-[calc(5.5rem+env(safe-area-inset-bottom))] outline-none"
+        >
           {children}
         </main>
         <BottomTabBar />
