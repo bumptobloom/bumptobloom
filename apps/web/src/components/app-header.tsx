@@ -79,11 +79,11 @@ function SettingsMenu() {
             type="button"
             role="menuitem"
             disabled
-            aria-disabled
+            aria-disabled="true"
             title="Not available in the MVP"
             className="flex w-full cursor-not-allowed items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.85rem] text-[var(--text-secondary)] opacity-50"
           >
-            <Bell className="size-4" />
+            <Bell className="size-4" aria-hidden />
             Notifications
           </button>
 
@@ -91,24 +91,24 @@ function SettingsMenu() {
             type="button"
             role="menuitem"
             disabled
-            aria-disabled
+            aria-disabled="true"
             title="Not available in the MVP"
             className="flex w-full cursor-not-allowed items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.85rem] text-[var(--text-secondary)] opacity-50"
           >
-            <CreditCard className="size-4" />
+            <CreditCard className="size-4" aria-hidden />
             Payment
           </button>
 
-          <div className="h-px bg-[var(--border-subtle)]" />
+          <div className="h-px bg-[var(--border-subtle)]" role="separator" />
 
           <button
             type="button"
             role="menuitem"
             onClick={handleLogout}
             disabled={busy}
-            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.85rem] text-[var(--text-primary)] transition hover:bg-[var(--surface-terra)]/40 disabled:opacity-60"
+            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.85rem] text-[var(--text-primary)] transition hover:bg-[var(--surface-terra)]/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] disabled:opacity-60"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-4" aria-hidden />
             {busy ? 'Logging out…' : 'Log out'}
           </button>
         </div>

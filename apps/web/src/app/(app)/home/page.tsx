@@ -166,7 +166,7 @@ export default async function HomePage() {
         */}
         <Link
           href="/track"
-          className="mt-[var(--space-12)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+          className="mt-[var(--space-12)] inline-flex min-h-11 items-center rounded font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           More guidance &rarr;
         </Link>
@@ -210,7 +210,7 @@ export default async function HomePage() {
         </div>
         <Link
           href="/recommended"
-          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+          className="mt-[var(--space-8)] inline-flex min-h-11 items-center rounded font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           View recommendations →
         </Link>

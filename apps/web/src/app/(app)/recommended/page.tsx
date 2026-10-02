@@ -33,11 +33,11 @@ export default async function RecommendedPage() {
           <Link
             key={product.id}
             href={`/recommended/${product.id}`}
-            className="flex gap-4 rounded-[18px] border p-4"
+            className="flex gap-4 rounded-[18px] border p-4 transition hover:border-[var(--border-subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
             style={{ background: 'var(--card-primary)', borderColor: 'var(--border-card)' }}
           >
             <div
-              aria-hidden
+              aria-hidden="true"
               className="size-16 shrink-0 rounded-[12px]"
               style={{ background: 'var(--surface-terra)' }}
             />

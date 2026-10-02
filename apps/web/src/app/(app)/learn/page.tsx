@@ -59,7 +59,7 @@ export default async function LearnPage({
       {viewingOtherMonth ? (
         <Link
           href="/learn"
-          className="-mt-1 self-center text-[0.75rem] text-[var(--text-brand)]"
+          className="-mt-1 self-center rounded text-[0.75rem] text-[var(--text-brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           Back to {feed.babyMonth} months
         </Link>
@@ -123,9 +123,10 @@ export default async function LearnPage({
                       href={card.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[var(--text-brand)] underline underline-offset-2"
+                      className="rounded text-[var(--text-brand)] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                     >
                       {card.sourceLabel}
+                      <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   ) : (
                     card.sourceLabel

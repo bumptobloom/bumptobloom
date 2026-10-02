@@ -82,7 +82,7 @@ export function MilestoneChecklist({
   return (
     <div className="flex flex-col gap-5">
       {failed && (
-        <p role="alert" className="rounded-[14px] bg-red-50 px-4 py-3 text-[13px] text-red-700">
+        <p role="alert" className="rounded-[14px] bg-[var(--surface-terra)] px-4 py-3 text-[13px] text-[var(--text-accent-terracotta)]">
           {failed}
         </p>
       )}
@@ -98,23 +98,25 @@ export function MilestoneChecklist({
           <ul className="overflow-hidden rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)]">
             {domain.items.map((item, index) => {
               const checked = noticed.has(item.id);
+              const checkboxId = `milestone-${item.id}`;
               return (
                 <li
                   key={item.id}
                   className={index > 0 ? 'border-t' : undefined}
                   style={index > 0 ? { borderColor: 'var(--border-subtle)' } : undefined}
                 >
-                  <label className="flex cursor-pointer items-start gap-3 px-4 py-3.5">
+                  <div className="flex items-start gap-3 px-4 py-3.5">
                     <input
+                      id={checkboxId}
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggle(item.id)}
-                      className="mt-0.5 size-5 shrink-0 accent-[var(--brand-secondary)]"
+                      className="mt-0.5 size-5 shrink-0 rounded border-[var(--border-subtle)] accent-[var(--brand-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] cursor-pointer"
                     />
-                    <span className="text-[0.9rem] leading-snug text-[var(--text-primary)]">
+                    <label htmlFor={checkboxId} className="cursor-pointer text-[0.9rem] leading-snug text-[var(--text-primary)]">
                       {item.title}
-                    </span>
-                  </label>
+                    </label>
+                  </div>
                 </li>
               );
             })}

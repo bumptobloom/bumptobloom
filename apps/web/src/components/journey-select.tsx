@@ -23,7 +23,7 @@ export function JourneySelect() {
   return (
     <div className="space-y-3">
       <div
-        aria-disabled
+        aria-disabled="true"
         className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-terra)]/30 px-5 py-4 opacity-55"
       >
         <div className="flex items-start gap-3">
@@ -31,7 +31,7 @@ export function JourneySelect() {
           <div>
             <p className="text-[1.05rem] text-[var(--text-primary)]">I&apos;m expecting</p>
             <p className="mt-0.5 text-[0.8rem] leading-[1.45] text-[var(--text-secondary)]">
-              Track your pregnancy week by week
+              Track your pregnancy week by week (coming soon)
             </p>
           </div>
         </div>
@@ -42,10 +42,10 @@ export function JourneySelect() {
         onClick={() => setSelected('baby-here')}
         aria-pressed={selected === 'baby-here'}
         className={cn(
-          'w-full rounded-3xl border px-5 py-4 text-left transition',
+          'w-full rounded-3xl border px-5 py-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]',
           selected === 'baby-here'
             ? 'border-[var(--text-brand)] bg-[var(--surface-moss)] ring-2 ring-[var(--text-brand)]/25'
-            : 'border-[var(--border-card)] bg-[var(--card-primary)]',
+            : 'border-[var(--border-card)] bg-[var(--card-primary)] hover:border-[var(--border-subtle)]',
         )}
       >
         <div className="flex items-start gap-3">

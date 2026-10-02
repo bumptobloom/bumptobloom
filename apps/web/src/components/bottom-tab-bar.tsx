@@ -96,7 +96,7 @@ export function BottomTabBar() {
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex h-16 flex-col items-center justify-center gap-1 text-[11px] transition-colors',
+                  'flex h-16 flex-col items-center justify-center gap-1 text-[11px] transition-colors rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--text-brand)]',
                   active ? 'font-semibold' : 'font-normal'
                 )}
                 style={{ color: active ? 'var(--text-brand)' : 'var(--text-secondary)' }}

@@ -46,7 +46,7 @@ export default async function TrackPage({
       {viewingOtherMonth ? (
         <Link
           href="/track"
-          className="-mt-1 self-center text-[0.75rem] text-[var(--text-brand)]"
+          className="-mt-1 self-center rounded text-[0.75rem] text-[var(--text-brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           Back to {milestones.babyMonth} months
         </Link>

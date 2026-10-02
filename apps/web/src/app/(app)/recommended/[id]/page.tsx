@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
       <Link
         href="/recommended"
-        className="text-[14px] font-semibold underline underline-offset-4"
+        className="rounded text-[14px] font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         style={{ color: 'var(--text-brand)' }}
       >
         Back to Recommended
