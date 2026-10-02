@@ -9,7 +9,7 @@ export function RetryButton() {
     <button
       type="button"
       onClick={() => window.location.reload()}
-      className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
+      className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-secondary)]"
       style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
     >
       Try again

@@ -60,30 +60,44 @@ export default function LoginPage() {
         ) : null}
 
         <form onSubmit={handleLogin} className="space-y-3">
-          <TextField
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="Email"
-            icon={<Mail className="size-4" />}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div>
+            <label htmlFor="login-email" className="sr-only">
+              Email
+            </label>
+            <TextField
+              id="login-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="Email"
+              aria-label="Email address"
+              icon={<Mail className="size-4" aria-hidden />}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
-          <TextField
-            revealable
-            required
-            autoComplete="current-password"
-            placeholder="Password"
-            icon={<Lock className="size-4" />}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div>
+            <label htmlFor="login-password" className="sr-only">
+              Password
+            </label>
+            <TextField
+              id="login-password"
+              revealable
+              required
+              autoComplete="current-password"
+              placeholder="Password"
+              aria-label="Password"
+              icon={<Lock className="size-4" aria-hidden />}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="text-[0.78rem] text-[var(--text-secondary)] underline-offset-4 hover:underline"
+              className="rounded text-[0.78rem] text-[var(--text-secondary)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
             >
               Forgot password?
             </Link>
@@ -113,7 +127,7 @@ export default function LoginPage() {
         Don&apos;t have an account?{' '}
         <Link
           href="/signup"
-          className="text-[var(--text-primary)] underline-offset-4 hover:underline"
+          className="rounded text-[var(--text-primary)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
           Create account
         </Link>

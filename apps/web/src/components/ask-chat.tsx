@@ -242,9 +242,10 @@ export function AskChat({
                           href={source.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                          className="rounded text-[var(--text-brand)] font-medium underline underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                         >
                           {source.title}
+                          <span className="sr-only"> (opens in a new tab)</span>
                         </a>
                       </span>
                     ))}
@@ -259,13 +260,13 @@ export function AskChat({
                     onClick={() => handleFeedback(message.messageId!, 1)}
                     aria-label="Helpful answer"
                     aria-pressed={message.feedback === 1}
-                    className={`rounded-full p-2 transition ${
+                    className={`rounded-full p-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] ${
                       message.feedback === 1
                         ? 'bg-[var(--surface-terra)]'
                         : 'hover:bg-[var(--card-primary)]'
                     }`}
                   >
-                    <ThumbsUp className="size-4" />
+                    <ThumbsUp className="size-4" aria-hidden />
                   </button>
 
                   <button
@@ -273,13 +274,13 @@ export function AskChat({
                     onClick={() => handleFeedback(message.messageId!, -1)}
                     aria-label="Unhelpful answer"
                     aria-pressed={message.feedback === -1}
-                    className={`rounded-full p-2 transition ${
+                    className={`rounded-full p-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] ${
                       message.feedback === -1
                         ? 'bg-[var(--surface-terra)]'
                         : 'hover:bg-[var(--card-primary)]'
                     }`}
                   >
-                    <ThumbsDown className="size-4" />
+                    <ThumbsDown className="size-4" aria-hidden />
                   </button>
                 </div>
               ) : null}
@@ -288,13 +289,13 @@ export function AskChat({
         )}
 
         {loading ? (
-          <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+          <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]" role="status" aria-live="polite">
             Bloom is thinking…
           </div>
         ) : null}
 
         {error ? (
-          <p role="alert" className="text-sm text-[var(--text-secondary)]">
+          <p role="alert" className="text-sm text-[var(--text-alert)]">
             {error}
           </p>
         ) : null}
@@ -306,23 +307,27 @@ export function AskChat({
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
       >
+        <label htmlFor="ask-question-input" className="sr-only">
+          Ask Bloom a question
+        </label>
         <input
+          id="ask-question-input"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           disabled={loading}
           maxLength={2000}
           placeholder="Ask Bloom something…"
           aria-label="Ask Bloom a question"
-          className="min-w-0 flex-1 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+          className="min-w-0 flex-1 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         />
 
         <button
           type="submit"
           disabled={loading || !question.trim()}
           aria-label="Send question"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)] disabled:opacity-40"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] disabled:opacity-40"
         >
-          <Send className="size-4" />
+          <Send className="size-4" aria-hidden />
         </button>
       </form>
     </section>

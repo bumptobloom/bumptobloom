@@ -22,21 +22,27 @@ export function TextField({
   revealable = false,
   className,
   type = 'text',
+  id,
+  placeholder,
   ...props
 }: TextFieldProps) {
   const [revealed, setRevealed] = useState(false);
   const resolvedType = revealable ? (revealed ? 'text' : 'password') : type;
+  const accessibleName = props['aria-label'] || (!props['aria-labelledby'] ? placeholder : undefined);
 
   return (
     <div className="relative">
       {icon ? (
-        <span className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--text-secondary)]">
+        <span className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--text-secondary)]" aria-hidden>
           {icon}
         </span>
       ) : null}
       <input
         {...props}
+        id={id}
+        placeholder={placeholder}
         type={resolvedType}
+        aria-label={accessibleName}
         className={cn(
           'w-full rounded-[var(--radius-input)] border border-[var(--border-subtle)] bg-[var(--surface-terra)]/40 py-3',
           'text-[0.9rem] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]',
@@ -51,9 +57,9 @@ export function TextField({
           type="button"
           onClick={() => setRevealed((v) => !v)}
           aria-label={revealed ? 'Hide password' : 'Show password'}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
-          {revealed ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          {revealed ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
         </button>
       ) : null}
     </div>

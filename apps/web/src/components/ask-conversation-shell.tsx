@@ -194,9 +194,9 @@ export function AskConversationShell({
           type="button"
           onClick={() => setSidebarOpen(true)}
           aria-label="Open conversation history"
-          className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-secondary)]"
+          className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
         >
-          <Menu className="size-5" />
+          <Menu className="size-5" aria-hidden />
         </button>
       </div>
 

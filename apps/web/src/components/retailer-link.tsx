@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 
 /**
@@ -24,7 +25,12 @@ export function RetailerLink({
   children: ReactNode;
 }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className={className} style={style}
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className={cn(className, 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]')}
+      style={style}
       onClick={() => {
         if (retailerSlug === 'amazon') {
           trackEvent('amazon_clicked', { product_id: productId });
@@ -32,6 +38,7 @@ export function RetailerLink({
       }}
     >
       {children}
+      <span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
