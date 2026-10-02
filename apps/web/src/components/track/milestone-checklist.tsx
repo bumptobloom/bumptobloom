@@ -1,20 +1,18 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Footprints, Lightbulb, MessageSquare } from 'lucide-react';
+const DOMAIN_ICON = {
+  physical: '🏃‍♀️',
+  cognitive: '🧩',
+  language: '💬',
+  social_emotional: '🧩',
+} as const;
 import type { MilestoneDomain } from '@/lib/api/types';
 import {
   markMilestoneAction,
   unmarkMilestoneAction,
 } from '@/app/actions/milestones';
 import { trackEvent } from '@/lib/analytics';
-
-const DOMAIN_ICON = {
-  physical: Footprints,
-  cognitive: Lightbulb,
-  language: MessageSquare,
-  social_emotional: Lightbulb,
-} as const;
 
 /**
  * Track is a checklist, not an assessment. Nothing here ranks, scores or
@@ -88,11 +86,13 @@ export function MilestoneChecklist({
       )}
 
       {populated.map((domain) => {
-        const Icon = DOMAIN_ICON[domain.domain];
+        const icon = DOMAIN_ICON[domain.domain];
         return (
         <section key={domain.domain}>
           <h2 className="mb-2 flex items-center gap-2 px-1 text-[1.05rem] text-[var(--text-primary)]">
-            <Icon className="size-4 text-[var(--text-brand)]" aria-hidden />
+            <span className="text-base" aria-hidden>
+              {icon}
+            </span>
             {domain.label}
           </h2>
           <ul className="overflow-hidden rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)]">
