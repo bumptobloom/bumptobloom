@@ -101,9 +101,13 @@ jobs:
           python-version: "3.12"
       # The checker first, so a checker that cannot fail does not sit here
       # reporting success. Same reason the RLS job tests its own checker.
+      # No working-directory here. The path is already repo-relative, and
+      # setting one made this resolve to scripts/scripts/... and fail with
+      # "can't open file" - the checker's own first CI run went red on it.
+      # Python puts the script's own directory on sys.path, so the
+      # `from check_migrations import ...` in the test resolves from the root.
       - name: Verify the migration checker catches collisions and stale names
         run: python3 scripts/test_check_migrations.py
-        working-directory: scripts
       # On a pull_request this runs against the PR merged into main, so a
       # branch whose number was free when it was written goes red as soon as
       # another PR merges and takes it.
