@@ -8,8 +8,8 @@ import type {
 } from './types';
 import {
   bucketForAge,
+  resolveMonth,
   selectProductIds,
-  wholeMonthAge,
   type RecommendationRule,
 } from './recommendation-rules';
 import { buildRetailerLinks } from './retailer-urls';
@@ -387,10 +387,18 @@ function toProductDetail(row: ProductRow): RecommendedProductDetail {
  * baby rather than a fixed string. The rules table picks the products and
  * their order; recommendation-rules.ts removes duplicates.
  *
+ * `selectedMonth` previews another month (the screen's `?month=`); it is
+ * clamped to 0-24 and defaults to the baby's own month. `ageMonths` in the
+ * response stays the baby's real age either way - it describes the baby, not
+ * the month being viewed - while `bucketLabel` follows the month on screen.
+ *
  * Reads go through the signed-in user's client, so RLS decides access: a baby
  * id that is not hers finds nothing and 404s.
  */
-export async function getRecommendations(babyId: string): Promise<RecommendationsResponse> {
+export async function getRecommendations(
+  babyId: string,
+  selectedMonth?: number
+): Promise<RecommendationsResponse> {
   const supabase = await createServerClient();
 
   const { data: baby, error: babyError } = await supabase
@@ -408,8 +416,8 @@ export async function getRecommendations(babyId: string): Promise<Recommendation
   }
 
   const { ageMonths } = calculateBabyAge(baby.birth_date, { dueDate: baby.due_date });
-  const bucket = bucketForAge(ageMonths);
-  const month = wholeMonthAge(ageMonths);
+  const month = resolveMonth(ageMonths, selectedMonth);
+  const bucket = bucketForAge(month);
 
   const { data: ruleRows, error: rulesError } = await supabase
     .from('product_recommendation_rules')
@@ -428,7 +436,7 @@ export async function getRecommendations(babyId: string): Promise<Recommendation
     maxAgeMonth: r.max_age_month,
     priority: r.priority,
   }));
-  const orderedIds = selectProductIds(ageMonths, rules);
+  const orderedIds = selectProductIds(month, rules);
 
   let products: RecommendedProduct[] = [];
   if (orderedIds.length > 0) {

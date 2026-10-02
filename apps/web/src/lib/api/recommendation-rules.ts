@@ -39,6 +39,21 @@ export function wholeMonthAge(ageMonths: number): number {
   return Math.min(24, Math.max(0, Math.floor(ageMonths)));
 }
 
+/**
+ * Which month the list should be built for.
+ *
+ * Normally the baby's own age. A caller can pass a month to preview another
+ * one (the Recommended screen's `?month=`, same idea as Track), and anything
+ * out of range or unparseable is clamped back inside 0-24 rather than
+ * returning an empty list.
+ */
+export function resolveMonth(ageMonths: number, selectedMonth?: number): number {
+  if (selectedMonth === undefined || !Number.isFinite(selectedMonth)) {
+    return wholeMonthAge(ageMonths);
+  }
+  return wholeMonthAge(selectedMonth);
+}
+
 export function bucketForAge(ageMonths: number): AgeBucket {
   const month = wholeMonthAge(ageMonths);
   return (

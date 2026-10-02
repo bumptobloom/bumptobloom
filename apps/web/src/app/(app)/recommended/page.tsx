@@ -7,14 +7,23 @@ import { StandingDisclaimer } from '@/components/standing-disclaimer';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RecommendedPage() {
+export default async function RecommendedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const home = await getHome();
 
   if (!home.baby) {
     redirect('/onboarding');
   }
 
-  const recommendations = await getRecommendations(home.baby.id);
+  // Same `?month=` preview Track uses. Out-of-range values are clamped in the
+  // data layer, so a hand-typed month cannot empty the screen.
+  const { month: monthParam } = await searchParams;
+  const selectedMonth = monthParam === undefined ? undefined : Number(monthParam);
+
+  const recommendations = await getRecommendations(home.baby.id, selectedMonth);
 
   return (
     <section className="flex flex-col gap-5">

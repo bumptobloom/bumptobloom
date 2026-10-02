@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   AGE_BUCKETS,
+  resolveMonth,
   MIN_PRODUCTS_PER_AGE,
   bucketForAge,
   findCoverageGaps,
@@ -114,4 +115,35 @@ test('a catalog with too few products is reported month by month', () => {
   assert.equal(gaps[0].ageMonth, 4); // 0–3 has three, month 4 onwards has one
   assert.equal(gaps.length, 21);
   assert.ok(gaps.every((g) => g.productCount === 1));
+});
+
+// ------------------------------------------------------- previewing a month
+
+test('with no month chosen, the list follows the baby', () => {
+  assert.equal(resolveMonth(7.4), 7);
+  assert.equal(resolveMonth(0.2), 0);
+});
+
+test('a chosen month wins over the baby\u2019s age', () => {
+  assert.equal(resolveMonth(7.4, 18), 18);
+  assert.equal(resolveMonth(18.9, 0), 0);
+});
+
+test('a chosen month is clamped to 0-24 rather than emptying the list', () => {
+  assert.equal(resolveMonth(7, -5), 0);
+  assert.equal(resolveMonth(7, 99), 24);
+  assert.equal(resolveMonth(7, 12.8), 12);
+});
+
+test('an unparseable month falls back to the baby, not to zero', () => {
+  assert.equal(resolveMonth(7.4, Number.NaN), 7);
+  assert.equal(resolveMonth(7.4, Number.POSITIVE_INFINITY), 7);
+});
+
+test('every month 0-24 can be previewed and still returns products', () => {
+  const rules = catalogShapedRules();
+  for (let month = 0; month <= 24; month++) {
+    const ids = selectProductIds(resolveMonth(9, month), rules);
+    assert.ok(ids.length >= MIN_PRODUCTS_PER_AGE, `month ${month} returned ${ids.length}`);
+  }
 });
