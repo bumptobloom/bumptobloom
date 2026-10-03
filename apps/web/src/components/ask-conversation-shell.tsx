@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { Menu } from 'lucide-react';
 
 import type {
   ConversationHistory,
@@ -188,18 +187,15 @@ export function AskConversationShell({
   const chatKey = selectedConversationId ?? 'new-conversation';
 
   return (
-    <section className="relative flex min-h-[calc(100dvh-9rem)] flex-col">
-      <div className="mb-3 flex items-center">
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Open conversation history"
-          className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-secondary)]"
-        >
-          <Menu className="size-5" />
-        </button>
-      </div>
-
+    // Fills the main column rather than asking for a viewport height of its
+    // own. Both this and AskChat used to set min-h-[calc(100dvh-9rem)], one
+    // nested inside the other under the menu row, and 9rem was short of the
+    // real chrome anyway (66px header + 20px top + 5.5rem bottom = 174px).
+    // That put the composer about 90px below the fold, which is the "I don't
+    // see the ask option unless I scroll down" from PM testing. Percentages
+    // cannot fix it: main's specified height is auto, so h-full on a child
+    // collapses to content height. It has to be flex all the way down.
+    <section className="relative flex min-h-0 flex-1 flex-col">
       {conversationError ? (
         <p
           role="alert"
@@ -214,7 +210,7 @@ export function AskConversationShell({
           Loading conversation…
         </div>
       ) : (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col">
           <AskChat
             key={chatKey}
             babyId={babyId}

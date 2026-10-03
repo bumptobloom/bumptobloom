@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 
-import { Send, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Mic, Send, ThumbsDown, ThumbsUp } from 'lucide-react';
 
 import type {
   ConversationHistory,
@@ -204,20 +204,35 @@ export function AskChat({
   };
 
   return (
-    <section className="flex min-h-[calc(100dvh-9rem)] flex-col">
-      <div className="pb-4">
-        <h1 className="text-[1.5rem] font-semibold text-[var(--text-primary)]">
-          Bloom companion
-        </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Ask questions about your baby&apos;s development.
-        </p>
-      </div>
-
-      <div className="flex-1 space-y-4 overflow-y-auto">
+    <section className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="rounded-3xl bg-[var(--card-secondary)] p-4 text-sm text-[var(--text-secondary)]">
-            Hi! I&apos;m Bloom. What would you like to know?
+          <div className="flex items-start gap-[var(--space-12)]">
+            <span
+              aria-hidden
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface-moss)] text-[1.35rem]"
+            >
+              🪷
+            </span>
+
+            <div className="min-w-0 flex-1 rounded-[var(--radius-20)] bg-[var(--card-primary)] p-[var(--space-16)]">
+              <p
+                className="text-[var(--text-primary)]"
+                style={{ font: 'var(--type-card-title)' }}
+              >
+                Hi there! I&apos;m Bloom
+              </p>
+
+              <hr className="my-[var(--space-12)] border-t border-[var(--border-subtle)]" />
+
+              <p
+                className="text-[var(--text-primary)]"
+                style={{ font: 'var(--type-body)' }}
+              >
+                Ask me anything about feeding, sleeping, diaper and digestion,
+                crying and soothing, mom&apos;s wellbeing.
+              </p>
+            </div>
           </div>
         ) : (
           messages.map((message, index) => (
@@ -300,31 +315,46 @@ export function AskChat({
         ) : null}
       </div>
 
-      <StandingDisclaimer text={ASK_DISCLAIMER} />
-
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
       >
-        <input
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          disabled={loading}
-          maxLength={2000}
-          placeholder="Ask Bloom something…"
-          aria-label="Ask Bloom a question"
-          className="min-w-0 flex-1 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
-        />
+        <div className="relative min-w-0 flex-1">
+          <input
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            disabled={loading}
+            maxLength={2000}
+            placeholder="Ask Bloom…"
+            aria-label="Ask Bloom a question"
+            className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] py-3 pl-5 pr-12 text-[0.95rem] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+          />
+
+          {/* Drawn because 05a shows it. It does nothing yet: dictation is not
+              built, and the PMs logged "no voice-to-text" separately. Not a
+              button, so nothing invites a tap that would do nothing. */}
+          <Mic
+            aria-hidden
+            className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-[var(--text-secondary)]"
+          />
+        </div>
 
         <button
           type="submit"
           disabled={loading || !question.trim()}
           aria-label="Send question"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)] disabled:opacity-40"
+          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-secondary)] text-[#fffcf4] disabled:opacity-40"
         >
-          <Send className="size-4" />
+          <Send className="size-5" />
         </button>
       </form>
+
+      {/* Below the composer, per 05a. The composer is the thing a parent
+          reaches for, so it sits directly under the conversation; the
+          standing disclaimer reads as a footnote beneath it. */}
+      <div className="mt-3">
+        <StandingDisclaimer text={ASK_DISCLAIMER} />
+      </div>
     </section>
   );
 }
