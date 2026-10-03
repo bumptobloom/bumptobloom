@@ -33,20 +33,65 @@ test('rejects a future birth date', () => {
   );
 });
 
+/**
+ * A UTC date exactly `months` whole months before today, day-of-month clamped
+ * to the target month's length.
+ *
+ * Deliberately not the implementation's own arithmetic. The previous version
+ * of this test built its fixture with `setMonth(getMonth() - 25)` and
+ * `toISOString()` - the same computation the validator used, except
+ * toISOString is UTC while the validator parsed local. In any timezone behind
+ * UTC the fixture landed a day later than the cutoff, so nothing threw and the
+ * test failed. CI runs in UTC and never saw it; it only failed on a laptop in
+ * Pacific, in the evening.
+ */
+function utcMonthsAgo(months: number): string {
+  const now = new Date();
+  const day = now.getUTCDate();
+  const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - months, 1));
+  const lastDayOfTarget = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)
+  ).getUTCDate();
+  target.setUTCDate(Math.min(day, lastDayOfTarget));
+  return target.toISOString().slice(0, 10);
+}
+
 test('rejects a birth date outside the 0–24 month range', () => {
-  const oldestAllowed = new Date();
-  oldestAllowed.setMonth(oldestAllowed.getMonth() - 25);
-
-  const birthDate = oldestAllowed.toISOString().slice(0, 10);
-
   assert.throws(
     () =>
       validateBabyInput({
         name: 'Emma',
-        birthDate,
+        birthDate: utcMonthsAgo(25),
       }),
     /Birth date is outside the 0–24 month range/
   );
+});
+
+test('rejects a birth date well outside the range', () => {
+  assert.throws(
+    () =>
+      validateBabyInput({
+        name: 'Emma',
+        birthDate: utcMonthsAgo(40),
+      }),
+    /Birth date is outside the 0–24 month range/
+  );
+});
+
+test('accepts the oldest baby the app supports', () => {
+  // The positive control. Without it, a validator that rejected every date
+  // would pass the two tests above.
+  const result = validateBabyInput({
+    name: 'Emma',
+    birthDate: utcMonthsAgo(24),
+  });
+  assert.equal(result.birthDate, utcMonthsAgo(24));
+});
+
+test('accepts a baby born today', () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const result = validateBabyInput({ name: 'Emma', birthDate: today });
+  assert.equal(result.birthDate, today);
 });
 
 test('requires a baby name', () => {
