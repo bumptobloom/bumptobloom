@@ -1,10 +1,35 @@
-import { TabPlaceholder } from '@/components/tab-placeholder';
+import { redirect } from 'next/navigation';
+import { getHome } from '@/lib/api/home';
+import { getTodaysTemperatures } from '@/lib/api/temperature-readings';
+import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { TemperatureForm } from '@/components/vitals/temperature-form';
+import { TodaysReadings } from '@/components/vitals/todays-readings';
+import { TodaysSummary } from '@/components/vitals/todays-summary';
 
-export default function VitalsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function VitalsPage() {
+  const home = await getHome();
+
+  if (!home.baby) {
+    redirect('/onboarding');
+  }
+
+  const { readings, summary, timezone } = await getTodaysTemperatures(
+    home.baby.id
+  );
+
   return (
-    <TabPlaceholder
-      title="Vitals"
-      note="Not built yet. Vitals is a temperature log: a reading, how it was taken, and an optional note. Readings in the fever range get a neutral label and nothing more — it does not tell you how serious anything is, and it never suggests a dose."
-    />
+    <section className="flex flex-col gap-[var(--space-20)]">
+      <h1 className="sr-only">Vitals</h1>
+
+      <TodaysSummary summary={summary} readings={readings} />
+
+      <TemperatureForm babyId={home.baby.id} />
+
+      <TodaysReadings readings={readings} timezone={timezone} />
+
+      <StandingDisclaimer />
+    </section>
   );
 }

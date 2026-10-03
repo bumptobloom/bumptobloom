@@ -121,7 +121,7 @@ export function AppHeader() {
   return (
     <header className="flex h-[66px] items-center justify-between border-b border-[var(--border-subtle)] px-[var(--space-20)]">
       <div className="flex items-center gap-[var(--space-8)]">
-        <BloomB className="size-[30px]" />
+        <BloomB className="h-[30px] w-auto" />
         <span className="font-display text-[1.05rem] leading-none text-[var(--text-primary)]">
           BumpToBloom
         </span>

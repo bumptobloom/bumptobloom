@@ -201,3 +201,32 @@ export function assessFever(input: FeverInput): FeverResult {
     reasons: ['no_fever'],
   };
 }
+
+/**
+ * Is this reading in the fever range, once converted to rectal-equivalent?
+ *
+ * This exists for the Vitals temperature log, which under ADR-007 is a log and
+ * not a triage tool. Vitals must never call assessFever: a tier ranks how
+ * serious a reading is, and Vitals is not allowed to do that. What it is
+ * allowed to do, because the Figma shows it and the screen disclaimer says it
+ * is informational, is label a reading as being in the fever range or not.
+ *
+ * So this returns a boolean and nothing else. No tier, no reasons, no advice,
+ * no age. It shares FEVER_F and METHOD_OFFSET_F with the triage engine so the
+ * two can never drift apart and tell a mother different things about the same
+ * number.
+ *
+ * Age is deliberately not a parameter. The triage engine treats a fever in a
+ * neonate differently, and that judgement is the part Vitals must not make.
+ */
+export function isFeverRange(tempF: number, method: Method): boolean {
+  if (!Number.isFinite(tempF) || tempF < 90 || tempF > 110) {
+    throw new FeverInputError('tempF must be between 90 and 110');
+  }
+  if (!(method in METHOD_OFFSET_F)) {
+    throw new FeverInputError(`unknown method: ${method}`);
+  }
+
+  const rectalEquivalentF = Math.round((tempF + METHOD_OFFSET_F[method]) * 10) / 10;
+  return rectalEquivalentF >= FEVER_F;
+}
