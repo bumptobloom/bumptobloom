@@ -2,7 +2,15 @@ import 'server-only';
 
 import { createOpenAIClient } from './openai-client';
 
-const RESEARCH_MODEL = 'gpt-4.1-mini';
+// gpt-4.1-mini cannot be used here. It is listed under the web search
+// guide's Limitations as one of the older Responses API models, and it
+// rejects the hosted tool's newer controls outright:
+// "400 Parameter 'filters' not supported with model 'gpt-4.1-mini'".
+// Since the allowlist below is enforced through filters.allowed_domains,
+// the model and the filter are a package -- do not move this back to a
+// 4.1 model without removing the filter, which would unenforce the
+// allowlist again.
+const RESEARCH_MODEL = 'gpt-6-luna';
 
 /**
  * The only sites Ask is allowed to research from or cite.
@@ -80,6 +88,11 @@ export async function researchAskQuestion(
 
   const response = await openai.responses.create({
     model: RESEARCH_MODEL,
+    // Explicit, and low. This is a lookup that feeds another model, not an
+    // investigation, and the client that calls it gives up after 15s
+    // (docs/API-CONTRACTS.md). A higher effort turns the search agentic and
+    // spends that budget thinking.
+    reasoning: { effort: 'low' },
     tools: [
       {
         type: 'web_search',
