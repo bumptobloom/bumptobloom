@@ -11,6 +11,8 @@ import type {
 
 import { BloomAvatar } from '@/components/bloom-avatar';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { AskAnswer } from '@/components/ask-answer';
+import { dedupeSources } from '@/lib/ask/dedupe-sources';
 
 type AskSource = {
   title: string;
@@ -277,13 +279,17 @@ export function AskChat({
                   : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
               }
             >
-              <div className="whitespace-pre-wrap">{message.content}</div>
+                {message.role === 'assistant' ? (
+                <AskAnswer content={message.content} />
+              ) : (
+                <div className="whitespace-pre-wrap">{message.content}</div>
+              )}
 
               {message.role === 'assistant' && message.sources?.length ? (
                 <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
                   <p className="text-xs font-medium text-[var(--text-secondary)]">
                     Sources:{' '}
-                    {message.sources.map((source, sourceIndex) => (
+                    {dedupeSources(message.sources).map((source, sourceIndex) => (
                       <span key={source.url}>
                         {sourceIndex > 0 ? ' · ' : ''}
                         <a
