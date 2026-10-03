@@ -4,6 +4,9 @@ import { createBrowserClient } from '../supabase/client';
 
 const BABY_AVATARS_BUCKET = 'baby-avatars';
 const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+// Upper bound on what we will even try to decode. Well above any phone
+// photo, low enough that a video picked by mistake fails fast.
+const MAX_DECODE_SIZE_BYTES = 50 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 const ALLOWED_IMAGE_TYPES = new Map([
@@ -74,11 +77,23 @@ export async function uploadBabyAvatar(
     throw new Error('Please select a JPEG, PNG, or WebP image.');
   }
 
-  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+  // Refuse something absurd before we hand it to createImageBitmap, which
+  // decodes the whole thing into memory on the parent's phone.
+  if (file.size > MAX_DECODE_SIZE_BYTES) {
     throw new Error('The photo must be 5 MB or smaller.');
   }
 
   const uploadFile = await optimizeAvatar(file);
+
+  // The 5 MB limit applies to what we upload, not to what came out of the
+  // camera. optimizeAvatar resizes to 1200px and re-encodes at JPEG 0.82, so
+  // a 9 MB phone photo lands well under the limit. Checking file.size here
+  // rejected that parent before the resize that would have saved her, which
+  // is the "photo upload is not working" the PMs reported.
+  if (uploadFile.size > MAX_AVATAR_SIZE_BYTES) {
+    throw new Error('The photo must be 5 MB or smaller.');
+  }
+
   const extension = ALLOWED_IMAGE_TYPES.get(uploadFile.type) ?? originalExtension;
 
   const supabase = createBrowserClient();
