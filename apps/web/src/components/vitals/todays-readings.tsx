@@ -1,12 +1,48 @@
-import type { TemperatureMethod, TemperatureReading } from '@/lib/api/types';
+'use client';
+import { NotebookPen } from 'lucide-react';
+import { isFeverRange } from '@btb/fever-rules';
+import type { TemperatureReading } from '@/lib/api/types';
+import { METHOD_LABELS } from './methods';
 
-const METHOD_LABELS: Record<TemperatureMethod, string> = {
-  tympanic: 'Ear',
-  axillary: 'Armpit',
-  temporal: 'Forehead',
-  rectal: 'Rectal',
-};
+function formatTime(iso: string, timezone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZone: timezone,
+  }).format(new Date(iso));
+}
 
+/**
+ * Figma frame 07, "Today's readings". Today only, newest first, which is what
+ * getTodaysTemperatures() returns.
+ *
+ * The "Fever range" pill is a label and not a judgement: isFeverRange() gives a
+ * boolean and nothing else, and Vitals never calls assessFever(). ADR-007. The
+ * screen disclaimer is what makes the label permissible, so the two ship
+ * together or not at all.
+ *
+ * Frame 08 shows a chevron on every row and frame 07 shows none. Nobody has
+ * said what tapping it opens, so it is left out rather than built as a control
+ * that goes nowhere. Asked in #btb-all on 23 Sep.
+ */
+
+/**
+ * `timezone` is the parent's own `parent_profiles.timezone`, handed down by the
+ * page from getTodaysTemperatures. Deliberately not the browser's zone, and no
+ * fallback to one.
+ *
+ * getTodaysTemperatures picks the day's rows with `todayBoundsUtc(now,
+ * profile.timezone)`. Formatting with the browser's zone instead made the two
+ * disagree: a mother whose profile is America/New_York, opening the app in
+ * London, got her New York day labelled with London times - an 11pm reading
+ * shown as 4am under "Today's readings". Choosing the day in one zone and
+ * printing the clock in another is how a reading ends up looking like it was
+ * taken on a different day than it was.
+ *
+ * Keya's decision, 1 Oct: Vitals follows the parent's timezone on both the
+ * query and the display, Home stays on UTC. lib/timezone.ts, which read the
+ * browser's zone, is deleted with this change - nothing imported it.
+ */
 export function TodaysReadings({
   readings,
   timezone,
@@ -15,58 +51,98 @@ export function TodaysReadings({
   timezone: string;
 }) {
   return (
-    <section aria-labelledby="todays-readings-heading">
+    <section
+      aria-labelledby="todays-readings-heading"
+      className="w-full rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]"
+    >
       <h2
         id="todays-readings-heading"
-        className="mb-[var(--space-12)] text-[var(--text-primary)]"
-        style={{ font: 'var(--type-card-title)' }}
+        className="uppercase tracking-wide text-[var(--text-brand)]"
+        style={{ font: 'var(--type-eyebrow)' }}
       >
         Today&apos;s readings
       </h2>
 
       {readings.length === 0 ? (
         <p
-          className="text-[var(--text-secondary)]"
+          className="mt-[var(--space-16)] text-[var(--text-secondary)]"
           style={{ font: 'var(--type-body)' }}
         >
-          No readings recorded today.
+          No readings yet today.
         </p>
       ) : (
-        <div className="flex flex-col gap-[var(--space-8)]">
-          {readings.map((reading) => (
-            <article
-              key={reading.id}
-              className="rounded-[var(--radius-card)] border border-[var(--border-subtle)] bg-[var(--card-primary)] p-[var(--space-12)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p
-                  className="text-[var(--text-primary)]"
-                  style={{ font: 'var(--type-card-title)' }}
-                >
-                  {reading.tempF.toFixed(1)}°F
-                </p>
-                <time
-                  dateTime={reading.takenAt}
-                  className="text-[var(--text-secondary)]"
-                  style={{ font: 'var(--type-body)' }}
-                >
-                  {new Date(reading.takenAt).toLocaleTimeString([], {
-                    timeZone: timezone,
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </time>
-              </div>
-              <p
-                className="mt-1 text-[var(--text-secondary)]"
-                style={{ font: 'var(--type-body)' }}
+        <ul className="mt-[var(--space-8)]">
+          {readings.map((reading, index) => {
+            const feverish = isFeverRange(reading.tempF, reading.method);
+
+            return (
+              <li
+                key={reading.id}
+                className={
+                  index === 0
+                    ? 'py-[var(--space-16)]'
+                    : 'border-t border-[var(--border-subtle)] py-[var(--space-16)]'
+                }
               >
-                {METHOD_LABELS[reading.method]}
-                {reading.notes ? ` · ${reading.notes}` : ''}
-              </p>
-            </article>
-          ))}
-        </div>
+                <div className="flex items-center gap-[var(--space-12)]">
+                  <time
+                    dateTime={reading.takenAt}
+                    className="shrink-0 text-[var(--text-secondary)]"
+                    style={{ font: 'var(--type-body)' }}
+                  >
+                    {formatTime(reading.takenAt, timezone)}
+                  </time>
+
+                  <span
+                    className={
+                      feverish
+                        ? 'shrink-0 font-semibold text-[var(--text-alert)]'
+                        : 'shrink-0 font-semibold text-[var(--text-primary)]'
+                    }
+                    style={{ font: 'var(--type-body)' }}
+                  >
+                    {reading.tempF.toFixed(1)}&deg;F
+                  </span>
+
+                  {reading.notes ? (
+                    <NotebookPen
+                      aria-hidden
+                      className="size-4 shrink-0 text-[var(--text-brand)]"
+                    />
+                  ) : null}
+
+                  {feverish ? (
+                    <span
+                      className="shrink-0 rounded-[var(--radius-pill)] bg-[var(--surface-alert)] px-[var(--space-10)] py-[var(--space-2)] text-[var(--text-alert)]"
+                      style={{ font: 'var(--type-eyebrow)' }}
+                    >
+                      Fever range
+                    </span>
+                  ) : null}
+
+                  <span
+                    className="ml-auto shrink-0 text-[var(--text-secondary)]"
+                    style={{ font: 'var(--type-body)' }}
+                  >
+                    {METHOD_LABELS[reading.method]}
+                  </span>
+                </div>
+
+                {/* The design saves a note but never shows one. Until the
+                    chevron question is answered, showing it here is the only
+                    way she can read back what she wrote. */}
+                {reading.notes ? (
+                  <p
+                    className="mt-[var(--space-6)] text-[var(--text-secondary)]"
+                    style={{ font: 'var(--type-body)' }}
+                  >
+                    {reading.notes}
+                  </p>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );
