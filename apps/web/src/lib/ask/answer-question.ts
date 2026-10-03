@@ -187,7 +187,12 @@ export async function answerQuestion(
             '',
             'WEB RESEARCH:',
             research.summary,
-          ].join('\\n'),
+            // The join below is a newline. It used to be an escaped backslash
+            // followed by n, so the model received this whole block as one
+            // run-on line with visible backslash-n sequences in it, including
+            // the only formatting instruction Ask has. buildAskSystemPrompt in
+            // packages/shared always joined correctly; this one did not.
+          ].join('\n'),
         },
         { role: 'user', content: input.question },
       ],
