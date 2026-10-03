@@ -12,6 +12,48 @@ export const RECOMMENDATIONS_LIST_DISCLAIMER =
   'Products chosen with your child in mind. Please review age recommendations, safety information, and product details before purchasing.';
 
 /**
+ * Approved copy for the product detail disclaimer.
+ *
+ * The affiliate sentence that used to end this ("We may earn a small
+ * commission at no extra cost to you") is deliberately absent. We have no
+ * affiliate programme: docs/API-CONTRACTS.md and the RetailerLink type both
+ * say retailer links are plain search URLs with no affiliate and no tracking,
+ * and docs/MEETING-BRIEF.md still lists applying to those programmes as
+ * something nobody has done. Telling a parent we earn a commission when we do
+ * not is a false statement about money, and it is harder to walk back than to
+ * never make. If an affiliate programme is ever approved, put it back then.
+ */
+export const PRODUCT_DETAIL_DISCLAIMER =
+  'Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product\u2019s age and safety information before purchasing.';
+
+/** Age buckets from #42. A month selects the bucket that contains it. */
+export const AGE_BUCKETS = [
+  { min: 0, max: 3, label: '0-3 months' },
+  { min: 4, max: 8, label: '4-8 months' },
+  { min: 9, max: 14, label: '9-14 months' },
+  { min: 15, max: 24, label: '15-24 months' },
+] as const;
+
+export function bucketForMonth(month: number) {
+  const clamped = Math.min(24, Math.max(0, Math.floor(month)));
+  return AGE_BUCKETS.find((b) => clamped >= b.min && clamped <= b.max) ?? AGE_BUCKETS[0];
+}
+
+/**
+ * Fallback icon for a card or detail hero.
+ *
+ * `emoji` is optional on purpose. It cannot be required: these sixteen rows
+ * come from supabase/seed/products.sql, the products table has no emoji
+ * column, and #225 builds RecommendedProduct straight from DB rows. A
+ * required field would fail the typecheck in this very file and again in
+ * #225. Decorative only - every call site renders it aria-hidden next to the
+ * product's real name, and it goes away when real images arrive (#41/#95).
+ */
+export function productIcon(product: { emoji?: string }): string {
+  return product.emoji ?? '\u{1F9F8}';
+}
+
+/**
  * All 16 curated products across the 4 developmental age buckets (0–3, 4–8, 9–14, 15–24 months).
  * Sourced directly from supabase/seed/products.sql and migration 0009.
  */
@@ -20,6 +62,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000001-0000-4000-a000-000000000001',
     name: 'High-Contrast Black & White Art Cards',
+    emoji: '🎴',
     rationale: 'Stimulates early visual development and optic nerve growth before full color perception emerges.',
     description: 'A collection of durable, high-contrast black-and-white visual stimulation cards designed for newborns and young infants.',
     whyHelpful: [
@@ -38,6 +81,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000002-0000-4000-a000-000000000002',
     name: 'Inflatable Tummy Time Water Mat',
+    emoji: '🌊',
     rationale: 'Encourages head lifting and upper-body strength during daily tummy time with interactive visual feedback.',
     description: "A leak-proof, sensory water play mat with floating sea creatures that responds to baby's touch during tummy time.",
     whyHelpful: [
@@ -56,6 +100,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000003-0000-4000-a000-000000000003',
     name: 'Sound Machine with Constant White Noise',
+    emoji: '🔊',
     rationale: 'Replicates continuous womb sound rhythms to ease sleep transitions and mask abrupt household sounds.',
     description: 'A compact, non-looping white noise sound machine providing constant soothing acoustic backgrounds for infant sleep.',
     whyHelpful: [
@@ -74,6 +119,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000004-0000-4000-a000-000000000004',
     name: 'Organic Cotton Muslin Burp Cloths (4-Pack)',
+    emoji: '🧺',
     rationale: 'Gentle, breathable cotton absorbs frequent newborn spit-ups without irritating delicate newborn skin.',
     description: 'Multi-layered, absorbent organic cotton muslin cloths designed for frequent feeding, burping, and daily cleanups.',
     whyHelpful: [
@@ -94,6 +140,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000005-0000-4000-a000-000000000005',
     name: '100% Food-Grade Silicone Baby Teether',
+    emoji: '🦷',
     rationale: 'Relieves gum pressure during early tooth eruption while encouraging two-handed grasping and oral motor exploration.',
     description: 'A flexible, BPA-free textured silicone teether designed with easy-grip handles for teething infants.',
     whyHelpful: [
@@ -112,6 +159,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000006-0000-4000-a000-000000000006',
     name: 'Ergonomic Silicone Starter Spoon Set',
+    emoji: '🥄',
     rationale: 'Soft-tipped, shallow silicone bowl protects sensitive gums as baby explores puree and puree-to-finger food transitions.',
     description: 'Ergonomically contoured silicone feeding spoons with shallow bowls designed for early self-feeding and assisted puree transitions.',
     whyHelpful: [
@@ -130,6 +178,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000007-0000-4000-a000-000000000007',
     name: 'Textured Sensory Rattle Ball',
+    emoji: '⚽',
     rationale: 'Develops hand-eye coordination, palmar grasp, and auditory tracking through light rattles and varied surface textures.',
     description: 'A lightweight, easy-to-grasp flexible ball featuring varied sensory textures and gentle rattling chime sounds.',
     whyHelpful: [
@@ -148,6 +197,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000008-0000-4000-a000-000000000008',
     name: 'Soft Fabric Crinkle Peek-a-Boo Book',
+    emoji: '📕',
     rationale: 'Engages tactile and auditory curiosity while introducing early interactive routines through crinkle pages.',
     description: 'An interactive, chew-safe soft fabric book with crinkly pages, lift-the-flap elements, and high-contrast patterns.',
     whyHelpful: [
@@ -168,6 +218,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000009-0000-4000-a000-000000000009',
     name: 'Weighted Straw Silicone Open/Trainer Cup',
+    emoji: '🥤',
     rationale: 'Promotes mature swallowing mechanics and oral muscle coordination during the transition from bottles to cups.',
     description: 'A spill-resistant training cup with a 360-degree weighted straw and removable handles to support open cup learning.',
     whyHelpful: [
@@ -186,6 +237,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000010-0000-4000-a000-000000000010',
     name: 'Wooden Push Walker & Activity Center',
+    emoji: '🛒',
     rationale: 'Provides a stable base to build confidence, balance, and leg strength for babies pulling up and taking first steps.',
     description: 'A sturdy wooden push wagon with integrated sensory gears, bead mazes, and non-slip rubber-trimmed wheels.',
     whyHelpful: [
@@ -204,6 +256,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000011-0000-4000-a000-000000000011',
     name: 'Shape Sorting Cube & Stacking Rings',
+    emoji: '🧩',
     rationale: 'Teaches spatial awareness, shape recognition, and fine motor problem-solving through trial-and-error play.',
     description: 'A classic wooden shape-sorting box and ring stacker set designed to build spatial reasoning and cognitive problem-solving.',
     whyHelpful: [
@@ -222,6 +275,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000012-0000-4000-a000-000000000012',
     name: 'Silicone Suction Divided Plate with Grip',
+    emoji: '🍽️',
     rationale: 'High walls and non-slip suction base support self-feeding autonomy and pincer grasp refinement with table foods.',
     description: 'A non-toxic divided silicone toddler plate featuring strong table suction and curved inner walls for easy scooping.',
     whyHelpful: [
@@ -242,6 +296,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a1111111-1111-4111-a111-111111111111',
     name: 'Toddler Balance Bike',
+    emoji: '🚲',
     rationale: 'Supports balance, coordination and confidence through active outdoor play.',
     description: 'A sturdy, pedal-free balance bike that helps toddlers build balance and steering coordination before moving to pedal bikes.',
     whyHelpful: [
@@ -260,6 +315,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a2222222-2222-4222-a222-222222222222',
     name: 'First Words Chunky Board Books Set',
+    emoji: '📖',
     rationale: 'Supports the fast vocabulary growth typical at this age.',
     description: 'A sturdy starter library of chunky board books designed to build early toddler vocabulary through simple, durable pages.',
     whyHelpful: [
@@ -278,6 +334,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000015-0000-4000-a000-000000000015',
     name: 'Large Wooden Building Blocks Set (30 pcs)',
+    emoji: '🧱',
     rationale: 'Fosters creative construction, early engineering concepts, and hand-eye dexterity through stacking and balance.',
     description: 'A set of solid natural wood blocks in assorted geometric shapes for open-ended building, stacking, and spatial play.',
     whyHelpful: [
@@ -296,6 +353,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   {
     id: 'a0000016-0000-4000-a000-000000000005',
     name: 'Non-Slip Toddler Step Stool',
+    emoji: '🪜',
     rationale: 'Promotes self-care autonomy for handwashing, teeth brushing, and independent participation in daily family routines.',
     description: 'A dual-height, non-slip toddler step stool with rubber grip feet designed for bathroom and kitchen sink reach.',
     whyHelpful: [
@@ -320,8 +378,32 @@ export const MOCK_RECOMMENDATIONS: RecommendationsResponse = {
   disclaimer: RECOMMENDATIONS_LIST_DISCLAIMER,
 };
 
-export async function getRecommendations(_babyId: string): Promise<RecommendationsResponse> {
-  return MOCK_RECOMMENDATIONS;
+/**
+ * `selectedMonth` is the month the parent is looking at. Omit it and she gets
+ * her baby's current month. Nothing here writes, so browsing another month
+ * never changes the child's age or profile - the same rule Track and Learn
+ * follow.
+ *
+ * Every month from 0 to 24 lands in a bucket that has four products, because
+ * the catalogue (#41, PR #220) covers all four buckets. There is no empty
+ * state to design for any more - that was only a risk while the stub held
+ * four 15-24 products and nothing else.
+ */
+export async function getRecommendations(
+  _babyId: string,
+  selectedMonth?: number,
+): Promise<RecommendationsResponse> {
+  const babyMonth = Math.floor(MOCK_RECOMMENDATIONS.ageMonths);
+  const month = selectedMonth === undefined ? babyMonth : Math.min(24, Math.max(0, selectedMonth));
+  const bucketIndex = AGE_BUCKETS.findIndex((b) => b.label === bucketForMonth(month).label);
+
+  return {
+    ageMonths: MOCK_RECOMMENDATIONS.ageMonths,
+    bucketLabel: AGE_BUCKETS[bucketIndex].label,
+    // Four per bucket, in catalogue order: 0-3 is 0-3, 4-8 is 4-7, and so on.
+    products: MOCK_PRODUCT_DETAILS.slice(bucketIndex * 4, bucketIndex * 4 + 4),
+    disclaimer: RECOMMENDATIONS_LIST_DISCLAIMER,
+  };
 }
 
 export async function getProduct(id: string): Promise<RecommendedProductDetail> {

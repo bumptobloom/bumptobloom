@@ -182,12 +182,24 @@ export async function answerQuestion(
           role: 'system',
           content: [
             'Use the following web research as supporting evidence for your answer.',
-            'Answer naturally and clearly. Use a short paragraph for a simple answer, bullets when there are multiple suggestions, and numbered steps when explaining a process.',
+            // Length and shape are PM requirements from the 28 Sep and 30 Sep
+            // demo testing rounds: "keep 100-150 words, bullet points for easy
+            // readability, please follow the requirement as per the PRD". The
+            // model was previously told only to answer "naturally and clearly"
+            // with no cap at all, and every tester reported a wall of text.
+            'Keep the whole answer between 100 and 150 words, including anything you cite inline. This is a limit, not a target.',
+            'Open with one or two short sentences that answer the question directly.',
+            'Use bullets whenever there is more than one suggestion, and numbered steps when explaining a process. Do not return one long paragraph.',
             'Do not mention the research process or invent citations.',
             '',
             'WEB RESEARCH:',
             research.summary,
-          ].join('\\n'),
+            // The join below is a newline. It used to be an escaped backslash
+            // followed by n, so the model received this whole block as one
+            // run-on line with visible backslash-n sequences in it, including
+            // the only formatting instruction Ask has. buildAskSystemPrompt in
+            // packages/shared always joined correctly; this one did not.
+          ].join('\n'),
         },
         { role: 'user', content: input.question },
       ],
