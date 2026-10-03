@@ -1,18 +1,41 @@
 import Link from 'next/link';
-import { getProduct } from '@/lib/api/recommendations';
+import { getProduct, PRODUCT_DETAIL_DISCLAIMER, productIcon } from '@/lib/api/recommendations';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { TrackPageView } from '@/components/track-page-view';
 import { RetailerLink } from '@/components/retailer-link';
 
 export const dynamic = 'force-dynamic';
 
-interface ProductDetailPageProps {
+/**
+ * Product detail. Figma 10.
+ *
+ * The hero used to be an empty tinted square, because every imageUrl in the
+ * stub catalogue is an empty string. It now shows the product's own icon at
+ * size, and falls back to that icon rather than to nothing when a real
+ * imageUrl eventually arrives from #41. Whatever is shown always belongs to
+ * the product being viewed.
+ *
+ * `month` comes through on the query string so Back returns the parent to the
+ * month she was browsing instead of dumping her on her baby's current month.
+ */
+export default async function ProductDetailPage({
+  params,
+  searchParams,
+}: {
   params: Promise<{ id: string }>;
-}
-
-export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const { id } = await params;
+  const { month: monthParam } = await searchParams;
   const product = await getProduct(id);
+
+  const parsed = monthParam === undefined ? undefined : Number(monthParam);
+  const month =
+    parsed === undefined || Number.isNaN(parsed)
+      ? undefined
+      : Math.min(24, Math.max(0, Math.floor(parsed)));
+
+  const backHref = month === undefined ? '/recommended' : `/recommended?month=${month}`;
 
   const priceLabel = (product.indicativePriceCents / 100).toLocaleString('en-US', {
     style: 'currency',
@@ -20,37 +43,31 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   });
 
   return (
-    <section className="flex flex-col gap-5">
+    <section className="flex flex-col gap-[var(--space-20)]">
       <TrackPageView event="product_viewed" properties={{ product_id: product.id }} />
+
       <div
         aria-hidden
-        className="aspect-square w-full rounded-[18px]"
-        style={{ background: 'var(--surface-terra)' }}
-      />
-
-      <div>
-        <h1 className="text-[24px] leading-tight font-semibold" style={{ color: 'var(--text-primary)' }}>
-          {product.name}
-        </h1>
-        <p className="mt-1 text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          {product.description}
-        </p>
+        className="flex aspect-square w-full items-center justify-center rounded-[var(--radius-16)] bg-[var(--surface-terra)] text-[6rem]"
+      >
+        {productIcon(product)}
       </div>
 
-      <article
-        className="rounded-[18px] border p-5"
-        style={{ background: 'var(--card-secondary)', borderColor: 'var(--border-card)' }}
-      >
-        <h2 className="text-[13px] font-semibold tracking-wide uppercase" style={{ color: 'var(--text-secondary)' }}>
-          Why it&apos;s helpful
-        </h2>
-        <ul className="mt-3 flex flex-col gap-2">
-          {product.whyHelpful.map((reason, index) => (
-            <li
-              key={index}
-              className="text-[15px] leading-relaxed"
-              style={{ color: 'var(--text-primary)' }}
-            >
+      <div className="flex flex-col gap-[var(--space-8)]">
+        <h1 className="type-card-title text-[var(--text-primary)]">{product.name}</h1>
+
+        {month === undefined ? null : (
+          <p className="type-eyebrow text-[var(--text-brand)]">Month {month}</p>
+        )}
+
+        <p className="type-body text-[var(--text-secondary)]">{product.description}</p>
+      </div>
+
+      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-secondary)] p-[var(--space-20)]">
+        <h2 className="type-eyebrow text-[var(--text-secondary)]">Why it&apos;s helpful</h2>
+        <ul className="mt-[var(--space-12)] flex list-disc flex-col gap-[var(--space-8)] pl-[var(--space-20)]">
+          {product.whyHelpful.map((reason) => (
+            <li key={reason} className="type-body text-[var(--text-primary)]">
               {reason}
             </li>
           ))}
@@ -58,14 +75,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {/* US-010, verbatim from Product. "medical device" is flagged as a
             likely typo for "medical advice", but left as approved pending
             Product confirmation - do not silently correct. */}
-        <p className="mt-3 text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+        <p className="type-eyebrow mt-[var(--space-12)] normal-case tracking-normal text-[var(--text-secondary)]">
           Product recommendation are general suggestions and do not replace professional medical device
         </p>
       </article>
 
-      <p className="text-[18px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-        {priceLabel}
-      </p>
+      <p className="type-label text-[var(--text-primary)]">{priceLabel}</p>
 
       {product.retailers.map((retailer) => (
         <RetailerLink
@@ -73,22 +88,20 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           href={retailer.url}
           retailerSlug={retailer.slug}
           productId={product.id}
-          className="inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] px-6 text-[15px] font-semibold"
-          style={{ background: 'var(--brand-secondary)', color: '#fffcf4' }}
+          className="type-label inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] bg-[var(--brand-secondary)] px-[var(--space-24)] text-white"
         >
           Shop Now on {retailer.name}
         </RetailerLink>
       ))}
 
       <Link
-        href="/recommended"
-        className="text-[14px] font-semibold underline underline-offset-4"
-        style={{ color: 'var(--text-brand)' }}
+        href={backHref}
+        className="type-label text-[var(--text-brand)] underline underline-offset-4"
       >
         Back to Recommended
       </Link>
 
-      <StandingDisclaimer text="Products chosen with your child in mind. BumpToBloom does not manufacture, inspect, or guarantee any third-party product. Please check the product's age and safety information before purchasing. We may earn a small commission at no extra cost to you." />
+      <StandingDisclaimer text={PRODUCT_DETAIL_DISCLAIMER} />
     </section>
   );
 }
