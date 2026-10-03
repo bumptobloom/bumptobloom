@@ -32,9 +32,19 @@ function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.Re
  * This records a reading. It does not tell the mother what the reading means,
  * and the save path must never start doing so (ADR-007). The range check below
  * is only to give her a sensible message instead of a database error; the real
- * guards are validateNewReading() and the 0008 check constraint.
+ * guards are validateNewReading() and the 0013 check constraint.
+ *
+ * `timezone` is the parent's own parent_profiles.timezone, handed down by the
+ * page. Vitals follows it on the day query, the readings list and this label,
+ * so all three agree about what "today" is (Keya's decision, 1 Oct).
  */
-export function TemperatureForm({ babyId }: { babyId: string }) {
+export function TemperatureForm({
+  babyId,
+  timezone,
+}: {
+  babyId: string;
+  timezone: string;
+}) {
   const router = useRouter();
 
   const [tempF, setTempF] = useState('');
@@ -43,21 +53,30 @@ export function TemperatureForm({ babyId }: { babyId: string }) {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Rendered after mount only. The server and the phone are in different time
-  // zones often enough that formatting this during SSR causes a hydration
-  // mismatch, and this line is the mother's local time by definition.
+  // Rendered after mount only, so the clock cannot tick across a minute
+  // between the server render and the client one and cause a hydration
+  // mismatch.
+  //
+  // Formatted in the parent's zone, not the browser's. Formatting here with
+  // the browser's zone while getTodaysTemperatures picks the day with
+  // parent_profiles.timezone is what put "Today, 9:47 PM" above a list of
+  // readings stamped 4:47 AM on the #229 preview.
   const [takenAtLabel, setTakenAtLabel] = useState<string | null>(null);
 
   useEffect(() => {
     function tick() {
       setTakenAtLabel(
-        new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+        new Intl.DateTimeFormat('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZone: timezone,
+        }).format(new Date()),
       );
     }
     tick();
     const timer = setInterval(tick, 30_000);
     return () => clearInterval(timer);
-  }, []);
+  }, [timezone]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

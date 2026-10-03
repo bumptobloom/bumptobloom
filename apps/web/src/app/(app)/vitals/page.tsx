@@ -25,7 +25,7 @@ export default async function VitalsPage() {
 
       <TodaysSummary summary={summary} readings={readings} />
 
-      <TemperatureForm babyId={home.baby.id} />
+      <TemperatureForm babyId={home.baby.id} timezone={timezone} />
 
       <TodaysReadings readings={readings} timezone={timezone} />
 
