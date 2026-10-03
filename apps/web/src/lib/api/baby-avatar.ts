@@ -4,6 +4,9 @@ import { createBrowserClient } from '../supabase/client';
 
 const BABY_AVATARS_BUCKET = 'baby-avatars';
 const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+// Upper bound on what we will even try to decode. Well above any phone
+// photo, low enough that a video picked by mistake fails fast.
+const MAX_DECODE_SIZE_BYTES = 50 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 const ALLOWED_IMAGE_TYPES = new Map([
@@ -11,6 +14,53 @@ const ALLOWED_IMAGE_TYPES = new Map([
   ['image/png', 'png'],
   ['image/webp', 'webp'],
 ]);
+
+const MAX_UPLOAD_DIMENSION = 1200;
+const OPTIMIZE_AFTER_BYTES = 0;
+
+async function optimizeAvatar(file: File): Promise<File> {
+  if (file.size <= OPTIMIZE_AFTER_BYTES) {
+    return file;
+  }
+
+  if (typeof createImageBitmap === 'undefined') {
+    return file;
+  }
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file;
+  }
+  const longestSide = Math.max(bitmap.width, bitmap.height);
+  const scale = Math.min(1, MAX_UPLOAD_DIMENSION / longestSide);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const context = canvas.getContext('2d');
+  if (!context) {
+    bitmap.close();
+    return file;
+  }
+
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  const compressed = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/jpeg', 0.82),
+  );
+
+  if (!compressed || compressed.size >= file.size) {
+    return file;
+  }
+
+  return new File([compressed], file.name.replace(/\.[^.]+$/, '.jpg'), {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+}
 
 export interface BabyAvatarUploadResult {
   avatarPath: string;
@@ -21,15 +71,30 @@ export async function uploadBabyAvatar(
   babyId: string,
   file: File,
 ): Promise<BabyAvatarUploadResult> {
-  const extension = ALLOWED_IMAGE_TYPES.get(file.type);
+  const originalExtension = ALLOWED_IMAGE_TYPES.get(file.type);
 
-  if (!extension) {
+  if (!originalExtension) {
     throw new Error('Please select a JPEG, PNG, or WebP image.');
   }
 
-  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+  // Refuse something absurd before we hand it to createImageBitmap, which
+  // decodes the whole thing into memory on the parent's phone.
+  if (file.size > MAX_DECODE_SIZE_BYTES) {
     throw new Error('The photo must be 5 MB or smaller.');
   }
+
+  const uploadFile = await optimizeAvatar(file);
+
+  // The 5 MB limit applies to what we upload, not to what came out of the
+  // camera. optimizeAvatar resizes to 1200px and re-encodes at JPEG 0.82, so
+  // a 9 MB phone photo lands well under the limit. Checking file.size here
+  // rejected that parent before the resize that would have saved her, which
+  // is the "photo upload is not working" the PMs reported.
+  if (uploadFile.size > MAX_AVATAR_SIZE_BYTES) {
+    throw new Error('The photo must be 5 MB or smaller.');
+  }
+
+  const extension = ALLOWED_IMAGE_TYPES.get(uploadFile.type) ?? originalExtension;
 
   const supabase = createBrowserClient();
 
@@ -57,9 +122,9 @@ export async function uploadBabyAvatar(
 
   const { error: uploadError } = await supabase.storage
     .from(BABY_AVATARS_BUCKET)
-    .upload(avatarPath, file, {
+    .upload(avatarPath, uploadFile, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: uploadFile.type,
       upsert: false,
     });
 
@@ -81,16 +146,17 @@ export async function uploadBabyAvatar(
   }
 
   if (baby.avatar_path && baby.avatar_path !== avatarPath) {
-    const { error: cleanupError } = await supabase.storage
+    void supabase.storage
       .from(BABY_AVATARS_BUCKET)
-      .remove([baby.avatar_path]);
-
-    if (cleanupError) {
-      console.error(
-        '[uploadBabyAvatar] Unable to remove previous avatar:',
-        cleanupError,
-      );
-    }
+      .remove([baby.avatar_path])
+      .then(({ error: cleanupError }) => {
+        if (cleanupError) {
+          console.error(
+            '[uploadBabyAvatar] Unable to remove previous avatar:',
+            cleanupError,
+          );
+        }
+      });
   }
 
   const { data: signedAvatar, error: signedUrlError } =
