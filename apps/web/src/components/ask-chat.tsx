@@ -334,22 +334,24 @@ export function AskChat({
                   <div className="min-w-0 max-w-[82%]">
                     <div className="rounded-[18px] border border-[#e6dfcf] bg-[#fffdf7] px-4 py-3 text-sm text-[var(--text-primary)]">
                       {message.redirectedToHealth ? (
-                        <Callout variant="safety">
-                          <div className="flex items-start gap-[var(--space-12)]">
-                            <TriangleAlert
-                              className="mt-0.5 size-5 shrink-0"
-                              aria-hidden="true"
-                            />
-                            <div className="min-w-0">
-                              <p className="text-base font-semibold leading-6">
-                                Contact your pediatrician
-                              </p>
-                              <p className="mt-2 text-sm leading-6">
-                                {message.content}
-                              </p>
-                            </div>
-                          </div>
-                        </Callout>
+                        <div className="w-full max-w-[380px] rounded-[16px] border border-[#B88768] bg-[#F7E6D8] px-5 py-5">
+  <div className="flex items-center gap-3">
+    <TriangleAlert
+      className="size-5 shrink-0 text-[#A96F4F]"
+      aria-hidden="true"
+    />
+
+    <p className="text-[17px] font-medium leading-6 text-[#A96F4F]">
+      Contact your pediatrician
+    </p>
+  </div>
+
+  <div className="mt-3 border-t border-[#E5D3C5]" />
+
+  <p className="mt-4 text-[16px] leading-6 text-[#36453A]">
+    {message.content}
+  </p>
+</div>
                       ) : (
                         <AskAnswer content={message.content} />
                       )}
