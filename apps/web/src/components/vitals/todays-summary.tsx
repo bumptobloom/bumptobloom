@@ -23,18 +23,15 @@ function Stat({
   alert?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-[var(--space-12)]">
+    <div className="flex min-w-0 items-center gap-[var(--space-8)]">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--card-primary)] text-[var(--text-brand)]">
         {icon}
       </span>
-      <div>
-        {/* No flex-1 here. Equal halves are too narrow for "Highest Recorded"
-            at body size in a 430px column, and it wrapped to two lines. The
-            two stats need different widths, not the same one. */}
-        <p
-          className="whitespace-nowrap text-[var(--text-secondary)]"
-          style={{ font: 'var(--type-body)' }}
-        >
+      <div className="min-w-0">
+        {/* Equal halves, and the label may wrap. Forcing one line with
+            unequal widths made the row wider than the card on a phone, so
+            "Total Readings" ran off the right edge (PM defect, 3 Oct). */}
+        <p className="text-[0.875rem] leading-[1.25] text-[var(--text-secondary)]">
           {label}
         </p>
         <p
@@ -66,14 +63,14 @@ export function TodaysSummary({
 
   return (
     <Callout variant="info" eyebrow="Today's summary">
-      <div className="flex items-stretch justify-between gap-[var(--space-12)]">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[var(--space-12)]">
         <Stat
           icon={<Thermometer className="size-5" aria-hidden />}
           label="Highest Recorded"
           value={highest === null ? '—' : `${highest.toFixed(1)}°F`}
           alert={highestIsFeverish}
         />
-        <span aria-hidden className="w-px shrink-0 bg-[var(--text-brand)]/20" />
+        <span aria-hidden className="w-px self-stretch bg-[var(--text-brand)]/20" />
         <Stat
           icon={<Clock className="size-5" aria-hidden />}
           label="Total Readings"
