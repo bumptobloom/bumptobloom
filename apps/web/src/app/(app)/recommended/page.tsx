@@ -33,6 +33,7 @@ export default async function RecommendedPage({
 
   const recommendations = await getRecommendations(
     home.baby.id,
+    home.baby.ageMonths,
     parsed === undefined || Number.isNaN(parsed) ? undefined : parsed,
   );
 
