@@ -22,9 +22,13 @@ export default function ForgotPasswordPage() {
     // Must point at /reset-password, not /login. It used to send her to the
     // log-in form, where there was nothing to do with the recovery link and no
     // way to choose a new password (PRD US-01, item 4).
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const { error: resetError } =
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL(
+          '/reset-password',
+          window.location.origin,
+        ).toString(),
+      });
 
     if (resetError) {
       setError(resetError.message || 'Failed to send reset link.');
