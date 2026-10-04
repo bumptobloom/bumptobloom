@@ -100,20 +100,20 @@ export async function answerQuestion(
 
   const redirectToHealth = shouldRedirectToHealth(input.question);
 
-  if (!redirectToHealth) {
-    try {
-      await assertUnderRateLimit(parentProfile.id);
-    } catch (err) {
-      if (err instanceof RateLimitExceededError) {
-        throw new RateLimitedError();
-      }
-
-      if (err instanceof RateLimitCheckError) {
-        throw new AskUpstreamError(err.message);
-      }
-
-      throw err;
+  // Every Ask question consumes one of the 10 daily slots, including
+  // questions that are redirected to the pediatrician safety guidance.
+  try {
+    await assertUnderRateLimit(parentProfile.id);
+  } catch (err) {
+    if (err instanceof RateLimitExceededError) {
+      throw new RateLimitedError();
     }
+
+    if (err instanceof RateLimitCheckError) {
+      throw new AskUpstreamError(err.message);
+    }
+
+    throw err;
   }
 
   let conversationId: string;
