@@ -128,6 +128,10 @@ export function AskChat({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (dictation.listening) {
+      dictation.stop();
+    }
+
     const trimmedQuestion = question.trim();
 
     if (!trimmedQuestion || loading || submittingRef.current) {
@@ -238,7 +242,16 @@ export function AskChat({
     }
   };
 
+  const askWaveStyle = `
+    @keyframes askWave {
+      from { transform: scaleY(0.45); opacity: 0.55; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+  `;
+
   return (
+    <>
+      <style>{askWaveStyle}</style>
     <section className="flex min-h-[calc(100dvh-9rem)] flex-col">
       <div className="flex-1 space-y-4 overflow-y-auto">
         {messages.length === 0 ? (
@@ -428,34 +441,75 @@ export function AskChat({
         className="mt-4 flex items-center gap-2"
       >
         <div className="relative min-w-0 flex-1">
-          <input
-            value={question}
-            onChange={(event) => setQuestion(event.target.value)}
-            disabled={loading}
-            maxLength={2000}
-            placeholder="Ask Bloom something…"
-            aria-label="Ask Bloom a question"
-            className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
-          />
-
-          {dictation.supported ? (
-            <button
-              type="button"
-              onClick={dictation.toggle}
-              disabled={loading}
-              aria-label={
-                dictation.listening ? 'Stop dictating' : 'Dictate your question'
-              }
-              aria-pressed={dictation.listening}
-              className={`absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full transition disabled:opacity-40 ${
-                dictation.listening
-                  ? 'text-[var(--text-accent-terracotta)]'
-                  : 'text-[var(--text-secondary)]'
-              }`}
+          {dictation.listening ? (
+            <div
+              className="flex h-12 w-full items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-3"
+              aria-live="polite"
+              aria-label="Recording voice input"
             >
-              <Mic className="size-5" aria-hidden />
-            </button>
-          ) : null}
+              <button
+                type="button"
+                onClick={dictation.stop}
+                disabled={loading}
+                aria-label="Stop recording"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:bg-[var(--surface-terra)]"
+              >
+                <span className="text-xl leading-none">×</span>
+              </button>
+
+              <div className="flex min-w-0 flex-1 items-center gap-[3px]">
+                {Array.from({ length: 28 }).map((_, index) => (
+                  <span
+                    key={index}
+                    className="w-[2px] rounded-full bg-[var(--text-accent-terracotta)]"
+                    style={{
+                      height: `${6 + ((index * 7) % 18)}px`,
+                      animation: `askWave 0.8s ease-in-out ${index * 0.035}s infinite alternate`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--text-accent-terracotta)]">
+                <span className="size-2 animate-pulse rounded-full bg-[var(--text-accent-terracotta)]" />
+                Recording
+              </span>
+
+              <button
+                type="button"
+                onClick={dictation.stop}
+                disabled={loading}
+                aria-label="Stop recording"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)]"
+              >
+                <span className="size-3 rounded-[2px] bg-current" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={loading}
+                maxLength={2000}
+                placeholder="Ask Bloom something…"
+                aria-label="Ask Bloom a question"
+                className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+              />
+
+              {dictation.supported ? (
+                <button
+                  type="button"
+                  onClick={dictation.toggle}
+                  disabled={loading}
+                  aria-label="Dictate your question"
+                  className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-40"
+                >
+                  <Mic className="size-5" aria-hidden />
+                </button>
+              ) : null}
+            </>
+          )}
         </div>
 
         <button
@@ -468,5 +522,6 @@ export function AskChat({
         </button>
       </form>
     </section>
+    </>
   );
 }

@@ -1,54 +1,42 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-/**
- * Voice to text for the Ask input (Figma 05a, PM defect list item 5).
- * Dictation only: it fills the text box and never sends.
- *
- * Restored from 56b9ba0, where it was written for the frame-05 chat and later
- * dropped as part of a duplicate component (#229), not for a defect. Changes
- * since: `blocked` tells the parent when microphone permission was denied,
- * instead of the button silently doing nothing.
- *
- * Built on the browser's own SpeechRecognition: no key, no new dependency,
- * and no audio passes through our stack. Support is uneven (Chrome and Safari
- * yes, Firefox no), so `supported` is false there and the button is not shown.
- *
- * Privacy, for product: in Chrome this API sends audio to Google for
- * transcription. That is the browser's behaviour, not ours, but on a product
- * where a parent may describe her baby out loud it is worth a decision.
- */
-type SpeechRecognitionLike = {
-  lang: string;
-  interimResults: boolean;
+type SpeechRecognitionInstance = {
   continuous: boolean;
+  interimResults: boolean;
+  lang: string;
   start: () => void;
   stop: () => void;
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: ((event: { error?: string }) => void) | null;
+  abort: () => void;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
 };
 
-// Errors that mean "permission denied", as opposed to "heard nothing".
-const BLOCKED_ERRORS = new Set(['not-allowed', 'service-not-allowed']);
+type SpeechRecognitionResultEvent = {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+};
 
-// Whether the browser has the API at all. Read through useSyncExternalStore:
-// it never changes after load, and the server snapshot is false so SSR and
-// the first client render agree.
-const subscribeNever = () => () => {};
+type SpeechRecognitionErrorEventLike = {
+  error: string;
+};
 
-function readSupport() {
-  if (typeof window === 'undefined') return false;
-  const w = window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown };
-  return Boolean(w.SpeechRecognition ?? w.webkitSpeechRecognition);
-}
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
 
 export function useDictation(onText: (text: string) => void) {
-  const supported = useSyncExternalStore(subscribeNever, readSupport, () => false);
+  const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const activeRef = useRef(false);
   const onTextRef = useRef(onText);
 
   useEffect(() => {
@@ -56,63 +44,122 @@ export function useDictation(onText: (text: string) => void) {
   }, [onText]);
 
   useEffect(() => {
-    const w = window as unknown as {
-      SpeechRecognition?: new () => SpeechRecognitionLike;
-      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
-    };
-    const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-    if (!Ctor) return;
+    const speechWindow = window as SpeechRecognitionWindow;
+    const SpeechRecognition =
+      speechWindow.SpeechRecognition ||
+      speechWindow.webkitSpeechRecognition;
 
-    const recognition = new Ctor();
-    recognition.lang = 'en-US';
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    setSupported(true);
+
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-      let text = '';
-      for (let i = 0; i < event.results.length; i += 1) {
-        text += event.results[i][0]?.transcript ?? '';
+      let transcript = '';
+
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index += 1
+      ) {
+        if (event.results[index].isFinal) {
+          transcript += event.results[index][0].transcript;
+        }
       }
-      if (text.trim()) onTextRef.current(text.trim());
+
+      if (transcript.trim()) {
+        onTextRef.current(transcript.trim());
+      }
     };
+
     recognition.onerror = (event) => {
-      setListening(false);
-      if (event.error && BLOCKED_ERRORS.has(event.error)) setBlocked(true);
+      if (
+        event.error === 'not-allowed' ||
+        event.error === 'service-not-allowed'
+      ) {
+        setBlocked(true);
+        activeRef.current = false;
+        setListening(false);
+      }
     };
-    recognition.onend = () => setListening(false);
+
+    recognition.onend = () => {
+      if (activeRef.current) {
+        try {
+          recognition.start();
+          return;
+        } catch {
+          // Ignore restart errors.
+        }
+      }
+
+      setListening(false);
+    };
 
     recognitionRef.current = recognition;
 
     return () => {
-      recognition.onresult = null;
-      recognition.onerror = null;
-      recognition.onend = null;
-      try {
-        recognition.stop();
-      } catch {
-        // Already stopped.
-      }
+      activeRef.current = false;
+      recognition.abort();
+      recognitionRef.current = null;
     };
   }, []);
 
-  const toggle = useCallback(() => {
+  const start = useCallback(() => {
     const recognition = recognitionRef.current;
-    if (!recognition) return;
 
-    if (listening) {
-      recognition.stop();
-      setListening(false);
+    if (!recognition || activeRef.current) {
       return;
     }
 
+    setBlocked(false);
+    activeRef.current = true;
+    setListening(true);
+
     try {
       recognition.start();
-      setBlocked(false);
-      setListening(true);
     } catch {
+      activeRef.current = false;
       setListening(false);
     }
-  }, [listening]);
+  }, []);
 
-  return { supported, listening, blocked, toggle };
+  const stop = useCallback(() => {
+    const recognition = recognitionRef.current;
+
+    activeRef.current = false;
+    setListening(false);
+
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch {
+        // Ignore if already stopped.
+      }
+    }
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (activeRef.current) {
+      stop();
+    } else {
+      start();
+    }
+  }, [start, stop]);
+
+  return {
+    supported,
+    listening,
+    blocked,
+    start,
+    stop,
+    toggle,
+  };
 }
