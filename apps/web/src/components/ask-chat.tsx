@@ -29,6 +29,7 @@ type Message = {
   messageId?: string | null;
   feedback?: 1 | -1 | null;
   redirectedToHealth?: boolean;
+  createdAt?: string;
 };
 
 type AskResponse = {
@@ -50,6 +51,7 @@ function toMessage(message: ConversationMessage): Message {
     messageId: message.role === 'assistant' ? message.id : null,
     feedback: message.feedback,
     redirectedToHealth: message.content === REDIRECT_ANSWER,
+    createdAt: message.createdAt,
   };
 }
 
@@ -181,6 +183,7 @@ export function AskChat({
         messageId: result.messageId,
         feedback: null,
         redirectedToHealth: result.redirectedToHealth,
+        createdAt: new Date().toISOString(),
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -237,15 +240,6 @@ export function AskChat({
 
   return (
     <section className="flex min-h-[calc(100dvh-9rem)] flex-col">
-      <div className="pb-4">
-        <h1 className="text-[1.5rem] font-semibold text-[var(--text-primary)]">
-          Bloom companion
-        </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Ask questions about your baby&apos;s development.
-        </p>
-      </div>
-
       <div className="flex-1 space-y-4 overflow-y-auto">
         {messages.length === 0 ? (
 <div className="flex items-start gap-[var(--space-12)]">
@@ -286,11 +280,18 @@ export function AskChat({
               className={
                 message.role === 'user'
                   ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
-                  : message.redirectedToHealth
-                    ? 'mr-8'
-                    : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
+                  : 'mr-8'
               }
             >
+              {message.role === 'assistant' ? (
+                <div className="flex items-start gap-[var(--space-12)]">
+                  <img
+                    src="/Avatar.svg"
+                    alt="Bloom"
+                    className="size-10 shrink-0 object-contain"
+                  />
+
+                  <div className="min-w-0 flex-1">
                 {message.role === 'assistant' && message.redirectedToHealth ? (
                   <Callout variant="safety">
                     <div className="flex items-start gap-[var(--space-12)]">
@@ -332,8 +333,19 @@ export function AskChat({
                 </div>
               ) : null}
 
+              {message.role === 'assistant' ? (
+                <p className="mt-[var(--space-8)] text-[12px] text-[var(--text-secondary)]">
+                  {message.createdAt
+                    ? new Intl.DateTimeFormat('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      }).format(new Date(message.createdAt))
+                    : '\u00a0'}
+                </p>
+              ) : null}
+
               {message.role === 'assistant' && message.messageId ? (
-                <div className="mt-3 flex items-center gap-1">
+                <div className="mt-2 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => handleFeedback(message.messageId!, 1)}
@@ -363,13 +375,23 @@ export function AskChat({
                   </button>
                 </div>
               ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ))
         )}
 
         {loading ? (
-          <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-            Bloom is thinking…
+          <div className="mr-8 flex items-start gap-[var(--space-12)]">
+            <img
+              src="/Avatar.svg"
+              alt="Bloom"
+              className="size-10 shrink-0 object-contain"
+            />
+            <div className="rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              Bloom is thinking…
+            </div>
           </div>
         ) : null}
 
