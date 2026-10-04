@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Check, ExternalLink, Sparkles } from 'lucide-react';
 import { getProduct, PRODUCT_DETAIL_DISCLAIMER, productIcon } from '@/lib/api/recommendations';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { TrackPageView } from '@/components/track-page-view';
@@ -37,10 +38,17 @@ export default async function ProductDetailPage({
 
   const backHref = month === undefined ? '/recommended' : `/recommended?month=${month}`;
 
-  const priceLabel = (product.indicativePriceCents / 100).toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
+  // Figma 10 has one Shop Now button and no price. Amazon is the MVP
+  // retailer, so prefer it; otherwise use whichever retailer is listed first.
+  const retailer =
+    product.retailers.find((r) => r.slug === 'amazon') ?? product.retailers[0];
+
+  const helpfulTitle =
+    month === undefined
+      ? "Why it's helpful"
+      : month === 0
+        ? "Why it's helpful in the first month"
+        : `Why it's helpful at ${month} month${month === 1 ? '' : 's'}`;
 
   return (
     <section className="flex flex-col gap-[var(--space-20)]">
@@ -56,43 +64,43 @@ export default async function ProductDetailPage({
       <div className="flex flex-col gap-[var(--space-8)]">
         <h1 className="type-card-title text-[var(--text-primary)]">{product.name}</h1>
 
-        {month === undefined ? null : (
-          <p className="type-eyebrow text-[var(--text-brand)]">Month {month}</p>
-        )}
-
         <p className="type-body text-[var(--text-secondary)]">{product.description}</p>
       </div>
 
-      <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-secondary)] p-[var(--space-20)]">
-        <h2 className="type-eyebrow text-[var(--text-secondary)]">Why it&apos;s helpful</h2>
-        <ul className="mt-[var(--space-12)] flex list-disc flex-col gap-[var(--space-8)] pl-[var(--space-20)]">
+      <article className="rounded-[var(--radius-16)] bg-[var(--surface-moss)] p-[var(--space-20)]">
+        <h2 className="type-label flex items-center gap-[var(--space-8)] text-[var(--text-primary)]">
+          <Sparkles className="size-4 shrink-0 text-[var(--text-brand)]" aria-hidden />
+          {helpfulTitle}
+        </h2>
+        <ul className="mt-[var(--space-12)] flex flex-col gap-[var(--space-12)]">
           {product.whyHelpful.map((reason) => (
-            <li key={reason} className="type-body text-[var(--text-primary)]">
+            <li
+              key={reason}
+              className="type-body flex items-start gap-[var(--space-12)] text-[var(--text-primary)]"
+            >
+              <span
+                aria-hidden
+                className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--card-primary)]"
+              >
+                <Check className="size-3 text-[var(--text-brand)]" />
+              </span>
               {reason}
             </li>
           ))}
         </ul>
-        {/* US-010, verbatim from Product. "medical device" is flagged as a
-            likely typo for "medical advice", but left as approved pending
-            Product confirmation - do not silently correct. */}
-        <p className="type-eyebrow mt-[var(--space-12)] normal-case tracking-normal text-[var(--text-secondary)]">
-          Product recommendation are general suggestions and do not replace professional medical device
-        </p>
       </article>
 
-      <p className="type-label text-[var(--text-primary)]">{priceLabel}</p>
-
-      {product.retailers.map((retailer) => (
+      {retailer ? (
         <RetailerLink
-          key={retailer.slug}
           href={retailer.url}
           retailerSlug={retailer.slug}
           productId={product.id}
-          className="type-label inline-flex h-12 items-center justify-center rounded-[var(--radius-button-primary)] bg-[var(--brand-secondary)] px-[var(--space-24)] text-white"
+          className="type-card-title inline-flex h-14 w-full items-center justify-center gap-[var(--space-8)] rounded-[var(--radius-button-primary)] bg-[var(--brand-secondary)] px-[var(--space-24)] text-[var(--card-primary)]"
         >
-          Shop Now on {retailer.name}
+          Shop Now
+          <ExternalLink className="size-4" aria-hidden />
         </RetailerLink>
-      ))}
+      ) : null}
 
       <Link
         href={backHref}
