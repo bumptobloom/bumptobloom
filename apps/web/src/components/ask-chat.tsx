@@ -73,6 +73,7 @@ export function AskChat({
   );
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const dictation = useDictation((text) =>
     setQuestion((current) => appendTranscript(current, text, 2000)),
   );
@@ -124,6 +125,21 @@ export function AskChat({
       console.error('[ask] Failed to save feedback:', err);
     }
   };
+
+  useEffect(() => {
+    const container = chatScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    });
+  }, [messages, loading]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -252,8 +268,8 @@ export function AskChat({
   return (
     <>
       <style>{askWaveStyle}</style>
-    <section className="flex min-h-[calc(100dvh-9rem)] flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto">
+    <section className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col">
+      <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto ask-chat-scroll">
         {messages.length === 0 ? (
 <div className="flex items-start gap-[var(--space-12)]">
             <img src="/Avatar.svg" alt="Bloom" className="size-10 shrink-0 object-contain" />
@@ -325,10 +341,10 @@ export function AskChat({
                               aria-hidden="true"
                             />
                             <div className="min-w-0">
-                              <p style={{ font: 'var(--type-card-title)' }}>
+                              <p className="text-base font-semibold leading-6">
                                 Contact your pediatrician
                               </p>
-                              <p className="mt-[var(--space-12)]">
+                              <p className="mt-2 text-sm leading-6">
                                 {message.content}
                               </p>
                             </div>
@@ -434,11 +450,13 @@ export function AskChat({
 
       </div>
 
-      <StandingDisclaimer text={ASK_DISCLAIMER} />
+      {messages.length === 0 ? (
+        <StandingDisclaimer text={ASK_DISCLAIMER} />
+      ) : null}
 
       <form
         onSubmit={handleSubmit}
-        className="mt-4 flex items-center gap-2"
+        className="mt-4 flex shrink-0 items-center gap-2"
       >
         <div className="relative min-w-0 flex-1">
           {dictation.listening ? (
