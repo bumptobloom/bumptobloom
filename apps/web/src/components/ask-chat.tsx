@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
-import { Send, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
+import { Mic, Send, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
 
 import type {
   ConversationHistory,
@@ -10,10 +10,33 @@ import type {
 } from '@/lib/api/types';
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
-import { AskAnswer } from '@/components/ask-answer';
-import { dedupeSources } from '@/lib/ask/dedupe-sources';
-import { Callout } from '@/components/ui/callout';
-import { REDIRECT_ANSWER } from '@btb/shared';
+        <div className="relative min-w-0 flex-1">
+          <input
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            disabled={loading}
+            maxLength={2000}
+            placeholder="Ask Bloom something…"
+            aria-label="Ask Bloom a question"
+            className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] py-3 pl-5 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+          />
+          {dictation.supported ? (
+            <button
+              type="button"
+              onClick={dictation.toggle}
+              disabled={loading}
+              aria-label={dictation.listening ? 'Stop dictating' : 'Dictate your question'}
+              aria-pressed={dictation.listening}
+              className={`absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full transition disabled:opacity-40 ${
+                dictation.listening
+                  ? 'text-[var(--text-accent-terracotta)]'
+                  : 'text-[var(--text-secondary)]'
+              }`}
+            >
+              <Mic className="size-5" aria-hidden />
+            </button>
+          ) : null}
+        </div>
 
 type AskSource = {
   title: string;
@@ -69,11 +92,20 @@ export function AskChat({
   );
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
+  const dictation = useDictation((text) =>
+    setQuestion((current) => appendTranscript(current, text, 2000)),
+  );
+  const dictation = useDictation((text) =>
+    setQuestion((current) => appendTranscript(current, text, 2000)),
+  );
   const [error, setError] = useState<string | null>(null);
 
   // The greeting's timestamp. It is the time this screen was opened, which is
   // the only honest time for a message that was never sent.
   const [greetingTime, setGreetingTime] = useState<string | null>(null);
+  const dictation = useDictation((text) =>
+    setQuestion((current) => appendTranscript(current, text, 2000)),
+  );
 
   useEffect(() => {
     function stamp() {
@@ -381,15 +413,33 @@ export function AskChat({
         onSubmit={handleSubmit}
         className="mt-4 flex items-center gap-2"
       >
-        <input
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          disabled={loading}
-          maxLength={2000}
-          placeholder="Ask Bloom something…"
-          aria-label="Ask Bloom a question"
-          className="min-w-0 flex-1 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
-        />
+        <div className="relative min-w-0 flex-1">
+          <input
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            disabled={loading}
+            maxLength={2000}
+            placeholder="Ask Bloom something…"
+            aria-label="Ask Bloom a question"
+            className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] py-3 pl-5 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+          />
+          {dictation.supported ? (
+            <button
+              type="button"
+              onClick={dictation.toggle}
+              disabled={loading}
+              aria-label={dictation.listening ? 'Stop dictating' : 'Dictate your question'}
+              aria-pressed={dictation.listening}
+              className={`absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full transition disabled:opacity-40 ${
+                dictation.listening
+                  ? 'text-[var(--text-accent-terracotta)]'
+                  : 'text-[var(--text-secondary)]'
+              }`}
+            >
+              <Mic className="size-5" aria-hidden />
+            </button>
+          ) : null}
+        </div>
 
         <button
           type="submit"
@@ -400,6 +450,11 @@ export function AskChat({
           <Send className="size-4" />
         </button>
       </form>
+      {dictation.blocked ? (
+        <p role="status" className="mt-2 text-xs text-[var(--text-secondary)]">
+          Microphone access is blocked, so dictation can&apos;t start. You can type your question instead.
+        </p>
+      ) : null}
     </section>
   );
 }
