@@ -11,6 +11,11 @@ import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
 import { researchAskQuestion, AskResearchResult, AskSource } from './web-research';
+import {
+  assertUnderRateLimit,
+  RateLimitCheckError,
+  RateLimitExceededError,
+} from './rate-limit';
 
 export interface AnswerQuestionInput {
   userId: string;
@@ -41,6 +46,13 @@ export class AskUpstreamError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'AskUpstreamError';
+  }
+}
+
+export class RateLimitedError extends Error {
+  constructor() {
+    super("You've reached today's Ask Bloom limit. Please come back tomorrow.");
+    this.name = 'RateLimitedError';
   }
 }
 
@@ -84,6 +96,24 @@ export async function answerQuestion(
 
   if (parentError || !parentProfile) {
     throw new AskUpstreamError('Parent profile not found for the authenticated user');
+  }
+
+  const redirectToHealth = shouldRedirectToHealth(input.question);
+
+  if (!redirectToHealth) {
+    try {
+      await assertUnderRateLimit(parentProfile.id);
+    } catch (err) {
+      if (err instanceof RateLimitExceededError) {
+        throw new RateLimitedError();
+      }
+
+      if (err instanceof RateLimitCheckError) {
+        throw new AskUpstreamError(err.message);
+      }
+
+      throw err;
+    }
   }
 
   let conversationId: string;
@@ -131,7 +161,7 @@ export async function answerQuestion(
   // The triage guard runs before any model call. A redirect never "answers"
   // via a model, so there is nothing truthful to put in ai_runs's NOT NULL
   // prompt_version/model columns -- no run row exists for this case.
-  if (shouldRedirectToHealth(input.question)) {
+  if (redirectToHealth) {
     const { error: refusalMessageError } = await supabase
       .from('ai_messages')
       .insert({ conversation_id: conversationId, role: 'assistant', content: REDIRECT_ANSWER });

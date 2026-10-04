@@ -34,6 +34,6 @@ export function shouldRedirectToHealth(question: string): boolean {
 // symptom question no longer helps, so the refusal points to a real
 // doctor and 911 directly instead of the Health tab.
 export const REDIRECT_ANSWER =
-  "That sounds like a question about how your baby is feeling. I'm not " +
-  'able to help with symptoms — please contact your pediatrician, and ' +
-  'call 911 right away if it feels urgent.';
+  "I am sorry your baby isn't feeling well. I know this can be worrying. " +
+  "Please contact your pediatrician for guidance. If you're concerned this " +
+  "may be an emergency, please call 911.";

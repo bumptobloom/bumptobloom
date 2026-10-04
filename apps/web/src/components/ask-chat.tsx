@@ -1,18 +1,19 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
-import { Send, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Send, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
 
 import type {
   ConversationHistory,
   ConversationMessage,
 } from '@/lib/api/types';
 
-import { BloomAvatar } from '@/components/bloom-avatar';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { AskAnswer } from '@/components/ask-answer';
 import { dedupeSources } from '@/lib/ask/dedupe-sources';
+import { Callout } from '@/components/ui/callout';
+import { REDIRECT_ANSWER } from '@btb/shared';
 
 type AskSource = {
   title: string;
@@ -25,6 +26,7 @@ type Message = {
   sources?: AskSource[];
   messageId?: string | null;
   feedback?: 1 | -1 | null;
+  redirectedToHealth?: boolean;
 };
 
 type AskResponse = {
@@ -45,6 +47,7 @@ function toMessage(message: ConversationMessage): Message {
     sources: message.sources,
     messageId: message.role === 'assistant' ? message.id : null,
     feedback: message.feedback,
+    redirectedToHealth: message.content === REDIRECT_ANSWER,
   };
 }
 
@@ -65,6 +68,7 @@ export function AskChat({
     initialConversation?.id ?? null,
   );
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   // The greeting's timestamp. It is the time this screen was opened, which is
@@ -119,10 +123,11 @@ export function AskChat({
 
     const trimmedQuestion = question.trim();
 
-    if (!trimmedQuestion || loading) {
+    if (!trimmedQuestion || loading || submittingRef.current) {
       return;
     }
 
+    submittingRef.current = true;
     setError(null);
     setLoading(true);
 
@@ -170,6 +175,7 @@ export function AskChat({
         sources: result.sources,
         messageId: result.messageId,
         feedback: null,
+        redirectedToHealth: result.redirectedToHealth,
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -219,6 +225,7 @@ export function AskChat({
       }
     } finally {
       window.clearTimeout(timeoutId);
+      submittingRef.current = false;
       setLoading(false);
     }
   };
@@ -237,7 +244,7 @@ export function AskChat({
       <div className="flex-1 space-y-4 overflow-y-auto">
         {messages.length === 0 ? (
 <div className="flex items-start gap-[var(--space-12)]">
-            <BloomAvatar className="size-10 shrink-0" />
+            <img src="/Avatar.svg" alt="Bloom" className="size-10 shrink-0 object-contain" />
 
             <div className="min-w-0 flex-1">
               <div className="rounded-[var(--radius-20)] bg-[var(--card-primary)] p-[var(--space-16)]">
@@ -251,8 +258,7 @@ export function AskChat({
                 <hr className="my-[var(--space-12)] border-t border-[var(--border-subtle)]" />
 
                 <p
-                  className="text-[var(--text-primary)]"
-                  style={{ font: 'var(--type-body)' }}
+                  className="text-sm leading-6 text-[var(--text-primary)]"
                 >
                   Ask me anything about feeding, sleeping, diaper and digestion,
                   crying and soothing, mom&apos;s wellbeing.
@@ -268,7 +274,6 @@ export function AskChat({
               </p>
             </div>
           </div>
-          </div>
         ) : (
           messages.map((message, index) => (
             <div
@@ -276,14 +281,30 @@ export function AskChat({
               className={
                 message.role === 'user'
                   ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
-                  : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
+                  : message.redirectedToHealth
+                    ? 'mr-8'
+                    : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
               }
             >
-                {message.role === 'assistant' ? (
-                <AskAnswer content={message.content} />
-              ) : (
-                <div className="whitespace-pre-wrap">{message.content}</div>
-              )}
+                {message.role === 'assistant' && message.redirectedToHealth ? (
+                  <Callout variant="safety">
+                    <div className="flex items-start gap-[var(--space-12)]">
+                      <TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <p style={{ font: 'var(--type-card-title)' }}>
+                          Contact your pediatrician
+                        </p>
+                        <p className="mt-[var(--space-12)]">
+                          {message.content}
+                        </p>
+                      </div>
+                    </div>
+                  </Callout>
+                ) : message.role === 'assistant' ? (
+                  <AskAnswer content={message.content} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                )}
 
               {message.role === 'assistant' && message.sources?.length ? (
                 <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
