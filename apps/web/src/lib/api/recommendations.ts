@@ -1,3 +1,4 @@
+import { resolveRecommendationMonths } from './recommendation-month';
 import { notFound } from 'next/navigation';
 import type { RecommendationsResponse, RecommendedProductDetail } from './types';
 
@@ -391,14 +392,16 @@ export const MOCK_RECOMMENDATIONS: RecommendationsResponse = {
  */
 export async function getRecommendations(
   _babyId: string,
+  babyAgeMonths: number,
   selectedMonth?: number,
 ): Promise<RecommendationsResponse> {
-  const babyMonth = Math.floor(MOCK_RECOMMENDATIONS.ageMonths);
-  const month = selectedMonth === undefined ? babyMonth : Math.min(24, Math.max(0, selectedMonth));
+  // The baby's real age, passed in by the page. This used to come from
+  // MOCK_RECOMMENDATIONS, which made every baby 18 months old.
+  const { month } = resolveRecommendationMonths(babyAgeMonths, selectedMonth);
   const bucketIndex = AGE_BUCKETS.findIndex((b) => b.label === bucketForMonth(month).label);
 
   return {
-    ageMonths: MOCK_RECOMMENDATIONS.ageMonths,
+    ageMonths: babyAgeMonths,
     bucketLabel: AGE_BUCKETS[bucketIndex].label,
     // Four per bucket, in catalogue order: 0-3 is 0-3, 4-8 is 4-7, and so on.
     products: MOCK_PRODUCT_DETAILS.slice(bucketIndex * 4, bucketIndex * 4 + 4),
