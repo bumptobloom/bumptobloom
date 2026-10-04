@@ -11,7 +11,7 @@ import type {
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { useDictation } from '@/components/use-dictation';
-import { appendTranscript } from '@/components/ask/append-transcript';
+import { appendTranscript } from '@/lib/ask/append-transcript';
 import { AskAnswer } from '@/components/ask-answer';
 import { dedupeSources } from '@/lib/ask/dedupe-sources';
 import { REDIRECT_ANSWER } from '@btb/shared';
