@@ -31,7 +31,18 @@ type SpeechRecognitionWindow = Window & {
 };
 
 export function useDictation(onText: (text: string) => void) {
-  const [supported, setSupported] = useState(false);
+  const [supported] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const speechWindow = window as SpeechRecognitionWindow;
+
+    return Boolean(
+      speechWindow.SpeechRecognition ||
+        speechWindow.webkitSpeechRecognition,
+    );
+  });
   const [listening, setListening] = useState(false);
   const [blocked, setBlocked] = useState(false);
 
@@ -52,8 +63,6 @@ export function useDictation(onText: (text: string) => void) {
     if (!SpeechRecognition) {
       return;
     }
-
-    setSupported(true);
 
     const recognition = new SpeechRecognition();
 
