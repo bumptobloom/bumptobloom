@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
-import { Mic, Send, ThumbsDown, ThumbsUp, TriangleAlert } from 'lucide-react';
+import { Mic, Send, TriangleAlert } from 'lucide-react';
 
 import type {
   ConversationHistory,
@@ -277,107 +277,125 @@ export function AskChat({
           messages.map((message, index) => (
             <div
               key={`${message.messageId ?? message.role}-${index}`}
-              className={
-                message.role === 'user'
-                  ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
-                  : 'mr-8'
-              }
+              className="w-full"
             >
-              {message.role === 'assistant' ? (
-                <div className="flex items-start gap-[var(--space-12)]">
+              {message.role === 'user' ? (
+                <div className="flex flex-col items-end">
+                  <div className="max-w-[82%] rounded-[18px] bg-[#355b35] px-4 py-3 text-sm text-white">
+                    <div className="whitespace-pre-wrap">
+                      {message.content}
+                    </div>
+                  </div>
+
+                  <span className="mt-2 mr-1 text-xs text-[#667064]">
+                    {new Date().toLocaleTimeString([], {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
                   <img
                     src="/Avatar.svg"
                     alt="Bloom"
-                    className="size-10 shrink-0 object-contain"
+                    className="mt-1 size-10 shrink-0 object-contain"
                   />
 
-                  <div className="min-w-0 flex-1">
-                {message.role === 'assistant' && message.redirectedToHealth ? (
-                  <Callout variant="safety">
-                    <div className="flex items-start gap-[var(--space-12)]">
-                      <TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-                      <div className="min-w-0">
-                        <p style={{ font: 'var(--type-card-title)' }}>
-                          Contact your pediatrician
-                        </p>
-                        <p className="mt-[var(--space-12)]">
-                          {message.content}
-                        </p>
-                      </div>
+                  <div className="min-w-0 max-w-[82%]">
+                    <div className="rounded-[18px] border border-[#e6dfcf] bg-[#fffdf7] px-4 py-3 text-sm text-[var(--text-primary)]">
+                      {message.redirectedToHealth ? (
+                        <Callout variant="safety">
+                          <div className="flex items-start gap-[var(--space-12)]">
+                            <TriangleAlert
+                              className="mt-0.5 size-5 shrink-0"
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0">
+                              <p style={{ font: 'var(--type-card-title)' }}>
+                                Contact your pediatrician
+                              </p>
+                              <p className="mt-[var(--space-12)]">
+                                {message.content}
+                              </p>
+                            </div>
+                          </div>
+                        </Callout>
+                      ) : (
+                        <AskAnswer content={message.content} />
+                      )}
+
+                      {message.sources?.length ? (
+                        <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
+                          <p className="text-xs font-medium text-[var(--text-secondary)]">
+                            Sources:{' '}
+                            {dedupeSources(message.sources).map(
+                              (source, sourceIndex) => (
+                                <span key={source.url}>
+                                  {sourceIndex > 0 ? ' · ' : ''}
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                                  >
+                                    {source.title}
+                                  </a>
+                                </span>
+                              ),
+                            )}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
-                  </Callout>
-                ) : message.role === 'assistant' ? (
-                  <AskAnswer content={message.content} />
-                ) : (
-                  <div className="whitespace-pre-wrap">{message.content}</div>
-                )}
 
-              {message.role === 'assistant' && message.sources?.length ? (
-                <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
-                  <p className="text-xs font-medium text-[var(--text-secondary)]">
-                    Sources:{' '}
-                    {dedupeSources(message.sources).map((source, sourceIndex) => (
-                      <span key={source.url}>
-                        {sourceIndex > 0 ? ' · ' : ''}
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
-                        >
-                          {source.title}
-                        </a>
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="text-xs text-[#667064]">
+                        {new Date().toLocaleTimeString([], {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                        })}
                       </span>
-                    ))}
-                  </p>
-                </div>
-              ) : null}
 
-              {message.role === 'assistant' ? (
-                <p className="mt-[var(--space-8)] text-[12px] text-[var(--text-secondary)]">
-                  {message.createdAt
-                    ? new Intl.DateTimeFormat('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      }).format(new Date(message.createdAt))
-                    : '\u00a0'}
-                </p>
-              ) : null}
+                      {message.messageId ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleFeedback(message.messageId!, 1)
+                            }
+                            aria-label="Helpful answer"
+                            aria-pressed={message.feedback === 1}
+                            className={`text-lg leading-none transition-transform duration-150 ${
+                              message.feedback === 1
+                                ? 'scale-125'
+                                : 'scale-100'
+                            }`}
+                          >
+                            👍
+                          </button>
 
-              {message.role === 'assistant' && message.messageId ? (
-                <div className="mt-2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleFeedback(message.messageId!, 1)}
-                    aria-label="Helpful answer"
-                    aria-pressed={message.feedback === 1}
-                    className={`rounded-full p-2 transition ${
-                      message.feedback === 1
-                        ? 'bg-[var(--surface-terra)]'
-                        : 'hover:bg-[var(--card-primary)]'
-                    }`}
-                  >
-                    <ThumbsUp className="size-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleFeedback(message.messageId!, -1)}
-                    aria-label="Unhelpful answer"
-                    aria-pressed={message.feedback === -1}
-                    className={`rounded-full p-2 transition ${
-                      message.feedback === -1
-                        ? 'bg-[var(--surface-terra)]'
-                        : 'hover:bg-[var(--card-primary)]'
-                    }`}
-                  >
-                    <ThumbsDown className="size-4" />
-                  </button>
-                </div>
-              ) : null}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleFeedback(message.messageId!, -1)
+                            }
+                            aria-label="Unhelpful answer"
+                            aria-pressed={message.feedback === -1}
+                            className={`text-lg leading-none transition-transform duration-150 ${
+                              message.feedback === -1
+                                ? 'scale-125'
+                                : 'scale-100'
+                            }`}
+                          >
+                            👎
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
           ))
         )}
