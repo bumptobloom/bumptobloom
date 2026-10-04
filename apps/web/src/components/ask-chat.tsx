@@ -11,6 +11,8 @@ import type {
 
 import { BloomAvatar } from '@/components/bloom-avatar';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { useDictation } from '@/components/use-dictation';
+import { appendTranscript } from '@/lib/ask/append-transcript';
 
 type AskSource = {
   title: string;
@@ -68,6 +70,9 @@ export function AskChat({
   // The greeting's timestamp. It is the time this screen was opened, which is
   // the only honest time for a message that was never sent.
   const [greetingTime, setGreetingTime] = useState<string | null>(null);
+  const dictation = useDictation((text) =>
+    setQuestion((current) => appendTranscript(current, text, 2000)),
+  );
 
   useEffect(() => {
     function stamp() {
@@ -353,13 +358,24 @@ export function AskChat({
             className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] py-3 pl-5 pr-12 text-[0.95rem] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
           />
 
-          {/* Drawn because 05a shows it. It does nothing yet: dictation is not
-              built, and the PMs logged "no voice-to-text" separately. Not a
-              button, so nothing invites a tap that would do nothing. */}
-          <Mic
-            aria-hidden
-            className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-[var(--text-secondary)]"
-          />
+          {/* Dictation fills the box and never sends (05a). Shown only where
+              the browser supports speech recognition; elsewhere she types. */}
+          {dictation.supported ? (
+            <button
+              type="button"
+              onClick={dictation.toggle}
+              disabled={loading}
+              aria-label={dictation.listening ? 'Stop dictating' : 'Dictate your question'}
+              aria-pressed={dictation.listening}
+              className={`absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full transition disabled:opacity-40 ${
+                dictation.listening
+                  ? 'text-[var(--text-accent-terracotta)]'
+                  : 'text-[var(--text-secondary)]'
+              }`}
+            >
+              <Mic className="size-5" aria-hidden />
+            </button>
+          ) : null}
         </div>
 
         <button
@@ -371,6 +387,12 @@ export function AskChat({
           <Send className="size-5" />
         </button>
       </form>
+
+      {dictation.blocked ? (
+        <p role="status" className="mt-2 text-xs text-[var(--text-secondary)]">
+          Microphone access is blocked, so dictation can&apos;t start. You can type your question instead.
+        </p>
+      ) : null}
 
       {/* Below the composer, per 05a. The composer is the thing a parent
           reaches for, so it sits directly under the conversation; the
