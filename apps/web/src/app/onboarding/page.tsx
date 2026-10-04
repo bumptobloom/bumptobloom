@@ -16,7 +16,7 @@ export default async function OnboardingPage() {
     <div className="min-h-dvh w-full bg-[var(--canvas)]">
       <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-[var(--page-surface)] px-6 pt-12 pb-10">
         <BrandMark />
-        <h1 className="mt-8 mb-4 text-center text-[1.25rem] text-[var(--text-primary)]">
+        <h1 className="type-card-title mt-8 mb-5 text-center text-[var(--text-primary)]">
           Where are you in your journey?
         </h1>
         <JourneySelect />

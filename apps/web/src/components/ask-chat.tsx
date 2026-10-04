@@ -11,10 +11,9 @@ import type {
 
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { useDictation } from '@/components/use-dictation';
-import { appendTranscript } from '@/lib/ask/append-transcript';
+import { appendTranscript } from '@/components/ask/append-transcript';
 import { AskAnswer } from '@/components/ask-answer';
 import { dedupeSources } from '@/lib/ask/dedupe-sources';
-import { Callout } from '@/components/ui/callout';
 import { REDIRECT_ANSWER } from '@btb/shared';
 
 type AskSource = {
@@ -452,10 +451,6 @@ export function AskChat({
 
       </div>
 
-      {messages.length === 0 ? (
-        <StandingDisclaimer text={ASK_DISCLAIMER} />
-      ) : null}
-
       <form
         onSubmit={handleSubmit}
         className="mt-4 flex shrink-0 items-center gap-2"
@@ -536,11 +531,18 @@ export function AskChat({
           type="submit"
           disabled={loading || !question.trim()}
           aria-label="Send question"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)] disabled:opacity-40"
+          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--brand-secondary)] text-[#fffcf4] disabled:opacity-40"
         >
-          <Send className="size-4" />
+          <Send className="size-5" />
         </button>
       </form>
+
+      {/* Below the composer, per 05a. The composer is the thing a parent
+          reaches for, so it sits directly under the conversation; the
+          standing disclaimer reads as a footnote beneath it. */}
+      <div className="mt-3">
+        <StandingDisclaimer text={ASK_DISCLAIMER} />
+      </div>
     </section>
     </>
   );
