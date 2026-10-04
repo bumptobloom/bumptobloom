@@ -42,6 +42,15 @@ type AskResponse = {
 const ASK_DISCLAIMER =
   'AI can make mistakes. For medical concerns, contact a qualified healthcare professional. If you are experiencing a medical emergency, call 911.';
 
+  function formatMessageTime(createdAt?: string): string {
+  if (!createdAt) return '';
+
+  return new Date(createdAt).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 function toMessage(message: ConversationMessage): Message {
   return {
     role: message.role === 'assistant' ? 'assistant' : 'user',
@@ -157,10 +166,16 @@ export function AskChat({
     setError(null);
     setLoading(true);
 
-    setMessages((current) => [
-      ...current,
-      { role: 'user', content: trimmedQuestion },
-    ]);
+    const createdAt = new Date().toISOString();
+
+  setMessages((current) => [
+    ...current,
+    {
+      role: 'user',
+      content: trimmedQuestion,
+      createdAt,
+    },
+  ]);
 
     setQuestion('');
 
@@ -316,10 +331,7 @@ export function AskChat({
                   </div>
 
                   <span className="mt-2 mr-1 text-xs text-[#667064]">
-                    {new Date().toLocaleTimeString([], {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
+                    {formatMessageTime(message.createdAt)}
                   </span>
                 </div>
               ) : (
@@ -381,10 +393,7 @@ export function AskChat({
 
                     <div className="mt-2 flex items-center gap-3">
                       <span className="text-xs text-[#667064]">
-                        {new Date().toLocaleTimeString([], {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
+                        {formatMessageTime(message.createdAt)}
                       </span>
 
                       {message.messageId ? (
