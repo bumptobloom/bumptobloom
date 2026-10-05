@@ -186,7 +186,7 @@ export default async function HomePage() {
         <Heart className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
         <div>
           <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
-          <p className="mt-[var(--space-4)] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
+          <p className="mt-[var(--space-4)] max-w-[269px] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
             Record your child&apos;s temperature, notes, and readings in one place.
           </p>
         </div>
@@ -202,7 +202,8 @@ export default async function HomePage() {
         />
         <div>
           <h2 className="text-[var(--text-accent-warm)]" style={{ font: 'var(--type-label)' }}>Ask Bloom</h2>
-          <p className="mt-[var(--space-4)] text-[var(--text-accent-warm)]" style={{ font: 'var(--type-body)' }}>
+          <p className="mt-[var(--space-4)] max-w-[269px] text-[var(--text-accent-warm)]" 
+style={{ font: 'var(--type-body)' }}>
             Answers tailored to exactly where you are.
           </p>
         </div>
