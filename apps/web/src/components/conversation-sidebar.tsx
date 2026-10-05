@@ -396,6 +396,7 @@ export function ConversationSidebar({
       />
 
       <aside
+        id="conversation-history"
         className={`absolute left-0 top-0 flex h-full w-[82%] max-w-[320px] flex-col border-r border-[var(--border-subtle)] bg-[var(--card-primary)] shadow-xl transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}

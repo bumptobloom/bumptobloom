@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { Menu } from 'lucide-react';
 
 import type {
   ConversationHistory,
@@ -196,6 +197,19 @@ export function AskConversationShell({
     // cannot fix it: main's specified height is auto, so h-full on a child
     // collapses to content height. It has to be flex all the way down.
     <section className="relative flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 shrink-0">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open conversation history"
+          aria-expanded={sidebarOpen}
+          aria-controls="conversation-history"
+          className="flex size-12 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] text-[var(--text-primary)] shadow-sm transition hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
+        >
+          <Menu className="size-6" aria-hidden />
+        </button>
+      </div>
+
       {conversationError ? (
         <p
           role="alert"
