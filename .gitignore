@@ -50,3 +50,6 @@ __pycache__/
 
 # Local scratch, never part of a PR
 .btb-draft/
+
+# Supabase local temp files
+supabase/.temp/

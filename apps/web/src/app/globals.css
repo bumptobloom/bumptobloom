@@ -224,3 +224,39 @@
   .type-track-unit  { font: var(--type-track-unit); }
   .type-nav-chevron { font: var(--type-nav-chevron); }
 }
+
+
+/* Ask Bloom chat: floating rounded draggable scrollbar */
+.ask-chat-scroll {
+  overflow-y: scroll;
+  padding-right: 24px;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(120, 120, 120, 0.75) transparent;
+}
+
+.ask-chat-scroll::-webkit-scrollbar {
+  width: 10px;
+  background: transparent;
+}
+
+.ask-chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ask-chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.75);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.ask-chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 160, 160, 0.9);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.ask-chat-scroll::-webkit-scrollbar-button {
+  display: none;
+}

@@ -23,23 +23,44 @@ const TABS = [
 ] as const;
 
 function TabIcon({ href }: { href: string }) {
-  const iconClass = 'size-6';
+  const iconBox = 'flex size-6 items-center justify-center leading-none';
+  const lucideClass = 'size-6';
 
   switch (href) {
     case '/home':
-      return <span className="text-[1.35rem]" aria-hidden>🏠</span>;
+      return (
+        <span className={`${iconBox} text-[1.25rem]`} aria-hidden>
+          🏠
+        </span>
+      );
 
     case '/learn':
-      return <span className="text-[1.35rem]" aria-hidden>📖</span>;
+      return (
+        <span className={`${iconBox} text-[1.25rem]`} aria-hidden>
+          📖
+        </span>
+      );
 
     case '/ask':
-      return <MessageCircle className={iconClass} aria-hidden />;
+      return (
+        <span className={iconBox}>
+          <MessageCircle className={lucideClass} aria-hidden />
+        </span>
+      );
 
     case '/track':
-      return <span className="text-[1.35rem]" aria-hidden>🌱</span>;
+      return (
+        <span className={`${iconBox} text-[1.25rem]`} aria-hidden>
+          🌱
+        </span>
+      );
 
     case '/vitals':
-      return <Heart className={iconClass} aria-hidden />;
+      return (
+        <span className={iconBox}>
+          <Heart className={lucideClass} aria-hidden />
+        </span>
+      );
 
     default:
       return null;
