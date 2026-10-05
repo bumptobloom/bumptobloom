@@ -14,11 +14,14 @@ import {
   validatePasswordConfirmation,
 } from '@/lib/validation/password';
 
-function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
-    <span className="mb-1.5 block text-[0.78rem] text-[var(--text-primary)]">
+    <label
+      htmlFor={htmlFor}
+      className="mb-1.5 block text-[0.78rem] text-[var(--text-primary)]"
+    >
       {children}
-    </span>
+    </label>
   );
 }
 
@@ -114,9 +117,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSignup} className="space-y-3.5">
           <div>
-            <label htmlFor="signup-name">
-              <FieldLabel>Full name</FieldLabel>
-            </label>
+            <FieldLabel htmlFor="signup-name">Full name</FieldLabel>
             <TextField
               id="signup-name"
               type="text"
@@ -131,9 +132,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="signup-email">
-              <FieldLabel>Email</FieldLabel>
-            </label>
+            <FieldLabel htmlFor="signup-email">Email</FieldLabel>
             <TextField
               id="signup-email"
               type="email"
@@ -148,9 +147,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="signup-password">
-              <FieldLabel>Password</FieldLabel>
-            </label>
+            <FieldLabel htmlFor="signup-password">Password</FieldLabel>
             <TextField
               id="signup-password"
               revealable
@@ -169,9 +166,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="signup-confirm-password">
-              <FieldLabel>Confirm password</FieldLabel>
-            </label>
+            <FieldLabel htmlFor="signup-confirm-password">Confirm password</FieldLabel>
             <TextField
               id="signup-confirm-password"
               revealable
