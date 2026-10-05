@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Karla, Petrona, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./serwist-provider";
@@ -37,10 +37,25 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#faf3e7",
+};
+
 export const metadata: Metadata = {
   title: "BumpToBloom",
   description:
     "Milestones, guidance and answers for the first two years. An educational tool, not a medical device.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "BumpToBloom",
+  },
 };
 
 export default function RootLayout({

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'BumpToBloom Application',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#000000',
+    background_color: '#faf3e7',
+    theme_color: '#faf3e7',
     icons: [
       {
         src: '/favicon.ico',
