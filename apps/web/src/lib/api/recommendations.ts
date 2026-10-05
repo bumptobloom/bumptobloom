@@ -296,14 +296,14 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
   // 15–24 months
   {
     id: 'a1111111-1111-4111-a111-111111111111',
-    name: 'Toddler Balance Bike',
+    name: 'Balance Bike',
     emoji: '🚲',
     rationale: 'Supports balance, coordination and confidence through active outdoor play.',
-    description: 'A sturdy, pedal-free balance bike that helps toddlers build balance and steering coordination before moving to pedal bikes.',
+    description: 'Supports balance, coordination and confidence through active outdoor play.',
     whyHelpful: [
-      'Builds balance and bilateral motor coordination',
-      'Encourages outdoor physical activity and independence',
-      'Boosts confidence and gross motor stability',
+      'Builds balance and coordination',
+      'Encourages independence',
+      'Boosts confidence and gross motor skills',
     ],
     indicativePriceCents: 4500,
     imageUrl: '/products/toddler-balance-bike.webp',
