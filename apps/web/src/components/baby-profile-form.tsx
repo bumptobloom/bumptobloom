@@ -105,7 +105,8 @@ export default function BabyProfileForm({
 
       if (photo) {
         try {
-          await uploadBabyAvatar(result.id, photo);
+          const uploadedAvatar = await uploadBabyAvatar(result.id, photo);
+          setPhotoPreview(uploadedAvatar.avatarUrl);
         } catch {
           photoUploadError =
             'Baby profile saved, but the photo could not be uploaded. Please try again.';
@@ -195,6 +196,7 @@ export default function BabyProfileForm({
           required
           value={birthDate}
           onChange={(event) => setBirthDate(event.target.value)}
+          aria-label="Date of birth, MM/DD/YYYY"
           className={dateFieldClass}
         />
       </label>

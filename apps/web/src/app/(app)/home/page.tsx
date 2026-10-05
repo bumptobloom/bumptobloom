@@ -2,7 +2,7 @@ import { TrackPageView } from '@/components/track-page-view';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Pencil, Thermometer, MessageCircle, ShoppingBag } from 'lucide-react';
+import { Pencil, Heart, MessageCircleMore, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { getMonthTypical } from '@/lib/api/month-guidance';
@@ -12,9 +12,15 @@ export const dynamic = 'force-dynamic';
 
 /** "Tuesday, September 1st" — the format PRD US-001 asks for. */
 function formatToday(now: Date): string {
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
-  const month = now.toLocaleDateString('en-US', { month: 'long' });
-  const d = now.getDate();
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(now);
+  const month = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(now);
+  const d = now.getUTCDate();
   const suffix =
     d % 10 === 1 && d !== 11 ? 'st'
     : d % 10 === 2 && d !== 12 ? 'nd'
@@ -26,15 +32,13 @@ function formatToday(now: Date): string {
 /** Add months to a date, clamping to the last valid day of the target month. */
 function addMonthsClamped(from: Date, months: number): Date {
   const d = new Date(from);
-  const targetDay = d.getDate();
-  d.setDate(1);
-  d.setMonth(d.getMonth() + months);
+  const targetDay = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + months);
   const daysInTargetMonth = new Date(
-    d.getFullYear(),
-    d.getMonth() + 1,
-    0,
-  ).getDate();
-  d.setDate(Math.min(targetDay, daysInTargetMonth));
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  d.setUTCDate(Math.min(targetDay, daysInTargetMonth));
   return d;
 }
 
@@ -50,20 +54,20 @@ function addMonthsClamped(from: Date, months: number): Date {
  * anniversary, and step back one month only if that date is still ahead.
  */
 function completedMonths(birthDate: string, now: Date): number {
-  const birth = new Date(`${birthDate}T00:00:00`);
+  const birth = new Date(`${birthDate}T00:00:00.000Z`);
   let months =
-    (now.getFullYear() - birth.getFullYear()) * 12 +
-    (now.getMonth() - birth.getMonth());
+    (now.getUTCFullYear() - birth.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - birth.getUTCMonth());
   if (addMonthsClamped(birth, months).getTime() > now.getTime()) months -= 1;
   return Math.min(24, Math.max(0, months));
 }
 
 function monthAndDay(birthDate: string, now: Date): string {
-  const birth = new Date(`${birthDate}T00:00:00`);
+  const birth = new Date(`${birthDate}T00:00:00.000Z`);
 
   let months =
-    (now.getFullYear() - birth.getFullYear()) * 12 +
-    (now.getMonth() - birth.getMonth());
+    (now.getUTCFullYear() - birth.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - birth.getUTCMonth());
 
   let anniversary = addMonthsClamped(birth, months);
   if (anniversary.getTime() > now.getTime()) {
@@ -83,11 +87,11 @@ function monthAndDay(birthDate: string, now: Date): string {
 /** Figma 03 reads "essentials for Emma at 18 months". `ageLabel` returns
  *  "Newborn" under one month, which makes that sentence read "at Newborn". */
 function ageForCopy(birthDate: string, now: Date): string {
-  const birth = new Date(`${birthDate}T00:00:00`);
+  const birth = new Date(`${birthDate}T00:00:00.000Z`);
   let months =
-    (now.getFullYear() - birth.getFullYear()) * 12 +
-    (now.getMonth() - birth.getMonth());
-  if (now.getDate() < birth.getDate()) months -= 1;
+    (now.getUTCFullYear() - birth.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - birth.getUTCMonth());
+  if (now.getUTCDate() < birth.getUTCDate()) months -= 1;
   months = Math.max(0, months);
 
   if (months === 0) return 'in the first month';
@@ -126,6 +130,9 @@ export default async function HomePage() {
             alt={`${baby.name}'s profile photo`}
             width={64}
             height={64}
+            priority
+            sizes="64px"
+            unoptimized
             className="size-16 shrink-0 rounded-[var(--radius-16)] object-cover"
           />
         ) : (
@@ -176,7 +183,7 @@ export default async function HomePage() {
         href="/vitals"
         className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--surface-terra)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <Thermometer className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
+        <Heart className="size-6 shrink-0 text-[var(--text-accent-terracotta)]" aria-hidden />
         <div>
           <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
           <p className="mt-[var(--space-4)] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
@@ -189,7 +196,10 @@ export default async function HomePage() {
         href="/ask"
         className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--brand-primary)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <MessageCircle className="size-6 shrink-0 text-[var(--text-accent-warm)]" aria-hidden />
+        <MessageCircleMore
+          className="size-6 shrink-0 text-[var(--text-accent-warm)]"
+          aria-hidden
+        />
         <div>
           <h2 className="text-[var(--text-accent-warm)]" style={{ font: 'var(--type-label)' }}>Ask Bloom</h2>
           <p className="mt-[var(--space-4)] text-[var(--text-accent-warm)]" style={{ font: 'var(--type-body)' }}>
@@ -199,24 +209,39 @@ export default async function HomePage() {
       </Link>
 
       <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
-        <div className="flex items-start gap-[var(--space-12)]">
-          <ShoppingBag className="mt-0.5 size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
+        <div className="flex items-center gap-[var(--space-12)]">
+          <ShoppingBag
+            className="size-6 shrink-0 text-[var(--text-brand)]"
+            aria-hidden
+          />
+
           <div>
-            <h2 className="text-[var(--text-primary)]" style={{ font: 'var(--type-label)' }}>Recommended for You</h2>
-            <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
-              Age-appropriate essentials for {firstName} {ageForCopy(baby.birthDate, now)}.
+            <h2
+              className="text-[var(--text-primary)]"
+              style={{ font: 'var(--type-label)' }}
+            >
+              Recommended for You
+            </h2>
+
+            <p
+              className="mt-[var(--space-4)] text-[var(--text-secondary)]"
+              style={{ font: 'var(--type-body)' }}
+            >
+              Age-appropriate essentials for {firstName}{' '}
+              {ageForCopy(baby.birthDate, now)}.
             </p>
+
+            <Link
+              href="/recommended"
+              className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+            >
+              View recommendations →
+            </Link>
           </div>
         </div>
-        <Link
-          href="/recommended"
-          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
-        >
-          View recommendations →
-        </Link>
       </article>
 
-      <StandingDisclaimer text={home.disclaimer} />
+      <StandingDisclaimer text="BumpToBloom aims to help you feel informed and supported, not to replace guidance from your child’s pediatrician. When in doubt, please reach out to a healthcare professional." />
     </section>
   );
 }
