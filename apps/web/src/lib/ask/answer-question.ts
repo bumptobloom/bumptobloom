@@ -13,6 +13,7 @@ import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
 import { researchAskQuestion, AskResearchResult, AskSource } from './web-research';
+import { isValidTimeZone } from '@/lib/api/temperature-utils';
 import {
   assertUnderRateLimit,
   RateLimitCheckError,
@@ -24,6 +25,7 @@ export interface AnswerQuestionInput {
   babyId: string;
   conversationId: string | null;
   question: string;
+  timezone?: string | null;
 }
 
 export interface AnswerQuestionResult {
@@ -92,12 +94,27 @@ export async function answerQuestion(
 
   const { data: parentProfile, error: parentError } = await supabase
     .from('parent_profiles')
-    .select('id')
+    .select('id, timezone')
     .eq('user_id', input.userId)
     .single();
 
   if (parentError || !parentProfile) {
     throw new AskUpstreamError('Parent profile not found for the authenticated user');
+  }
+
+  // The layout sync normally stores this, but Ask must not depend on a
+  // separate client effect having completed before the daily limit runs.
+  // Use the device zone from this request when it is valid, then persist it
+  // for Vitals and future Ask requests.
+  if (isValidTimeZone(input.timezone) && input.timezone !== parentProfile.timezone) {
+    const { error: timezoneError } = await supabase
+      .from('parent_profiles')
+      .update({ timezone: input.timezone })
+      .eq('id', parentProfile.id);
+
+    if (timezoneError) {
+      throw new AskUpstreamError(`Failed to save parent timezone: ${timezoneError.message}`);
+    }
   }
 
   const redirectToHealth = shouldRedirectToHealth(input.question);

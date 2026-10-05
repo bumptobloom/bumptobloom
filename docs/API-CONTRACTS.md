@@ -322,7 +322,7 @@ Ask is a **Next.js route handler**, because it needs the OpenAI key and that key
 must never reach the browser.
 
 ```
-POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
+POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "...", "timezone": "America/Los_Angeles" }
 GET  /api/ask/conversations
 GET  /api/ask/conversations/:id
 PATCH /api/ask/conversations/:id
