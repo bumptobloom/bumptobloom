@@ -187,7 +187,7 @@ export default async function HomePage() {
         <div>
           <h2 className="text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-label)' }}>Vitals</h2>
           <p className="mt-[var(--space-4)] max-w-[269px] text-[var(--text-accent-terracotta)]" style={{ font: 'var(--type-body)' }}>
-            Record your child&apos;s temperature,notes, and readings in one place.
+            Record your child&apos;s temperature, notes, and readings in one place.
           </p>
         </div>
       </Link>
