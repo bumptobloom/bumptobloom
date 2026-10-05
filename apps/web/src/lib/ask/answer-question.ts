@@ -4,8 +4,10 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
   calculateBabyAge,
   buildAskBabyContext,
+  isAskQuestionInScope,
   shouldRedirectToHealth,
   REDIRECT_ANSWER,
+  UNSUPPORTED_ASK_ANSWER,
 } from '@btb/shared';
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
@@ -179,6 +181,29 @@ export async function answerQuestion(
       model: null,
       validationOk: true,
       redirectedToHealth: true,
+    };
+  }
+
+  // Ask only supports the five topics shown in its greeting. Decline before
+  // age-context assembly, web research, or any model call.
+  if (!isAskQuestionInScope(input.question)) {
+    const { error: unsupportedMessageError } = await supabase
+      .from('ai_messages')
+      .insert({ conversation_id: conversationId, role: 'assistant', content: UNSUPPORTED_ASK_ANSWER });
+
+    if (unsupportedMessageError) {
+      console.error('[ask] Failed to log unsupported-topic message:', unsupportedMessageError.message);
+    }
+
+    return {
+      answer: UNSUPPORTED_ASK_ANSWER,
+      sources: [],
+      conversationId,
+      messageId: null,
+      promptVersion: null,
+      model: null,
+      validationOk: true,
+      redirectedToHealth: false,
     };
   }
 

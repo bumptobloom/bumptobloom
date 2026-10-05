@@ -1,4 +1,5 @@
 export { shouldRedirectToHealth, REDIRECT_ANSWER } from './triage-guard.ts';
+export { isAskQuestionInScope, UNSUPPORTED_ASK_ANSWER } from './ask-scope.ts';
 export {
   calculateBabyAge,
   deriveAgeMonths,
