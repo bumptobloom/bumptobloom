@@ -63,3 +63,47 @@ export async function createParentProfile(fullName?: string) {
 
   return { success: true as const };
 }
+
+/** Store the parent's IANA timezone so Vitals uses the parent's local day and clock. */
+export async function setParentTimezone(timezone: string) {
+  if (!isValidTimeZone(timezone)) {
+    console.error('[setParentTimezone] Rejected timezone:', timezone);
+    return { success: false as const };
+  }
+
+  const supabase = await createServerClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error('[setParentTimezone] No authenticated user found:', userError?.message);
+    return { success: false as const };
+  }
+
+  const { error: updateError } = await supabase
+    .from('parent_profiles')
+    .update({ timezone })
+    .eq('user_id', user.id);
+
+  if (updateError) {
+    console.error('[setParentTimezone] Failed to store timezone:', updateError.message);
+    return { success: false as const };
+  }
+
+  return { success: true as const };
+}
+
+function isValidTimeZone(timezone: unknown): timezone is string {
+  if (typeof timezone !== 'string' || timezone.length === 0 || timezone.length > 64) {
+    return false;
+  }
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
+}

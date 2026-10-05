@@ -26,7 +26,6 @@ type Message = {
   content: string;
   sources?: AskSource[];
   messageId?: string | null;
-  feedback?: 1 | -1 | null;
   redirectedToHealth?: boolean;
   createdAt?: string;
 };
@@ -57,7 +56,6 @@ function toMessage(message: ConversationMessage): Message {
     content: message.content,
     sources: message.sources,
     messageId: message.role === 'assistant' ? message.id : null,
-    feedback: message.feedback,
     redirectedToHealth: message.content === REDIRECT_ANSWER,
     createdAt: message.createdAt,
   };
@@ -103,36 +101,6 @@ export function AskChat({
 
     stamp();
   }, []);
-
-
-  const handleFeedback = async (
-    messageId: string,
-    feedback: 1 | -1,
-  ) => {
-    setMessages((current) =>
-      current.map((message) =>
-        message.messageId === messageId
-          ? { ...message, feedback }
-          : message,
-      ),
-    );
-
-    try {
-      const response = await fetch('/api/ask/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ messageId, feedback }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Could not save feedback.');
-      }
-    } catch (err) {
-      console.error('[ask] Failed to save feedback:', err);
-    }
-  };
 
   useEffect(() => {
     const container = chatScrollRef.current;
@@ -215,7 +183,6 @@ export function AskChat({
         content: result.answer,
         sources: result.sources,
         messageId: result.messageId,
-        feedback: null,
         redirectedToHealth: result.redirectedToHealth,
         createdAt: new Date().toISOString(),
       };
@@ -352,14 +319,14 @@ export function AskChat({
       aria-hidden="true"
     />
 
-    <p className="text-[17px] font-medium leading-6 text-[#A96F4F]">
+    <p className="text-[16px] font-medium leading-[22px] text-[#A96F4F]">
       Contact your pediatrician
     </p>
   </div>
 
   <div className="mt-3 border-t border-[#E5D3C5]" />
 
-  <p className="mt-4 text-[16px] leading-6 text-[#36453A]">
+  <p className="mt-4 text-[14px] leading-[22px] text-[#36453A]">
     {message.content}
   </p>
 </div>
@@ -396,41 +363,6 @@ export function AskChat({
                         {formatMessageTime(message.createdAt)}
                       </span>
 
-                      {message.messageId ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleFeedback(message.messageId!, 1)
-                            }
-                            aria-label="Helpful answer"
-                            aria-pressed={message.feedback === 1}
-                            className={`text-lg leading-none transition-transform duration-150 ${
-                              message.feedback === 1
-                                ? 'scale-125'
-                                : 'scale-100'
-                            }`}
-                          >
-                            👍
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleFeedback(message.messageId!, -1)
-                            }
-                            aria-label="Unhelpful answer"
-                            aria-pressed={message.feedback === -1}
-                            className={`text-lg leading-none transition-transform duration-150 ${
-                              message.feedback === -1
-                                ? 'scale-125'
-                                : 'scale-100'
-                            }`}
-                          >
-                            👎
-                          </button>
-                        </>
-                      ) : null}
                     </div>
                   </div>
                 </div>
