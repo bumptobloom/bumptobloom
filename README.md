@@ -1,109 +1,127 @@
 # BumpToBloom
 
-A trusted, personalized companion for first-time moms — babies 0–24 months.
+A trusted, personalized companion for first-time moms with babies from birth through 24 months.
 
-**6-week MVP.** 11 engineers, 5 timezones, everyone part-time. That constraint
-shapes every decision in this repo: contracts are frozen early, work is split so
-squads don't block each other, and everything happens through PRs because we are
-almost never online at the same time.
+BumpToBloom is a mobile-first progressive web app that provides age-based guidance, milestone tracking, temperature logging, product recommendations, and a safety-focused AI companion.
+
+## MVP demo features
+
+- Account creation, login, and password recovery
+- Baby onboarding and profile management
+- Personalized Home experience based on the baby’s age
+- Learn guidance with trusted sources and safety disclaimers
+- Track Milestones with age-based milestone checklists
+- Vitals temperature log with method, notes, daily summaries, and local-time display
+- Recommended for You with month-based product recommendations
+- Ask Bloom with guarded health-question routing
+- Structured Ask Bloom answers with sources and response feedback
+- Row Level Security for parent and baby data
+- Monitoring through Sentry and PostHog
 
 ---
 
 ## Quick start
 
-```bash
+```
 git clone git@github.com:bumptobloom/bumptobloom.git
 cd bumptobloom
 npm install
-cp .env.example apps/web/.env.local     # ask your pod lead for the real values
-npm run dev                    # http://localhost:3000
+cp .env.example apps/web/.env.local
+npm run dev
 ```
 
-Open it on your laptop, then open the same URL on your phone (same wifi, use your
-machine's local IP). It's the same app — a phone-shaped column on desktop,
-full-screen on mobile.
+Open ```http://localhost:3000``` The .env.example file contains placeholders only. Ask a project lead for the approved Development values. Never commit or share real keys.
+For mobile testing, open the local network URL on a phone connected to the same Wi-Fi network.
 
-New to the project? Read [docs/ONBOARDING.md](docs/ONBOARDING.md) first — it takes
-about fifteen minutes and will save you a week.
+New contributors should read [docs/ONBOARDING.md](docs/ONBOARDING.md) first.
 
 ---
 
-## What's in here
+## Project structure
 
 ```
 apps/
-  web/                Next.js 15 + TypeScript + Tailwind + shadcn/ui.
-                      A progressive web app — installable, works offline.
+  web/
+    src/app/          Next.js App Router pages and routes
+    src/components/   Reusable UI components
+    src/lib/          API clients, validation, safety, and utilities
+
 packages/
-  fever-rules/        Pure TypeScript triage engine. No I/O, no deps, heavily
-                      tested. Runs IN THE BROWSER so it works offline.
-                      See docs/SAFETY.md before touching it.
-  shared/             Shared types, Zod schemas, and the Ask triage guard.
+  fever-rules/        Deterministic temperature safety rules
+  shared/             Shared types, schemas, and Ask safety logic
+
 supabase/
-  migrations/         SQL, applied in order. Never edit an applied migration.
-  seed/               Reference data (milestones, content, products).
-data/                 Source datasets before they become seeds.
-docs/                 Architecture, decisions, API contracts, safety.
+  migrations/         Database migrations, applied in order
+  seed/               Reference content, milestones, and products
+
+data/                 Source datasets
+docs/                 Architecture, safety, decisions, and API contracts
 ```
 
 ## Stack
 
-| Layer | Choice |
+| Layer | Technology |
 |---|---|
 | App | Next.js 15, TypeScript, App Router |
 | Styling | Tailwind + shadcn/ui |
-| Installable | `manifest.json` + service worker (Serwist) |
-| Data + auth | Supabase, guarded by Row Level Security |
+| Installable | Web manifest and service worker |
+| Database and auth | Supabase with Row Level Security |
 | Server logic | Next.js API routes and Server Actions |
-| Ask / AI | OpenAI, called server-side only |
+| AI | OpenAI, called server-side only |
 | Hosting | Vercel |
+| Monitoring | Sentry and PostHog |
 | CI | GitHub Actions |
-| Tests | Vitest, Playwright, node:test |
+| Testing | TypeScript, ESLint, node:test, and package-level tests |
 
-It's a **progressive web app** — a website people can install. On Android and
-desktop Chrome the browser offers an Install prompt; on iPhone it's Share → Add
-to Home Screen. Once installed it opens without browser chrome and works offline.
+BumpToBloom is a progressive web app. It can be installed from supported mobile and desktop browsers.
 
 Why this and not an app-store app: see
 [ADR-006](docs/DECISIONS.md#adr-006--a-progressive-web-app-phone-shaped-on-any-device).
 
 ---
 
-## The three rules
+## Safety principles
 
-**1. Age is derived, never stored.** `babies.birth_date` is the source of truth.
-Nothing in this codebase stores "month 8". This closes the "what about babies
-between months?" question and gives us preterm corrected-age support for free.
+**1. Age is derived, never stored** 
+`babies.birth_date` is the source of truth. The application derives the baby’s age instead of storing a permanent month value.
 
-**2. AI never decides anything medical.** Ask cannot influence a fever result.
-Triage is `packages/fever-rules` — deterministic, no network, running in the
-browser. A mother at 2am on bad wifi still gets an answer, because the service
-worker caches the shell.
+**2. AI does not make medical decisions** 
+Ask Bloom does not determine fever severity or provide medical triage. Temperature safety logic is handled by the deterministic `packages/fever-rules` package.
 
-**2b. No secret ever reaches the browser.** Anything prefixed `NEXT_PUBLIC_` is
-readable by anyone who opens devtools. That's fine for the Supabase URL and anon
-key, because RLS protects the data. The OpenAI key is server-side only.
+Medical or emergency questions are redirected to appropriate professional care.
 
-**3. Contracts before code.** [docs/API-CONTRACTS.md](docs/API-CONTRACTS.md) is
-frozen at the end of Week 1. Frontend builds against it, backend builds to it,
-and neither waits for the other. Changing a frozen contract needs a PR that both
-squad leads approve.
+**3. No server secrets reach the browser** 
+Values beginning with ```NEXT_PUBLIC_``` are visible in the browser. The Supabase public client values are protected by Row Level Security.
+
+The OpenAI key and other server secrets are used only on the server.
+
+**4. User data is isolated** 
+Supabase Row Level Security ensures that each parent can access only their own account, baby profile, and related data.
+
+**5. Contracts before code** 
+Shared contracts and safety rules are documented before implementation. Changes to frozen contracts require review from the relevant squad leads.
 
 ---
 
-## Squads
+## Development checks
 
-| Squad | Owns | Lead |
-|---|---|---|
-| Platform | repo, auth, schema, deploys, design system | Sonakshi |
-| Experience | Home, Track, Learn UI | Joanna |
-| AI | Ask route, prompts, evals | Keya |
-| Data & Safety | datasets, fever rules, Act catalog | Natasha |
-
-Full roster, capacity and timezone map in [docs/ONBOARDING.md](docs/ONBOARDING.md).
+Run these before opening a pull request:
+```
+git diff --check
+npm run typecheck --workspaces --if-present
+npm run lint --workspaces --if-present
+npm run test --workspaces --if-present
+npm run build --workspace=apps/web
+```
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Short version: branch off `develop`,
-name it `squad/short-description`, keep PRs under ~400 lines, and get one review
-from someone outside your squad.
+See [CONTRIBUTING.md](CONTRIBUTING.md). 
+
+In short:
+- Branch from the latest main
+- Use a focused branch name such as squad/short-description
+- Keep pull requests small and focused
+- Include testing information in the pull request
+- Request review from someone outside your squad
+- Never commit credentials, environment files, or private user data
