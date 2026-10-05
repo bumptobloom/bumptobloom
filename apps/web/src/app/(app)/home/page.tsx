@@ -213,16 +213,16 @@ export default async function HomePage() {
             <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
               Age-appropriate essentials for {firstName} {ageForCopy(baby.birthDate, now)}.
             </p>
-          </div>
-        </div>
-        <Link
-          href="/recommended"
-          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+            <Link
+               href="/recommended"
+               className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold 
+text-[var(--text-brand)] underline-offset-4 hover:underline"
         >
-          View recommendations →
-        </Link>
-      </article>
-
+               View recommendations →
+             </Link>
+	   </div>
+	 </div>
+       </article>
       <StandingDisclaimer text="BumpToBloom aims to help you feel informed and supported, not to replace guidance from your child’s pediatrician. When in doubt, please reach out to a healthcare professional." />
     </section>
   );
