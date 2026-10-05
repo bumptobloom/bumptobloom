@@ -1,18 +1,20 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 
-import { Mic, Send, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Mic, Send, TriangleAlert } from 'lucide-react';
 
 import type {
   ConversationHistory,
   ConversationMessage,
 } from '@/lib/api/types';
 
-import { BloomAvatar } from '@/components/bloom-avatar';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
+import { useDictation } from '@/components/use-dictation';
+import { appendTranscript } from '@/lib/ask/append-transcript';
 import { AskAnswer } from '@/components/ask-answer';
 import { dedupeSources } from '@/lib/ask/dedupe-sources';
+import { REDIRECT_ANSWER } from '@btb/shared';
 
 type AskSource = {
   title: string;
@@ -25,6 +27,8 @@ type Message = {
   sources?: AskSource[];
   messageId?: string | null;
   feedback?: 1 | -1 | null;
+  redirectedToHealth?: boolean;
+  createdAt?: string;
 };
 
 type AskResponse = {
@@ -38,6 +42,15 @@ type AskResponse = {
 const ASK_DISCLAIMER =
   'AI can make mistakes. For medical concerns, contact a qualified healthcare professional. If you are experiencing a medical emergency, call 911.';
 
+  function formatMessageTime(createdAt?: string): string {
+  if (!createdAt) return '';
+
+  return new Date(createdAt).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
 function toMessage(message: ConversationMessage): Message {
   return {
     role: message.role === 'assistant' ? 'assistant' : 'user',
@@ -45,6 +58,8 @@ function toMessage(message: ConversationMessage): Message {
     sources: message.sources,
     messageId: message.role === 'assistant' ? message.id : null,
     feedback: message.feedback,
+    redirectedToHealth: message.content === REDIRECT_ANSWER,
+    createdAt: message.createdAt,
   };
 }
 
@@ -65,6 +80,11 @@ export function AskChat({
     initialConversation?.id ?? null,
   );
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
+  const dictation = useDictation((text) =>
+    setQuestion((current) => appendTranscript(current, text, 2000)),
+  );
   const [error, setError] = useState<string | null>(null);
 
   // The greeting's timestamp. It is the time this screen was opened, which is
@@ -114,22 +134,48 @@ export function AskChat({
     }
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  useEffect(() => {
+    const container = chatScrollRef.current;
 
-    const trimmedQuestion = question.trim();
-
-    if (!trimmedQuestion || loading) {
+    if (!container) {
       return;
     }
 
+    requestAnimationFrame(() => {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    });
+  }, [messages, loading]);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (dictation.listening) {
+      dictation.stop();
+    }
+
+    const trimmedQuestion = question.trim();
+
+    if (!trimmedQuestion || loading || submittingRef.current) {
+      return;
+    }
+
+    submittingRef.current = true;
     setError(null);
     setLoading(true);
 
-    setMessages((current) => [
-      ...current,
-      { role: 'user', content: trimmedQuestion },
-    ]);
+    const createdAt = new Date().toISOString();
+
+  setMessages((current) => [
+    ...current,
+    {
+      role: 'user',
+      content: trimmedQuestion,
+      createdAt,
+    },
+  ]);
 
     setQuestion('');
 
@@ -170,6 +216,8 @@ export function AskChat({
         sources: result.sources,
         messageId: result.messageId,
         feedback: null,
+        redirectedToHealth: result.redirectedToHealth,
+        createdAt: new Date().toISOString(),
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -219,16 +267,26 @@ export function AskChat({
       }
     } finally {
       window.clearTimeout(timeoutId);
+      submittingRef.current = false;
       setLoading(false);
     }
   };
 
+  const askWaveStyle = `
+    @keyframes askWave {
+      from { transform: scaleY(0.45); opacity: 0.55; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+  `;
+
   return (
-    <section className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+    <>
+      <style>{askWaveStyle}</style>
+    <section className="flex h-[calc(100dvh-9rem)] min-h-0 flex-col">
+      <div ref={chatScrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto ask-chat-scroll">
         {messages.length === 0 ? (
-          <div className="flex items-start gap-[var(--space-12)]">
-            <BloomAvatar className="size-10 shrink-0" />
+<div className="flex items-start gap-[var(--space-12)]">
+            <img src="/Avatar.svg" alt="Bloom" className="size-10 shrink-0 object-contain" />
 
             <div className="min-w-0 flex-1">
               <div className="rounded-[var(--radius-20)] bg-[var(--card-primary)] p-[var(--space-16)]">
@@ -242,8 +300,7 @@ export function AskChat({
                 <hr className="my-[var(--space-12)] border-t border-[var(--border-subtle)]" />
 
                 <p
-                  className="text-[var(--text-primary)]"
-                  style={{ font: 'var(--type-body)' }}
+                  className="text-sm leading-6 text-[var(--text-primary)]"
                 >
                   Ask me anything about feeding, sleeping, diaper and digestion,
                   crying and soothing, mom&apos;s wellbeing.
@@ -263,77 +320,135 @@ export function AskChat({
           messages.map((message, index) => (
             <div
               key={`${message.messageId ?? message.role}-${index}`}
-              className={
-                message.role === 'user'
-                  ? 'ml-8 rounded-[18px] bg-[var(--surface-terra)] px-4 py-3 text-sm text-[var(--text-primary)]'
-                  : 'mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-primary)]'
-              }
+              className="w-full"
             >
-                {message.role === 'assistant' ? (
-                <AskAnswer content={message.content} />
+              {message.role === 'user' ? (
+                <div className="flex flex-col items-end">
+                  <div className="max-w-[82%] rounded-[18px] bg-[#355b35] px-4 py-3 text-sm text-white">
+                    <div className="whitespace-pre-wrap">
+                      {message.content}
+                    </div>
+                  </div>
+
+                  <span className="mt-2 mr-1 text-xs text-[#667064]">
+                    {formatMessageTime(message.createdAt)}
+                  </span>
+                </div>
               ) : (
-                <div className="whitespace-pre-wrap">{message.content}</div>
-              )}
+                <div className="flex items-start gap-3">
+                  <img
+                    src="/Avatar.svg"
+                    alt="Bloom"
+                    className="mt-1 size-10 shrink-0 object-contain"
+                  />
 
-              {message.role === 'assistant' && message.sources?.length ? (
-                <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
-                  <p className="text-xs font-medium text-[var(--text-secondary)]">
-                    Sources:{' '}
-                    {dedupeSources(message.sources).map((source, sourceIndex) => (
-                      <span key={source.url}>
-                        {sourceIndex > 0 ? ' · ' : ''}
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
-                        >
-                          {source.title}
-                        </a>
+                  <div className="min-w-0 max-w-[82%]">
+                    <div className="rounded-[18px] border border-[#e6dfcf] bg-[#fffdf7] px-4 py-3 text-sm text-[var(--text-primary)]">
+                      {message.redirectedToHealth ? (
+                        <div className="w-full max-w-[380px] rounded-[16px] border border-[#B88768] bg-[#F7E6D8] px-5 py-5">
+  <div className="flex items-center gap-3">
+    <TriangleAlert
+      className="size-5 shrink-0 text-[#A96F4F]"
+      aria-hidden="true"
+    />
+
+    <p className="text-[17px] font-medium leading-6 text-[#A96F4F]">
+      Contact your pediatrician
+    </p>
+  </div>
+
+  <div className="mt-3 border-t border-[#E5D3C5]" />
+
+  <p className="mt-4 text-[16px] leading-6 text-[#36453A]">
+    {message.content}
+  </p>
+</div>
+                      ) : (
+                        <AskAnswer content={message.content} />
+                      )}
+
+                      {message.sources?.length ? (
+                        <div className="mt-3 border-t border-[var(--border-subtle)] pt-3">
+                          <p className="text-xs font-medium text-[var(--text-secondary)]">
+                            Sources:{' '}
+                            {dedupeSources(message.sources).map(
+                              (source, sourceIndex) => (
+                                <span key={source.url}>
+                                  {sourceIndex > 0 ? ' · ' : ''}
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                                  >
+                                    {source.title}
+                                  </a>
+                                </span>
+                              ),
+                            )}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-2 flex items-center gap-3">
+                      <span className="text-xs text-[#667064]">
+                        {formatMessageTime(message.createdAt)}
                       </span>
-                    ))}
-                  </p>
-                </div>
-              ) : null}
 
-              {message.role === 'assistant' && message.messageId ? (
-                <div className="mt-3 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleFeedback(message.messageId!, 1)}
-                    aria-label="Helpful answer"
-                    aria-pressed={message.feedback === 1}
-                    className={`rounded-full p-2 transition ${
-                      message.feedback === 1
-                        ? 'bg-[var(--surface-terra)]'
-                        : 'hover:bg-[var(--card-primary)]'
-                    }`}
-                  >
-                    <ThumbsUp className="size-4" />
-                  </button>
+                      {message.messageId ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleFeedback(message.messageId!, 1)
+                            }
+                            aria-label="Helpful answer"
+                            aria-pressed={message.feedback === 1}
+                            className={`text-lg leading-none transition-transform duration-150 ${
+                              message.feedback === 1
+                                ? 'scale-125'
+                                : 'scale-100'
+                            }`}
+                          >
+                            👍
+                          </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleFeedback(message.messageId!, -1)}
-                    aria-label="Unhelpful answer"
-                    aria-pressed={message.feedback === -1}
-                    className={`rounded-full p-2 transition ${
-                      message.feedback === -1
-                        ? 'bg-[var(--surface-terra)]'
-                        : 'hover:bg-[var(--card-primary)]'
-                    }`}
-                  >
-                    <ThumbsDown className="size-4" />
-                  </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleFeedback(message.messageId!, -1)
+                            }
+                            aria-label="Unhelpful answer"
+                            aria-pressed={message.feedback === -1}
+                            className={`text-lg leading-none transition-transform duration-150 ${
+                              message.feedback === -1
+                                ? 'scale-125'
+                                : 'scale-100'
+                            }`}
+                          >
+                            👎
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              ) : null}
+              )}
             </div>
           ))
         )}
 
         {loading ? (
-          <div className="mr-8 rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
-            Bloom is thinking…
+          <div className="mr-8 flex items-start gap-[var(--space-12)]">
+            <img
+              src="/Avatar.svg"
+              alt="Bloom"
+              className="size-10 shrink-0 object-contain"
+            />
+            <div className="rounded-[18px] bg-[var(--card-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              Bloom is thinking…
+            </div>
           </div>
         ) : null}
 
@@ -342,30 +457,83 @@ export function AskChat({
             {error}
           </p>
         ) : null}
+
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="mt-4 flex items-center gap-2"
+        className="mt-4 flex shrink-0 items-center gap-2"
       >
         <div className="relative min-w-0 flex-1">
-          <input
-            value={question}
-            onChange={(event) => setQuestion(event.target.value)}
-            disabled={loading}
-            maxLength={2000}
-            placeholder="Ask Bloom…"
-            aria-label="Ask Bloom a question"
-            className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] py-3 pl-5 pr-12 text-[0.95rem] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
-          />
+          {dictation.listening ? (
+            <div
+              className="flex h-12 w-full items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-3"
+              aria-live="polite"
+              aria-label="Recording voice input"
+            >
+              <button
+                type="button"
+                onClick={dictation.stop}
+                disabled={loading}
+                aria-label="Stop recording"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:bg-[var(--surface-terra)]"
+              >
+                <span className="text-xl leading-none">×</span>
+              </button>
 
-          {/* Drawn because 05a shows it. It does nothing yet: dictation is not
-              built, and the PMs logged "no voice-to-text" separately. Not a
-              button, so nothing invites a tap that would do nothing. */}
-          <Mic
-            aria-hidden
-            className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-[var(--text-secondary)]"
-          />
+              <div className="flex min-w-0 flex-1 items-center gap-[3px]">
+                {Array.from({ length: 28 }).map((_, index) => (
+                  <span
+                    key={index}
+                    className="w-[2px] rounded-full bg-[var(--text-accent-terracotta)]"
+                    style={{
+                      height: `${6 + ((index * 7) % 18)}px`,
+                      animation: `askWave 0.8s ease-in-out ${index * 0.035}s infinite alternate`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--text-accent-terracotta)]">
+                <span className="size-2 animate-pulse rounded-full bg-[var(--text-accent-terracotta)]" />
+                Recording
+              </span>
+
+              <button
+                type="button"
+                onClick={dictation.stop}
+                disabled={loading}
+                aria-label="Stop recording"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-terra)] text-[var(--text-primary)]"
+              >
+                <span className="size-3 rounded-[2px] bg-current" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={loading}
+                maxLength={2000}
+                placeholder="Ask Bloom something…"
+                aria-label="Ask Bloom a question"
+                className="w-full rounded-full border border-[var(--border-subtle)] bg-[var(--card-primary)] px-4 py-3 pr-12 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--border-card)]"
+              />
+
+              {dictation.supported ? (
+                <button
+                  type="button"
+                  onClick={dictation.toggle}
+                  disabled={loading}
+                  aria-label="Dictate your question"
+                  className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] disabled:opacity-40"
+                >
+                  <Mic className="size-5" aria-hidden />
+                </button>
+              ) : null}
+            </>
+          )}
         </div>
 
         <button
@@ -385,5 +553,6 @@ export function AskChat({
         <StandingDisclaimer text={ASK_DISCLAIMER} />
       </div>
     </section>
+    </>
   );
 }
