@@ -72,7 +72,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Provides engaging visual stimulation during tummy time and floor play',
     ],
     indicativePriceCents: 1200,
-    imageUrl: '',
+    imageUrl: '/products/high-contrast-art-cards.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=high+contrast+baby+art+cards' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=high+contrast+baby+cards' },
@@ -91,7 +91,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Makes daily tummy time more engaging and comfortable',
     ],
     indicativePriceCents: 1500,
-    imageUrl: '',
+    imageUrl: '/products/tummy-time-water-mat.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=tummy+time+water+mat' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=tummy+time+water+mat' },
@@ -110,7 +110,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Establishes a predictable, calming sleep association',
     ],
     indicativePriceCents: 2200,
-    imageUrl: '',
+    imageUrl: '/products/sound_machine.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=baby+sound+machine+white+noise' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=baby+white+noise+machine' },
@@ -129,7 +129,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Durable fabric withstands frequent daily laundering',
     ],
     indicativePriceCents: 1400,
-    imageUrl: '',
+    imageUrl: '/products/muslin_burp_cloth.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=organic+cotton+muslin+burp+cloths' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=muslin+burp+cloths' },
@@ -150,7 +150,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Promotes safe oral motor exploration and sensory integration',
     ],
     indicativePriceCents: 900,
-    imageUrl: '',
+    imageUrl: '/products/silicone-teether.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=silicone+baby+teether' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=silicone+baby+teether' },
@@ -169,7 +169,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Contoured grip supports comfortable parent-assisted and baby self-feeding',
     ],
     indicativePriceCents: 1000,
-    imageUrl: '',
+    imageUrl: '/products/starter_spoon_set.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=silicone+baby+starter+spoons' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=baby+silicone+spoons' },
@@ -188,7 +188,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Encourages rolling, reaching, and early gross motor movement',
     ],
     indicativePriceCents: 1100,
-    imageUrl: '',
+    imageUrl: '/products/textured-rattle-ball.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=sensory+rattle+ball+baby' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=baby+sensory+ball' },
@@ -207,7 +207,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Durable, chewable fabric supports early book handling',
     ],
     indicativePriceCents: 1300,
-    imageUrl: '',
+    imageUrl: '/products/crinkle-peekaboo-book.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=soft+crinkle+baby+book' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=soft+crinkle+book' },
@@ -228,7 +228,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Weighted straw enables drinking from any angle',
     ],
     indicativePriceCents: 1200,
-    imageUrl: '',
+    imageUrl: '/products/trainer_cup.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=weighted+straw+baby+trainer+cup' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=baby+straw+training+cup' },
@@ -247,7 +247,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Activity center provides engaging sitting and standing play',
     ],
     indicativePriceCents: 3800,
-    imageUrl: '',
+    imageUrl: '/products/push_walker.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=wooden+push+walker+baby' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=wooden+baby+push+walker' },
@@ -266,7 +266,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Fosters trial-and-error problem solving and spatial awareness',
     ],
     indicativePriceCents: 1600,
-    imageUrl: '',
+    imageUrl: '/products/shape-sorting-stacker.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=shape+sorter+cube+baby' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=shape+sorter+toy' },
@@ -285,7 +285,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Divided sections keep food separate for selective early eaters',
     ],
     indicativePriceCents: 1400,
-    imageUrl: '',
+    imageUrl: '/products/plate.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=silicone+suction+baby+plate' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=silicone+suction+plate' },
@@ -306,7 +306,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Boosts confidence and gross motor stability',
     ],
     indicativePriceCents: 4500,
-    imageUrl: '',
+    imageUrl: '/products/toddler-balance-bike.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=balance+bike+toddler' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=toddler+balance+bike' },
@@ -325,7 +325,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Fosters positive early parent-child reading habits',
     ],
     indicativePriceCents: 1600,
-    imageUrl: '',
+    imageUrl: '/products/first-words-board-books.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=board+books+toddler+first+words' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=toddler+board+books' },
@@ -344,7 +344,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Introduces early physics concepts like gravity, balance, and stability',
     ],
     indicativePriceCents: 2400,
-    imageUrl: '',
+    imageUrl: '/products/wooden-building-blocks.webp',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=wooden+building+blocks+toddler' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=wooden+blocks+toddler' },
@@ -363,7 +363,7 @@ export const MOCK_PRODUCT_DETAILS: RecommendedProductDetail[] = [
       'Lightweight frame allows toddlers to move the stool independently',
     ],
     indicativePriceCents: 1800,
-    imageUrl: '',
+    imageUrl: '/products/toddler_step_stool.jpg',
     retailers: [
       { slug: 'amazon', name: 'Amazon', url: 'https://www.amazon.com/s?k=toddler+step+stool+bathroom' },
       { slug: 'target', name: 'Target', url: 'https://www.target.com/s?searchTerm=toddler+step+stool' },

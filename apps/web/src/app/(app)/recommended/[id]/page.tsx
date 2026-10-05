@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Check, ExternalLink, Sparkles } from 'lucide-react';
-import { getProduct, PRODUCT_DETAIL_DISCLAIMER, productIcon } from '@/lib/api/recommendations';
+import { getProduct, PRODUCT_DETAIL_DISCLAIMER } from '@/lib/api/recommendations';
+import { ProductImage } from '@/components/recommended/product-image';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { TrackPageView } from '@/components/track-page-view';
 import { RetailerLink } from '@/components/retailer-link';
@@ -54,12 +55,7 @@ export default async function ProductDetailPage({
     <section className="flex flex-col gap-[var(--space-20)]">
       <TrackPageView event="product_viewed" properties={{ product_id: product.id }} />
 
-      <div
-        aria-hidden
-        className="flex aspect-square w-full items-center justify-center rounded-[var(--radius-16)] bg-[var(--surface-terra)] text-[6rem]"
-      >
-        {productIcon(product)}
-      </div>
+      <ProductImage product={product} variant="hero" />
 
       <div className="flex flex-col gap-[var(--space-8)]">
         <h1 className="type-card-title text-[var(--text-primary)]">{product.name}</h1>

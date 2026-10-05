@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { TrackPageView } from '@/components/track-page-view';
 import { getHome } from '@/lib/api/home';
-import { getRecommendations, productIcon } from '@/lib/api/recommendations';
+import { getRecommendations } from '@/lib/api/recommendations';
+import { ProductImage } from '@/components/recommended/product-image';
 import { MonthStrip } from '@/components/track/month-strip';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 
@@ -82,12 +83,7 @@ export default async function RecommendedPage({
                 href={`/recommended/${product.id}?month=${month}`}
                 className="flex gap-[var(--space-16)] rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-16)]"
               >
-                <span
-                  aria-hidden
-                  className="flex size-16 shrink-0 items-center justify-center rounded-[var(--radius-12)] bg-[var(--surface-terra)] text-3xl"
-                >
-                  {productIcon(product)}
-                </span>
+                <ProductImage product={product} variant="card" />
                 <span className="flex flex-col gap-[var(--space-4)]">
                   <span className="type-label text-[var(--text-primary)]">
                     {product.name}
