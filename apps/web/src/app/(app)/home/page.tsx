@@ -207,7 +207,7 @@ export default async function HomePage() {
 
       <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
         <div className="flex items-start gap-[var(--space-12)]">
-          <ShoppingBag className="mt-0.5 size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
+          <ShoppingBag className="size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
           <div>
             <h2 className="text-[var(--text-primary)]" style={{ font: 'var(--type-label)' }}>Recommended for You</h2>
             <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
