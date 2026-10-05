@@ -2,7 +2,7 @@ import { TrackPageView } from '@/components/track-page-view';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Pencil, Heart, MessageCircle, ShoppingBag } from 'lucide-react';
+import { Pencil, Heart, MessageCircleMore, ShoppingBag } from 'lucide-react';
 import { getHome } from '@/lib/api/home';
 import { StandingDisclaimer } from '@/components/standing-disclaimer';
 import { getMonthTypical } from '@/lib/api/month-guidance';
@@ -196,7 +196,10 @@ export default async function HomePage() {
         href="/ask"
         className="flex min-h-[102px] items-center gap-[var(--space-12)] rounded-[var(--radius-16)] bg-[var(--brand-primary)] p-[var(--space-20)] transition hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
       >
-        <MessageCircle className="size-6 shrink-0 text-[var(--text-accent-warm)]" aria-hidden />
+        <MessageCircleMore
+          className="size-6 shrink-0 text-[var(--text-accent-warm)]"
+          aria-hidden
+        />
         <div>
           <h2 className="text-[var(--text-accent-warm)]" style={{ font: 'var(--type-label)' }}>Ask Bloom</h2>
           <p className="mt-[var(--space-4)] text-[var(--text-accent-warm)]" style={{ font: 'var(--type-body)' }}>
@@ -206,21 +209,36 @@ export default async function HomePage() {
       </Link>
 
       <article className="rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-20)]">
-        <div className="flex items-start gap-[var(--space-12)]">
-          <ShoppingBag className="mt-0.5 size-5 shrink-0 text-[var(--text-brand)]" aria-hidden />
+        <div className="flex items-center gap-[var(--space-12)]">
+          <ShoppingBag
+            className="size-6 shrink-0 text-[var(--text-brand)]"
+            aria-hidden
+          />
+
           <div>
-            <h2 className="text-[var(--text-primary)]" style={{ font: 'var(--type-label)' }}>Recommended for You</h2>
-            <p className="mt-[var(--space-4)] text-[var(--text-secondary)]" style={{ font: 'var(--type-body)' }}>
-              Age-appropriate essentials for {firstName} {ageForCopy(baby.birthDate, now)}.
+            <h2
+              className="text-[var(--text-primary)]"
+              style={{ font: 'var(--type-label)' }}
+            >
+              Recommended for You
+            </h2>
+
+            <p
+              className="mt-[var(--space-4)] text-[var(--text-secondary)]"
+              style={{ font: 'var(--type-body)' }}
+            >
+              Age-appropriate essentials for {firstName}{' '}
+              {ageForCopy(baby.birthDate, now)}.
             </p>
+
+            <Link
+              href="/recommended"
+              className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
+            >
+              View recommendations →
+            </Link>
           </div>
         </div>
-        <Link
-          href="/recommended"
-          className="mt-[var(--space-8)] inline-flex min-h-11 items-center font-semibold text-[var(--text-brand)] underline-offset-4 hover:underline"
-        >
-          View recommendations →
-        </Link>
       </article>
 
       <StandingDisclaimer text="BumpToBloom aims to help you feel informed and supported, not to replace guidance from your child’s pediatrician. When in doubt, please reach out to a healthcare professional." />
