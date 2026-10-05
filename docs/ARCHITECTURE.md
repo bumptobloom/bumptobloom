@@ -114,10 +114,11 @@ packages/shared/src/
   ask-context.ts                         builds the age/stage context object
 ```
 
-Response validation (Zod, catching a malformed OpenAI response before it
-reaches a parent) is #46's addition, not yet on `main`. Rate limiting and
-audit logging (`rate-limit.ts`, `classify-openai-error.ts`, `errors.ts`,
-`log-audit-event.ts`) are #72's addition, not yet on `main`.
+Response validation uses Zod to catch malformed OpenAI responses before they reach a parent.
+
+The Ask route also includes server-side rate limiting, sanitized provider errors, audit logging, approved-source filtering, and source links in the response.
+
+Ask Bloom never sends names, email addresses, user IDs, or other identifying information to OpenAI.
 
 An earlier plan (ADR-005) ran this behind a Supabase Edge Function
 (`supabase/functions/ask`), so the OpenAI key would never ship in a mobile
@@ -127,6 +128,14 @@ there shouldn't be one.
 
 Local run: `npm run dev`, then `POST /api/ask` with a session cookie —
 replaces `supabase functions serve` from the superseded plan.
+
+## Monitoring and privacy
+
+Sentry is used for error monitoring with personally identifying information and free-text content scrubbed before events are sent.
+
+PostHog is used for privacy-safe product analytics. Only approved event names and non-sensitive properties are tracked.
+
+Neither service receives passwords, OpenAI keys, baby names, email addresses, user IDs, or Ask free-text content.
 
 ## Environments
 
