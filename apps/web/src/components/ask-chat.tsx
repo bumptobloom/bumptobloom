@@ -164,6 +164,7 @@ export function AskChat({
           babyId,
           conversationId,
           question: trimmedQuestion,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
         signal: controller.signal,
       });
