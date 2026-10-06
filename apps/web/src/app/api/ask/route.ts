@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let body: { babyId?: unknown; conversationId?: unknown; question?: unknown }
+  let body: { babyId?: unknown; conversationId?: unknown; question?: unknown; timezone?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       babyId: body.babyId,
       conversationId,
       question: body.question,
+      timezone: typeof body.timezone === "string" ? body.timezone : null,
     })
 
     return NextResponse.json(result)

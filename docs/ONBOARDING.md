@@ -106,13 +106,20 @@ it on rework caused by contradicting documents. Which is exactly what
 
 | | URL | Deploys from |
 |---|---|---|
-| Production | https://bumptobloom-web.vercel.app | `main`, on every merge |
+| Production | https://bumptobloom-web-six.vercel.app | `main`, on every merge |
 | Preview | posted automatically on your PR | your branch, on every push |
 | Local | http://localhost:3000 | `npm run dev` |
 
 **Every pull request gets its own live preview URL.** Vercel posts it as a check
 on the PR. That link is how design and the PMs review work without cloning
 anything, so put it in the message when you ask someone to look at a screen.
+
+> **Not `bumptobloom-web.vercel.app`.** That hostname looks right and loads a
+> working BumpToBloom, which is what makes it dangerous. It is an alias in a
+> personal Vercel account, pointing at a deployment from early September, and
+> nothing we merge ever reaches it. The team project is `bump-to-bloom`, and
+> its production alias is the one in the table above. Checked 3 Oct: the two
+> serve different builds.
 
 ### Local setup
 

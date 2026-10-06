@@ -322,7 +322,7 @@ Ask is a **Next.js route handler**, because it needs the OpenAI key and that key
 must never reach the browser.
 
 ```
-POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "..." }
+POST /api/ask     { "babyId": "uuid", "conversationId": "uuid|null", "question": "...", "timezone": "America/Los_Angeles" }
 GET  /api/ask/conversations
 GET  /api/ask/conversations/:id
 PATCH /api/ask/conversations/:id
@@ -361,9 +361,11 @@ The handler, in order:
 2. Derive `ageMonths` from `birth_date`. The client never sends an age.
 3. **Run `shouldRedirectToHealth()` from `packages/shared`.** If it returns true,
    return the Health hand-off and stop. No model call happens.
-4. Build context — age in months and developmental stage only. **No name, no
+4. **Run `isAskQuestionInScope()` from `packages/shared`.** If it returns false,
+   return the unsupported-topic message and stop. No research or model call happens.
+5. Build context — age in months and developmental stage only. **No name, no
    user id, no email.** Nothing identifying reaches OpenAI.
-5. Call OpenAI, validate the response with Zod, log an `ai_runs` row.
+6. Call OpenAI, validate the response with Zod, log an `ai_runs` row.
 
 `redirectedToHealth: true` means the client shows the Health hand-off instead of
 answer text.

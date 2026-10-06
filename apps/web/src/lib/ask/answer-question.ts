@@ -4,13 +4,16 @@ import { createServiceRoleClient } from '@/lib/supabase/service-role';
 import {
   calculateBabyAge,
   buildAskBabyContext,
+  isAskQuestionInScope,
   shouldRedirectToHealth,
   REDIRECT_ANSWER,
+  UNSUPPORTED_ASK_ANSWER,
 } from '@btb/shared';
 import { getActivePromptVersion } from './prompt-version';
 import { buildSystemPrompt } from './build-system-prompt';
 import { createOpenAIClient } from './openai-client';
 import { researchAskQuestion, AskResearchResult, AskSource } from './web-research';
+import { isValidTimeZone } from '@/lib/api/temperature-utils';
 import {
   assertUnderRateLimit,
   RateLimitCheckError,
@@ -22,6 +25,7 @@ export interface AnswerQuestionInput {
   babyId: string;
   conversationId: string | null;
   question: string;
+  timezone?: string | null;
 }
 
 export interface AnswerQuestionResult {
@@ -90,12 +94,27 @@ export async function answerQuestion(
 
   const { data: parentProfile, error: parentError } = await supabase
     .from('parent_profiles')
-    .select('id')
+    .select('id, timezone')
     .eq('user_id', input.userId)
     .single();
 
   if (parentError || !parentProfile) {
     throw new AskUpstreamError('Parent profile not found for the authenticated user');
+  }
+
+  // The layout sync normally stores this, but Ask must not depend on a
+  // separate client effect having completed before the daily limit runs.
+  // Use the device zone from this request when it is valid, then persist it
+  // for Vitals and future Ask requests.
+  if (isValidTimeZone(input.timezone) && input.timezone !== parentProfile.timezone) {
+    const { error: timezoneError } = await supabase
+      .from('parent_profiles')
+      .update({ timezone: input.timezone })
+      .eq('id', parentProfile.id);
+
+    if (timezoneError) {
+      throw new AskUpstreamError(`Failed to save parent timezone: ${timezoneError.message}`);
+    }
   }
 
   const redirectToHealth = shouldRedirectToHealth(input.question);
@@ -179,6 +198,29 @@ export async function answerQuestion(
       model: null,
       validationOk: true,
       redirectedToHealth: true,
+    };
+  }
+
+  // Ask only supports the five topics shown in its greeting. Decline before
+  // age-context assembly, web research, or any model call.
+  if (!isAskQuestionInScope(input.question)) {
+    const { error: unsupportedMessageError } = await supabase
+      .from('ai_messages')
+      .insert({ conversation_id: conversationId, role: 'assistant', content: UNSUPPORTED_ASK_ANSWER });
+
+    if (unsupportedMessageError) {
+      console.error('[ask] Failed to log unsupported-topic message:', unsupportedMessageError.message);
+    }
+
+    return {
+      answer: UNSUPPORTED_ASK_ANSWER,
+      sources: [],
+      conversationId,
+      messageId: null,
+      promptVersion: null,
+      model: null,
+      validationOk: true,
+      redirectedToHealth: false,
     };
   }
 
