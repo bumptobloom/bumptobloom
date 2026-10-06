@@ -116,7 +116,7 @@ packages/shared/src/
 
 Response validation uses Zod to catch malformed OpenAI responses before they reach a parent.
 
-The Ask route also includes server-side rate limiting, sanitized provider errors, audit logging, approved-source filtering, and source links in the response.
+The Ask route also includes server-side rate limiting, the five-topic scope guard, sanitized provider errors, audit logging, approved-source filtering, and source links in the response.
 
 Ask Bloom never sends names, email addresses, user IDs, or other identifying information to OpenAI.
 

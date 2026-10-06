@@ -2,7 +2,7 @@ import 'server-only';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
 
 
-// Per Product's usage-control note: 10 questions per parent per UTC
+// Per Product's usage-control note: 10 questions per parent per local
 // calendar day, not the 20/hour we originally guessed.
 export const RATE_LIMIT_MAX_QUESTIONS_PER_DAY = 10;
 
@@ -21,7 +21,7 @@ export class RateLimitExceededError extends Error {
 }
 
 /**
- * Throws if this parent has reached today's (UTC) question budget.
+ * Throws if this parent has reached today's local-time question budget.
  *
  * Reserves the attempt atomically in the database via reserve_ask_attempt()
  * -- see migration 0015 -- so a burst of concurrent requests cannot all slip
