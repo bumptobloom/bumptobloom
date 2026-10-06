@@ -36,7 +36,7 @@ function TabIcon({ href }: { href: string }) {
 
     case '/learn':
       return (
-        <span className={`${iconBox} text-[1.25rem]`} aria-hidden>
+        <span className={`${iconBox} text-[1.3rem]`} aria-hidden>
           📖
         </span>
       );
