@@ -26,7 +26,7 @@ export function JourneySelect() {
     <div className="rounded-[28px] border border-[var(--border-card)] bg-[var(--card-primary)] px-6 py-7 shadow-[0_10px_30px_rgba(74,60,40,0.08)]">
       <div className="space-y-4">
         <div
-          aria-disabled
+          aria-disabled="true"
           className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--surface-terra)] px-4 py-4 opacity-60"
         >
           <div className="flex items-center gap-3">
@@ -41,7 +41,7 @@ export function JourneySelect() {
                 className="mt-0.5 text-[var(--text-secondary)]"
                 style={{ font: 'var(--type-small-title)' }}
               >
-                Track your pregnancy week by week
+                Track your pregnancy week by week (coming soon)
               </p>
             </div>
           </div>
@@ -52,10 +52,10 @@ export function JourneySelect() {
           onClick={() => setSelected('baby-here')}
           aria-pressed={selected === 'baby-here'}
           className={cn(
-            'w-full rounded-3xl border bg-[var(--surface-terra)] px-4 py-4 text-left transition',
+            'w-full rounded-3xl border bg-[var(--surface-terra)] px-4 py-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]',
             selected === 'baby-here'
               ? 'border-[var(--text-brand)] ring-2 ring-[var(--text-brand)]/25'
-              : 'border-[var(--border-subtle)]',
+              : 'border-[var(--border-subtle)] hover:border-[var(--text-brand)]/40',
           )}
         >
           <div className="flex items-center gap-3">

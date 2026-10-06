@@ -199,13 +199,17 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+  :focus-visible {
+    outline: 2px solid var(--text-brand);
+    outline-offset: 2px;
   }
 }
 
@@ -224,7 +228,6 @@
   .type-track-unit  { font: var(--type-track-unit); }
   .type-nav-chevron { font: var(--type-nav-chevron); }
 }
-
 
 /* Ask Bloom chat: floating rounded draggable scrollbar */
 .ask-chat-scroll {
@@ -260,3 +263,24 @@
 .ask-chat-scroll::-webkit-scrollbar-button {
   display: none;
 }
+
+.skip-link {
+  position: absolute;
+  top: -9999px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--card-primary);
+  color: var(--text-brand);
+  border: 2px solid var(--text-brand);
+  border-radius: var(--radius-button-primary);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+}
+

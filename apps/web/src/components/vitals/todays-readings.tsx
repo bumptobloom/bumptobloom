@@ -71,7 +71,7 @@ export function TodaysReadings({
           No readings yet today.
         </p>
       ) : (
-        <ul className="mt-[var(--space-8)]">
+        <ul className="mt-[var(--space-8)]" aria-label="Today's temperature readings">
           {readings.map((reading, index) => {
             const feverish = isFeverRange(reading.tempF, reading.method);
 

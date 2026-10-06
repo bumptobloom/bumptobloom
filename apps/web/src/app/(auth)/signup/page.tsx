@@ -14,11 +14,14 @@ import {
   validatePasswordConfirmation,
 } from '@/lib/validation/password';
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
+function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
-    <span className="mb-1.5 block text-[0.78rem] text-[var(--text-primary)]">
+    <label
+      htmlFor={htmlFor}
+      className="mb-1.5 block text-[0.78rem] text-[var(--text-primary)]"
+    >
       {children}
-    </span>
+    </label>
   );
 }
 
@@ -113,75 +116,86 @@ export default function SignupPage() {
         ) : null}
 
         <form onSubmit={handleSignup} className="space-y-3.5">
-          <label className="block">
-            <FieldLabel>Full name</FieldLabel>
+          <div>
+            <FieldLabel htmlFor="signup-name">Full name</FieldLabel>
             <TextField
+              id="signup-name"
               type="text"
               required
               autoComplete="name"
               placeholder="Enter your full name"
-              icon={<User className="size-4" />}
+              aria-label="Full name"
+              icon={<User className="size-4" aria-hidden />}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
-          </label>
+          </div>
 
-          <label className="block">
-            <FieldLabel>Email</FieldLabel>
+          <div>
+            <FieldLabel htmlFor="signup-email">Email</FieldLabel>
             <TextField
+              id="signup-email"
               type="email"
               required
               autoComplete="email"
               placeholder="Enter your email address"
-              icon={<Mail className="size-4" />}
+              aria-label="Email address"
+              icon={<Mail className="size-4" aria-hidden />}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </label>
+          </div>
 
-          <label className="block">
-            <FieldLabel>Password</FieldLabel>
+          <div>
+            <FieldLabel htmlFor="signup-password">Password</FieldLabel>
             <TextField
+              id="signup-password"
               revealable
               required
               autoComplete="new-password"
               placeholder="Create a password"
-              icon={<Lock className="size-4" />}
+              aria-label="Create a password"
+              aria-describedby="password-rules"
+              icon={<Lock className="size-4" aria-hidden />}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <span className="mt-1.5 block text-[0.72rem] text-[var(--text-secondary)]">
+            <span id="password-rules" className="mt-1.5 block text-[0.72rem] text-[var(--text-secondary)]">
               {PASSWORD_RULE_TEXT}
             </span>
-          </label>
+          </div>
 
-          <label className="block">
-            <FieldLabel>Confirm password</FieldLabel>
+          <div>
+            <FieldLabel htmlFor="signup-confirm-password">Confirm password</FieldLabel>
             <TextField
+              id="signup-confirm-password"
               revealable
               required
               autoComplete="new-password"
               placeholder="Confirm your password"
-              icon={<Lock className="size-4" />}
+              aria-label="Confirm your password"
+              icon={<Lock className="size-4" aria-hidden />}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-          </label>
+          </div>
 
           <label className="flex items-start gap-2.5 pt-0.5">
             <input
+              id="signup-agreed"
+              name="agreed"
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 rounded border-[var(--border-subtle)] accent-[var(--brand-secondary)]"
+              className="mt-0.5 size-4 shrink-0 rounded border-[var(--border-subtle)] accent-[var(--brand-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
             />
             <span className="text-[0.78rem] leading-[1.45] text-[var(--text-secondary)]">
               I agree to the{' '}
-              <Link href="/terms" className="text-[var(--text-accent-warm)] underline underline-offset-2">
+              <Link href="/terms" className="rounded text-[var(--text-accent-warm)] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]">
                 Terms
               </Link>{' '}
               &amp;{' '}
-              <Link href="/privacy" className="text-[var(--text-accent-warm)] underline underline-offset-2">
+              <Link href="/privacy" className="rounded text-[var(--text-accent-warm)] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]">
                 Privacy Policy
               </Link>
               .
@@ -207,7 +221,7 @@ export default function SignupPage() {
         <button
           type="button"
           disabled
-          aria-disabled
+          aria-disabled="true"
           title="Google sign-in is not available in the MVP"
           className="mt-3 flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-[var(--radius-button-primary)] border border-[var(--border-subtle)] bg-white/70 text-[0.9rem] text-[var(--text-secondary)] opacity-60"
         >
@@ -223,7 +237,7 @@ export default function SignupPage() {
 
       <p className="text-center text-[0.82rem] text-[var(--text-secondary)]">
         Already have an account?{' '}
-        <Link href="/login" className="text-[var(--text-primary)] underline-offset-4 hover:underline">
+        <Link href="/login" className="rounded text-[var(--text-primary)] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]">
           Log In
         </Link>
       </p>

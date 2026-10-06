@@ -78,15 +78,22 @@ export default function ForgotPasswordPage() {
             </div>
           ) : null}
 
-          <TextField
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="Email"
-            icon={<Mail className="size-4" />}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div>
+            <label htmlFor="forgot-email" className="sr-only">
+              Email
+            </label>
+            <TextField
+              id="forgot-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="Email"
+              aria-label="Email address"
+              icon={<Mail className="size-4" aria-hidden />}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
           <Button
             type="submit"

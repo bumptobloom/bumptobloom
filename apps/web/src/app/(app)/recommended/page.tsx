@@ -64,7 +64,7 @@ export default async function RecommendedPage({
         {viewingOtherMonth ? (
           <Link
             href="/recommended"
-            className="type-label self-center text-[var(--text-brand)]"
+            className="type-label self-center rounded text-[var(--text-brand)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
           >
             Back to {babyMonth} months
           </Link>
@@ -81,7 +81,7 @@ export default async function RecommendedPage({
             <li key={product.id}>
               <Link
                 href={`/recommended/${product.id}?month=${month}`}
-                className="flex gap-[var(--space-16)] rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-16)]"
+                className="flex gap-[var(--space-16)] rounded-[var(--radius-16)] border border-[var(--border-card)] bg-[var(--card-primary)] p-[var(--space-16)] transition hover:border-[var(--border-subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               >
                 <ProductImage product={product} variant="card" />
                 <span className="flex flex-col gap-[var(--space-4)]">

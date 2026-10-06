@@ -272,7 +272,7 @@ export function ConversationSidebar({
               maxLength={100}
               disabled={busy}
               aria-label="Conversation name"
-              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--card-primary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--border-card)]"
+              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--card-primary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
             />
 
             <div className="mt-2 flex justify-end gap-1">
@@ -280,19 +280,19 @@ export function ConversationSidebar({
                 type="button"
                 onClick={cancelRename}
                 disabled={busy}
-                className="rounded-lg px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--card-primary)]"
+                className="rounded-lg px-2 py-1 text-xs text-[var(--text-secondary)] hover:bg-[var(--card-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={busy || !renameValue.trim()}
-                className="inline-flex items-center gap-1 rounded-lg bg-[var(--surface-terra)] px-2 py-1 text-xs text-[var(--text-primary)] disabled:opacity-40"
+                className="inline-flex items-center gap-1 rounded-lg bg-[var(--surface-terra)] px-2 py-1 text-xs text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] disabled:opacity-40"
               >
                 {busy ? (
-                  <Loader2 className="size-3 animate-spin" />
+                  <Loader2 className="size-3 animate-spin" aria-hidden />
                 ) : (
-                  <Check className="size-3" />
+                  <Check className="size-3" aria-hidden />
                 )}
                 Save
               </button>
@@ -303,7 +303,7 @@ export function ConversationSidebar({
             <button
               type="button"
               onClick={() => onConversationSelect(conversation.id)}
-              className="min-w-0 flex-1 rounded-2xl px-3 py-3 text-left hover:bg-[var(--card-secondary)]"
+              className="min-w-0 flex-1 rounded-2xl px-3 py-3 text-left hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
               aria-current={active ? 'page' : undefined}
             >
               <span className="block truncate pr-1 text-sm font-medium text-[var(--text-primary)]">
@@ -329,45 +329,48 @@ export function ConversationSidebar({
                 aria-label={`Actions for ${conversation.title?.trim() || 'Conversation'}`}
                 aria-expanded={menuOpen}
                 disabled={busy}
-                className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-primary)] hover:text-[var(--text-primary)] disabled:opacity-40"
+                className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-primary)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)] disabled:opacity-40"
               >
                 {busy ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
                 ) : (
-                  <MoreHorizontal className="size-4" />
+                  <MoreHorizontal className="size-4" aria-hidden />
                 )}
               </button>
 
               {menuOpen ? (
-                <div className="absolute right-2 top-10 z-50 w-44 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-primary)] p-1 shadow-lg">
+                <div className="absolute right-2 top-10 z-50 w-44 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-primary)] p-1 shadow-lg" role="menu" aria-label="Conversation actions">
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => startRename(conversation)}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)]"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                   >
-                    <Pencil className="size-4" />
+                    <Pencil className="size-4" aria-hidden />
                     Rename
                   </button>
 
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => void togglePin(conversation)}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)]"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                   >
                     {conversation.isPinned ? (
-                      <PinOff className="size-4" />
+                      <PinOff className="size-4" aria-hidden />
                     ) : (
-                      <Pin className="size-4" />
+                      <Pin className="size-4" aria-hidden />
                     )}
                     {conversation.isPinned ? 'Unpin chat' : 'Pin chat'}
                   </button>
 
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => void deleteConversation(conversation)}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)]"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
                   >
-                    <Trash2 className="size-4" />
+                    <Trash2 className="size-4" aria-hidden />
                     Delete
                   </button>
                 </div>
@@ -416,9 +419,9 @@ export function ConversationSidebar({
             type="button"
             onClick={onClose}
             aria-label="Close conversation history"
-            className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-secondary)]"
+            className="rounded-full p-2 text-[var(--text-secondary)] hover:bg-[var(--card-secondary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
           >
-            <X className="size-5" />
+            <X className="size-5" aria-hidden />
           </button>
         </div>
 
@@ -426,9 +429,9 @@ export function ConversationSidebar({
           <button
             type="button"
             onClick={onNewConversation}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--surface-terra)] px-3 py-2.5 text-sm font-medium text-[var(--text-primary)]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--surface-terra)] px-3 py-2.5 text-sm font-medium text-[var(--text-primary)] transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--text-brand)]"
           >
-            <Plus className="size-4" />
+            <Plus className="size-4" aria-hidden />
             New conversation
           </button>
         </div>
