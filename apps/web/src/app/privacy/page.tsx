@@ -8,7 +8,7 @@ import { PRIVACY_POLICY, CONSUMER_HEALTH_DATA_PRIVACY_POLICY } from '@/lib/legal
 export const metadata: Metadata = {
   title: 'Privacy Policy & Consumer Health Data | BumpToBloom',
   description:
-    "Learn how BumpToBloom protects your family's data, our 30-day active deletion policy, and our Consumer Health Data Privacy Policy.",
+    "Learn how BumpToBloom protects your family's data, our request-based deletion policy, and our Consumer Health Data Privacy Policy.",
 };
 
 export default function PrivacyPage() {
@@ -115,8 +115,8 @@ export default function PrivacyPage() {
                   {isRetention && (
                     <div className="mt-3">
                       <Callout variant="info" eyebrow="Data Retention Policy">
-                        Active data deleted within <strong>30 days</strong> of request. Encrypted backup copies
-                        overwritten within <strong>90 days</strong> in the normal course of business.
+                        Account and associated personal data are deleted upon verified request, subject to standard
+                        backup overwrites, security procedures, and legal retention obligations.
                       </Callout>
                     </div>
                   )}

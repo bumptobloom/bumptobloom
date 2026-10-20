@@ -287,8 +287,8 @@ export const PRIVACY_POLICY: LegalDocument = {
       title: 'Data Retention and Deletion',
       paragraphs: [
         'We keep personal information only as long as reasonably necessary to operate and test the Service, fulfill the purposes described in this Policy, protect security, comply with applicable law, resolve disputes, and enforce agreements.',
-        'You may request deletion of your account and associated data at any time. When you do, we delete your personal information from our active systems within 30 days. Residual copies may remain in encrypted backups for up to 90 days, after which they are overwritten in the normal course of business.',
-        'We may retain information beyond these periods only where a legal obligation requires it, or in de-identified form that can no longer reasonably be linked to you or your child.',
+        'You may request deletion of your account and associated personal data at any time by contacting us at team.bumptobloom@gmail.com. Upon receiving and verifying your request, we delete your personal information from our active systems without undue delay, subject to standard backup overwrites, security procedures, and legal retention obligations.',
+        'We may retain limited information only where a legal obligation requires it, or in de-identified form that can no longer reasonably be linked to you or your child.',
       ],
     },
     {
@@ -418,7 +418,7 @@ export const CONSUMER_HEALTH_DATA_PRIVACY_POLICY: LegalDocument = {
         'Other vendors needed to operate a feature you request.',
       ],
       callout:
-        'Specific processors that may receive consumer health data: Supabase for authentication, database, and storage; Vercel for hosting and application infrastructure; OpenAI for generating Ask responses; and the web-research provider used by the Ask feature, if applicable.',
+        'Specific processors that may receive consumer health data: Supabase for authentication, database, and storage; Vercel for hosting and application infrastructure; and OpenAI for generating Ask responses. Ancillary services such as Sentry (error monitoring) and PostHog (product analytics) are strictly configured to exclude consumer health data and scrub any sensitive personal identifiers.',
     },
     {
       id: 'your-health-data-rights',

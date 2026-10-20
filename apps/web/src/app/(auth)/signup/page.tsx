@@ -63,7 +63,12 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          terms_accepted: true,
+          privacy_policy_accepted: true,
+          terms_accepted_at: new Date().toISOString(),
+        },
       },
     });
 
