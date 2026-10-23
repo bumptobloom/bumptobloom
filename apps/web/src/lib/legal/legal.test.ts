@@ -4,6 +4,7 @@ import {
   TERMS_OF_USE,
   PRIVACY_POLICY,
   CONSUMER_HEALTH_DATA_PRIVACY_POLICY,
+  LEGAL_TERMS_VERSION,
 } from './index.ts';
 
 test('TERMS_OF_USE has valid metadata and all 18 sections', () => {
@@ -42,18 +43,23 @@ test('PRIVACY_POLICY has valid metadata and all 15 sections', () => {
   assert.ok(sectionTitles.includes('Contact Us'));
 });
 
-test('CONSUMER_HEALTH_DATA_PRIVACY_POLICY has all 10 sections', () => {
+test('CONSUMER_HEALTH_DATA_PRIVACY_POLICY has all 11 sections', () => {
   assert.equal(CONSUMER_HEALTH_DATA_PRIVACY_POLICY.id, 'consumer-health-data-privacy-policy');
   assert.equal(CONSUMER_HEALTH_DATA_PRIVACY_POLICY.effectiveDate, 'October 20, 2026');
   assert.equal(CONSUMER_HEALTH_DATA_PRIVACY_POLICY.lastUpdated, 'October 20, 2026');
-  assert.equal(CONSUMER_HEALTH_DATA_PRIVACY_POLICY.sections.length, 10);
+  assert.equal(CONSUMER_HEALTH_DATA_PRIVACY_POLICY.sections.length, 11);
 
   const sectionTitles = CONSUMER_HEALTH_DATA_PRIVACY_POLICY.sections.map((s) => s.title);
   assert.ok(sectionTitles.includes('Consumer Health Data We Collect'));
   assert.ok(sectionTitles.includes('Sources of Consumer Health Data'));
   assert.ok(sectionTitles.includes('Why We Collect and Use Consumer Health Data'));
+  assert.ok(sectionTitles.includes('Consent for Collection and Disclosure'));
   assert.ok(sectionTitles.includes('Consumer Health Data We Disclose'));
   assert.ok(sectionTitles.includes('Your Consumer Health Data Rights'));
   assert.ok(sectionTitles.includes('How to Exercise Your Rights'));
   assert.ok(sectionTitles.includes('Contact'));
+});
+
+test('LEGAL_TERMS_VERSION is exported and matches 2026-10-20', () => {
+  assert.equal(LEGAL_TERMS_VERSION, '2026-10-20');
 });

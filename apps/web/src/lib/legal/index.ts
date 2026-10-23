@@ -25,6 +25,8 @@ export interface LegalDocument {
   contactWebsite: string;
 }
 
+export const LEGAL_TERMS_VERSION = '2026-10-20';
+
 export const TERMS_OF_USE: LegalDocument = {
   id: 'terms-of-use',
   title: 'Terms of Use',
@@ -287,8 +289,8 @@ export const PRIVACY_POLICY: LegalDocument = {
       title: 'Data Retention and Deletion',
       paragraphs: [
         'We keep personal information only as long as reasonably necessary to operate and test the Service, fulfill the purposes described in this Policy, protect security, comply with applicable law, resolve disputes, and enforce agreements.',
-        'You may request deletion of your account and associated personal data at any time by contacting us at team.bumptobloom@gmail.com. Upon receiving and verifying your request, we delete your personal information from our active systems without undue delay, subject to standard backup overwrites, security procedures, and legal retention obligations.',
-        'We may retain limited information only where a legal obligation requires it, or in de-identified form that can no longer reasonably be linked to you or your child.',
+        'You may request deletion of your account and associated data at any time. When you do, we delete your personal information from our active systems within 30 days. Residual copies may remain in encrypted backups for up to 90 days, after which they are overwritten in the normal course of business.',
+        'We may retain information beyond these periods only where a legal obligation requires it, or in de-identified form that can no longer reasonably be linked to you or your child.',
       ],
     },
     {
@@ -403,8 +405,15 @@ export const CONSUMER_HEALTH_DATA_PRIVACY_POLICY: LegalDocument = {
         'We do not use consumer health data to diagnose a condition, select treatment, determine eligibility for healthcare or insurance, or make another legal or similarly significant decision about a user.',
     },
     {
-      id: 'health-data-we-disclose',
+      id: 'consent-for-health-data',
       number: 4,
+      title: 'Consent for Collection and Disclosure',
+      content:
+        'We obtain your consent before collecting or using consumer health data as necessary to provide the features and services you request, including milestone tracking, temperature logging, and Ask responses. We obtain separate, affirmative consent before disclosing consumer health data, except as necessary to provide a requested service or as permitted by applicable law. You may withdraw your consent at any time as described in Section 7 (How to Exercise Your Rights).',
+    },
+    {
+      id: 'health-data-we-disclose',
+      number: 5,
       title: 'Consumer Health Data We Disclose',
       paragraphs: [
         'We do not sell consumer health data. We disclose consumer health data only as reasonably necessary to provide a feature you request, operate and secure the Service, comply with law, or act with your direction or consent.',
@@ -422,7 +431,7 @@ export const CONSUMER_HEALTH_DATA_PRIVACY_POLICY: LegalDocument = {
     },
     {
       id: 'your-health-data-rights',
-      number: 5,
+      number: 6,
       title: 'Your Consumer Health Data Rights',
       content: 'Depending on applicable law, you may have the right to:',
       listItems: [
@@ -436,35 +445,35 @@ export const CONSUMER_HEALTH_DATA_PRIVACY_POLICY: LegalDocument = {
     },
     {
       id: 'how-to-exercise-health-rights',
-      number: 6,
+      number: 7,
       title: 'How to Exercise Your Rights',
       content:
         'Submit a request to team.bumptobloom@gmail.com. We may verify your identity before acting on a request.',
     },
     {
       id: 'health-data-security',
-      number: 7,
+      number: 8,
       title: 'Data Security',
       content:
         'We use reasonable administrative, technical, and organizational safeguards designed to protect information from unauthorized access, use, alteration, loss, or disclosure. However, no internet-connected system is completely secure, and we cannot guarantee absolute security.',
     },
     {
       id: 'health-data-and-ai',
-      number: 8,
+      number: 9,
       title: 'Consumer Health Data and Artificial Intelligence',
       content:
         'Ask messages may contain consumer health data. AI providers may process this information only to provide the requested feature and related contracted services, subject to the provider configuration and agreement verified before publication. BumpToBloom does not authorize AI providers to use consumer health data for independent advertising or unrelated marketing.',
     },
     {
       id: 'changes-to-health-policy',
-      number: 9,
+      number: 10,
       title: 'Changes to This Policy',
       content:
         'If we materially change the categories of consumer health data we collect, our purposes for collecting it, or the categories of recipients, we will update this Policy and obtain additional consent when required by law.',
     },
     {
       id: 'health-policy-contact',
-      number: 10,
+      number: 11,
       title: 'Contact',
       content: 'Questions and health privacy requests may be sent to:',
     },
