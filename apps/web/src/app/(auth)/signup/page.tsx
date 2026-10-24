@@ -85,6 +85,31 @@ export default function SignupPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+  setError(null);
+
+  if (!agreed) {
+    setError('You must accept the Terms and Privacy policy to continue.');
+    return;
+  }
+
+  setLoading(true);
+
+  const supabase = createBrowserClient();
+
+  const { error: googleError } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+    },
+  });
+
+  if (googleError) {
+    setError(googleError.message || 'Google sign-in failed.');
+    setLoading(false);
+  }
+};
+
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border border-[var(--border-card)] bg-[var(--card-primary)] px-5 py-6">
@@ -206,10 +231,11 @@ export default function SignupPage() {
         {/* PRD US-02: display the Google CTA but disable it for MVP. */}
         <button
           type="button"
-          disabled
-          aria-disabled
+          onClick={handleGoogleSignIn}
+          disabled={loading || !agreed}
+          aria-disabled={!agreed}
           title="Google sign-in is not available in the MVP"
-          className="mt-3 flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-[var(--radius-button-primary)] border border-[var(--border-subtle)] bg-white/70 text-[0.9rem] text-[var(--text-secondary)] opacity-60"
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button-primary)] border border-[var(--border-subtle)] bg-white/70 text-[0.9rem] text-[var(--text-secondary)]"
         >
           <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
             <path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 0 1-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6Z" />
