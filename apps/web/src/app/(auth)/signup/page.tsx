@@ -13,6 +13,7 @@ import {
   validatePassword,
   validatePasswordConfirmation,
 } from '@/lib/validation/password';
+import { LEGAL_TERMS_VERSION } from '@/lib/legal';
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
@@ -63,7 +64,14 @@ export default function SignupPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          terms_accepted: true,
+          terms_accepted_at: new Date().toISOString(),
+          terms_version: LEGAL_TERMS_VERSION,
+          privacy_policy_accepted: true,
+          privacy_policy_version: LEGAL_TERMS_VERSION,
+        },
       },
     });
 
